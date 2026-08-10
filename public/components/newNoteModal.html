@@ -1,0 +1,47 @@
+<!-- Modal Component: Create New Note -->
+<div id="newNoteModal"
+    class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="glass-panel w-full max-w-lg rounded-2xl border border-white/15 p-6 shadow-2xl flex flex-col gap-4">
+        <div class="flex items-center justify-between border-b border-white/10 pb-3">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary">note_add</span>
+                <h3 class="font-headline-md text-base font-semibold text-primary">Tạo Note Mới Trực Tiếp Trên GitHub
+                </h3>
+            </div>
+            <button id="btnCloseNewNoteModal" class="text-on-surface-variant hover:text-on-surface">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+
+        <div class="flex flex-col gap-3 text-xs">
+            <div>
+                <label class="block mb-1 font-label-caps text-on-surface-variant">Đường dẫn file (Vd:
+                    Projects/BrainDashboard.md hoặc Wiki/Topic.md):</label>
+                <input id="newNotePathInput" type="text" placeholder="Wiki/TenGhiChuMoi.md"
+                    class="w-full bg-surface-container-high border border-white/10 rounded-lg px-3 py-2 text-xs text-on-surface outline-none focus:border-primary/50">
+            </div>
+
+            <div>
+                <div class="flex items-center justify-between mb-1">
+                    <label class="font-label-caps text-on-surface-variant">Nội dung ban đầu:</label>
+                    <div id="newNoteTokenBadge" class="text-[10px] font-mono text-amber-300 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded flex items-center gap-1">
+                        <span class="material-symbols-outlined text-xs">token</span>
+                        <span>0 tokens (~$0.000000)</span>
+                    </div>
+                </div>
+                <textarea id="newNoteContentInput" rows="6" placeholder="# Tiêu đề ghi chú mới&#10;&#10;Nội dung..."
+                    class="w-full bg-surface-container-high border border-white/10 rounded-lg p-3 text-xs font-mono text-on-surface outline-none focus:border-primary/50 resize-none"></textarea>
+            </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-2 border-t border-white/10">
+            <button id="btnCancelNewNote"
+                class="px-4 py-2 rounded-lg bg-white/5 text-on-surface-variant hover:bg-white/10 text-xs font-semibold">Hủy</button>
+            <button id="btnSubmitNewNote"
+                class="px-4 py-2 rounded-lg bg-primary text-on-primary hover:brightness-110 text-xs font-semibold flex items-center gap-1">
+                <span class="material-symbols-outlined text-sm">cloud_upload</span>
+                Tạo & Commit GitHub
+            </button>
+        </div>
+    </div>
+</div>

@@ -1,27 +1,64 @@
 <!-- Floating AI Chat Assistant Component (Fully Transparent / Text-Only Floating Style) -->
 <div id="chatBoxContainer"
-    class="absolute bottom-6 left-6 z-30 w-96 max-w-[calc(100vw-3rem)] p-2 flex flex-col gap-2.5 bg-transparent border-0 shadow-none transition-all pointer-events-auto">
+    class="absolute bottom-6 left-6 z-30 w-96 max-w-[calc(100vw-3rem)] p-2.5 flex flex-col gap-2.5 bg-slate-950/80 backdrop-blur-md border border-purple-500/30 rounded-2xl shadow-[0_0_25px_rgba(109,40,217,0.25)] transition-all pointer-events-auto">
     <!-- Header -->
-    <div class="flex items-center justify-between pb-1">
+    <div class="flex items-center justify-between pb-1.5 border-b border-purple-500/20">
         <div class="flex items-center gap-2">
-            <span class="material-symbols-outlined text-purple-400 text-xl text-glow">psychology</span>
+            <span class="material-symbols-outlined text-purple-400 text-xl text-glow animate-pulse">psychology</span>
             <div>
-                <span class="font-headline-md text-sm font-bold text-white text-glow block tracking-wide">AI JarVis</span>
-                <span class="text-[10px] text-cyan-400 font-mono">Trợ lý Tri Thức AI</span>
+                <div class="flex items-center gap-1.5">
+                    <span class="font-headline-md text-sm font-bold text-white text-glow block tracking-wide">AI JarVis</span>
+                    <span class="text-[9px] bg-purple-500/20 text-purple-300 border border-purple-400/40 px-1.5 py-0.2 rounded font-mono">Orus TTS</span>
+                </div>
+                <span id="voiceStatusText" class="text-[10px] text-cyan-400 font-mono block">Lắng nghe "Hey Jarvis"...</span>
             </div>
         </div>
         
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-1.5">
+            <!-- Wake Word Listening Toggle Button -->
+            <button id="btnWakeWordToggle" type="button" title="Bật/Tắt chế độ lắng nghe từ khóa 'Hey Jarvis'"
+                class="flex items-center gap-1 bg-purple-900/40 hover:bg-purple-800/60 border border-purple-400/40 px-2 py-0.5 rounded-full text-purple-200 text-[10px] font-semibold transition-all active:scale-95">
+                <span id="wakeWordIcon" class="material-symbols-outlined text-[13px] text-emerald-400">mic</span>
+                <span id="wakeWordBtnLabel" class="font-mono">Hey Jarvis: ON</span>
+            </button>
+
             <!-- Live Response Timer Badge -->
             <div id="aiTimerBadge" class="hidden items-center gap-1 bg-cyan-500/20 border border-cyan-400/40 px-2 py-0.5 rounded-full text-cyan-300 text-[10px] font-mono text-glow">
                 <span class="material-symbols-outlined text-[12px] animate-spin">sync</span>
                 <span id="aiTimerValue">0.0s</span>
             </div>
-            <!-- Status Badge -->
-            <div class="flex items-center gap-1.5 bg-emerald-500/20 border border-emerald-400/40 px-2 py-0.5 rounded-full">
-                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-                <span id="aiStatusBadge" class="text-[10px] font-semibold text-emerald-300">Active</span>
-            </div>
+
+            <!-- Minimize Chat Window Button -->
+            <button id="btnMinimizeChat" type="button" title="Thu nhỏ / Ẩn cửa sổ Jarvis"
+                class="text-slate-400 hover:text-white p-1 rounded-md transition-all active:scale-95 flex items-center justify-center">
+                <span class="material-symbols-outlined text-base">expand_more</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Voice Audio Wave Animation Banner (Hidden by default, shown when listening/speaking) -->
+    <div id="voiceWaveContainer" class="hidden items-center justify-between bg-purple-950/40 border border-cyan-500/30 rounded-lg px-3 py-1.5 animate-fadeIn">
+        <div class="flex items-center gap-2">
+            <span id="voiceWaveIcon" class="material-symbols-outlined text-cyan-400 text-sm animate-pulse">graphic_eq</span>
+            <span id="voiceWaveLabel" class="text-[11px] text-cyan-200 font-medium font-mono">Jarvis đang nói (Giọng Orus)...</span>
+        </div>
+        <div class="flex items-center gap-1">
+            <span class="w-1 h-3 bg-cyan-400 rounded-full animate-bounce [animation-delay:0ms]"></span>
+            <span class="w-1 h-4 bg-purple-400 rounded-full animate-bounce [animation-delay:150ms]"></span>
+            <span class="w-1 h-5 bg-cyan-300 rounded-full animate-bounce [animation-delay:300ms]"></span>
+            <span class="w-1 h-3 bg-purple-400 rounded-full animate-bounce [animation-delay:450ms]"></span>
+        </div>
+    </div>
+
+    <!-- Dynamic Audio Pulsing Orb Bubble (Bong bóng phập phồng theo cường độ âm thanh thực tế) -->
+    <div id="voiceOrbContainer" class="hidden relative my-2 flex-col items-center justify-center py-3 animate-fadeIn transition-all">
+        <div id="voiceOrbOuterRing" class="absolute w-24 h-24 rounded-full bg-cyan-500/20 border border-cyan-400/30 animate-ping"></div>
+        <div id="voiceOrbBubble" class="relative z-10 w-16 h-16 rounded-full bg-gradient-to-tr from-purple-600 via-cyan-400 to-indigo-500 flex items-center justify-center shadow-[0_0_30px_rgba(56,189,248,0.8)] transition-transform duration-75 ease-out border-2 border-white/50">
+            <span id="voiceOrbIcon" class="material-symbols-outlined text-white text-2xl text-glow">graphic_eq</span>
+        </div>
+        <div id="voiceOrbVolumeBadge" class="mt-2 text-[10px] text-cyan-300 font-mono tracking-wider bg-slate-900/90 px-2.5 py-0.5 rounded-full border border-cyan-500/40 shadow-sm flex items-center gap-1">
+            <span id="voiceOrbStatusLabel">Âm thanh Mic:</span>
+            <strong id="voiceVolumePercent" class="text-emerald-400 font-bold">0%</strong>
         </div>
     </div>
 
@@ -36,14 +73,18 @@
                 <span class="text-[10px] text-cyan-400/80 font-mono">Sẵn sàng</span>
             </strong>
             <p class="text-slate-100 text-xs leading-relaxed font-medium">
-                Chào bạn! Nhấp vào bất kỳ Node nào trên biểu đồ để <strong class="text-amber-300">Đọc, Sửa</strong> hoặc <strong class="text-emerald-300">Ghi Daily</strong> trực tiếp lên GitHub. Hãy đặt câu hỏi cho tôi bên dưới!
+                Chào bạn! Nói <strong class="text-emerald-300">"Hey Jarvis"</strong> hoặc bấm vào nút mic bên dưới để trò chuyện bằng giọng nói (Model <span class="text-purple-300 font-semibold">Gemini 2.5 Flash TTS - Giọng Orus</span>).
             </p>
         </div>
     </div>
 
-    <!-- Input Form (Transparent Borderless Input Field) -->
+    <!-- Input Form (Transparent Borderless Input Field with Speech Mic Button) -->
     <form id="chatForm" class="flex items-center gap-2 pt-1 border-t border-purple-500/30">
-        <input id="chatInput" type="text" placeholder="Nhập câu hỏi cho AI Brain..."
+        <button type="button" id="btnMicToggle" title="Nói trực tiếp với AI Jarvis"
+            class="bg-cyan-500/20 hover:bg-cyan-500/40 border border-cyan-400/40 text-cyan-300 p-1.5 rounded-lg transition-all active:scale-95 flex items-center justify-center">
+            <span id="micBtnIcon" class="material-symbols-outlined text-base">mic</span>
+        </button>
+        <input id="chatInput" type="text" placeholder="Nói 'Hey Jarvis' hoặc nhập câu hỏi..."
             class="bg-transparent border-b border-purple-500/40 px-2 py-1.5 text-xs text-white placeholder:text-slate-400 flex-1 outline-none focus:border-cyan-400 transition-all font-medium drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
         <button type="submit" id="sendBtn"
             class="bg-purple-600/40 hover:bg-purple-500/60 text-white px-3 py-1.5 rounded-lg transition-all border border-purple-400/40 shadow-sm active:scale-95 flex items-center justify-center font-bold">
@@ -51,3 +92,12 @@
         </button>
     </form>
 </div>
+
+<!-- Floating Minimized Jarvis Pill (Hiển thị khi thu nhỏ, bấm vào hoặc nói "Hey Jarvis" sẽ hiện cửa sổ chat lên) -->
+<button id="jarvisMinPill" type="button" title="Mở khung AI Jarvis (Nói 'Hey Jarvis' để mở tự động)"
+    class="hidden absolute bottom-6 left-6 z-30 items-center gap-2.5 bg-slate-950/90 hover:bg-slate-900 border border-purple-500/50 rounded-full px-4 py-2 shadow-[0_0_25px_rgba(109,40,217,0.4)] transition-all pointer-events-auto active:scale-95 group">
+    <span class="material-symbols-outlined text-purple-400 text-lg text-glow animate-pulse group-hover:scale-110 transition-transform">psychology</span>
+    <span class="font-headline-md text-xs font-bold text-white tracking-wide">AI JarVis</span>
+    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+    <span class="text-[10px] text-cyan-300 font-mono">Nói "Hey Jarvis"</span>
+</button>

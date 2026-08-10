@@ -1,0 +1,13 @@
+services:
+  jarvis-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: jarvis-ai-brain
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3000}:3000"
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production

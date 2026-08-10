@@ -1,0 +1,43 @@
+<!-- Top Action Bar Component -->
+<header class="absolute top-0 left-0 right-0 z-30 h-16 glass-panel px-6 flex items-center justify-between border-b border-white/10">
+    <div class="flex items-center gap-3">
+        <span class="material-symbols-outlined text-primary text-2xl">hub</span>
+        <div>
+            <h1 class="font-headline-md text-base font-semibold text-primary text-glow flex items-center gap-2">
+                GitHub Vault Graph View
+                <span id="repoNameBadge"
+                    class="text-[10px] font-label-caps px-2 py-0.5 rounded bg-primary/20 text-primary border border-primary/30">Obsidian-JarVis-Ai/AI_Brain_OS</span>
+            </h1>
+            <p class="text-[11px] text-on-surface-variant/80">Trực quan hóa mạng lưới Markdown & Nhật ký Daily ngầm định từ GitHub Repo</p>
+        </div>
+    </div>
+
+    <div class="flex items-center gap-3">
+        <!-- Search Input -->
+        <div class="relative">
+            <span class="material-symbols-outlined absolute left-2.5 top-2 text-base text-on-surface-variant">search</span>
+            <input id="graphSearchInput" type="text" placeholder="Tìm kiếm note / tag..."
+                class="bg-surface-container-high/80 border border-white/10 rounded-lg pl-8 pr-3 py-1.5 text-xs text-on-surface placeholder:text-on-surface-variant/50 outline-none focus:border-primary/50 transition-all w-48">
+        </div>
+
+        <!-- Daily Action Button -->
+        <button id="btnOpenDaily"
+            class="bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all shadow-[0_0_10px_rgba(52,211,153,0.2)]">
+            <span class="material-symbols-outlined text-base">calendar_today</span>
+            <span>Ghi Daily Hôm Nay</span>
+        </button>
+
+        <!-- New Note Button -->
+        <button id="btnNewNote"
+            class="bg-primary/20 hover:bg-primary/30 text-primary border border-primary/40 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all shadow-[0_0_10px_rgba(211,187,255,0.2)]">
+            <span class="material-symbols-outlined text-base">note_add</span>
+            <span>+ Tạo Note Mới</span>
+        </button>
+
+        <!-- Refresh Button -->
+        <button id="btnRefreshGraph" title="Tải lại dữ liệu từ GitHub"
+            class="bg-surface-container-high hover:brightness-125 text-on-surface border border-white/10 px-2.5 py-1.5 rounded-lg text-xs transition-all flex items-center justify-center">
+            <span class="material-symbols-outlined text-base">refresh</span>
+        </button>
+    </div>
+</header>
