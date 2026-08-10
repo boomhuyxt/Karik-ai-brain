@@ -1,0 +1,53 @@
+<!-- Floating AI Chat Assistant Component (Fully Transparent / Text-Only Floating Style) -->
+<div id="chatBoxContainer"
+    class="absolute bottom-6 left-6 z-30 w-96 max-w-[calc(100vw-3rem)] p-2 flex flex-col gap-2.5 bg-transparent border-0 shadow-none transition-all pointer-events-auto">
+    <!-- Header -->
+    <div class="flex items-center justify-between pb-1">
+        <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-purple-400 text-xl text-glow">psychology</span>
+            <div>
+                <span class="font-headline-md text-sm font-bold text-white text-glow block tracking-wide">AI JarVis</span>
+                <span class="text-[10px] text-cyan-400 font-mono">Trợ lý Tri Thức AI</span>
+            </div>
+        </div>
+        
+        <div class="flex items-center gap-2">
+            <!-- Live Response Timer Badge -->
+            <div id="aiTimerBadge" class="hidden items-center gap-1 bg-cyan-500/20 border border-cyan-400/40 px-2 py-0.5 rounded-full text-cyan-300 text-[10px] font-mono text-glow">
+                <span class="material-symbols-outlined text-[12px] animate-spin">sync</span>
+                <span id="aiTimerValue">0.0s</span>
+            </div>
+            <!-- Status Badge -->
+            <div class="flex items-center gap-1.5 bg-emerald-500/20 border border-emerald-400/40 px-2 py-0.5 rounded-full">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                <span id="aiStatusBadge" class="text-[10px] font-semibold text-emerald-300">Active</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Messages Box (Fully Transparent, Text-Only View) -->
+    <div id="chatMessages" class="h-60 overflow-y-auto flex flex-col gap-2.5 pr-1.5 text-xs select-text">
+        <div class="bg-transparent p-1 text-slate-100 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
+            <strong class="text-cyan-300 font-bold text-xs flex items-center justify-between mb-1 text-glow">
+                <span class="flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-sm text-cyan-400">smart_toy</span>
+                    AI Brain Assistant:
+                </span>
+                <span class="text-[10px] text-cyan-400/80 font-mono">Sẵn sàng</span>
+            </strong>
+            <p class="text-slate-100 text-xs leading-relaxed font-medium">
+                Chào bạn! Nhấp vào bất kỳ Node nào trên biểu đồ để <strong class="text-amber-300">Đọc, Sửa</strong> hoặc <strong class="text-emerald-300">Ghi Daily</strong> trực tiếp lên GitHub. Hãy đặt câu hỏi cho tôi bên dưới!
+            </p>
+        </div>
+    </div>
+
+    <!-- Input Form (Transparent Borderless Input Field) -->
+    <form id="chatForm" class="flex items-center gap-2 pt-1 border-t border-purple-500/30">
+        <input id="chatInput" type="text" placeholder="Nhập câu hỏi cho AI Brain..."
+            class="bg-transparent border-b border-purple-500/40 px-2 py-1.5 text-xs text-white placeholder:text-slate-400 flex-1 outline-none focus:border-cyan-400 transition-all font-medium drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+        <button type="submit" id="sendBtn"
+            class="bg-purple-600/40 hover:bg-purple-500/60 text-white px-3 py-1.5 rounded-lg transition-all border border-purple-400/40 shadow-sm active:scale-95 flex items-center justify-center font-bold">
+            <span class="material-symbols-outlined text-base">send</span>
+        </button>
+    </form>
+</div>
