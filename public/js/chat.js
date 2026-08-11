@@ -46,10 +46,7 @@ function initAIChat() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    message,
-                    tts: true,
-                    voice: 'Orus',
-                    model: 'gemini-2.5-flash-tts'
+                    message
                 })
             });
             const result = await res.json();
@@ -62,9 +59,7 @@ function initAIChat() {
             aiDiv.className = 'bg-transparent p-1.5 text-slate-100 self-start mr-4 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] transition-all animate-fadeIn';
             const renderFn = typeof window.renderCustomMarkdown === 'function' ? window.renderCustomMarkdown : (t => t);
 
-            const voiceBadgeHtml = result.audioData 
-                ? `<span class="text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 px-1 py-0.2 rounded font-mono flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">volume_up</span> Iapetus Audio</span>` 
-                : `<span class="text-[9px] bg-purple-500/20 text-purple-300 border border-purple-400/40 px-1 py-0.2 rounded font-mono">Gemini TTS</span>`;
+            const voiceBadgeHtml = `<span class="text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 px-1 py-0.2 rounded font-mono flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">volume_up</span> Chromium Voice</span>`;
 
             aiDiv.innerHTML = `
                 <strong class="text-cyan-300 font-bold text-xs flex items-center justify-between mb-1 text-glow">
@@ -83,9 +78,9 @@ function initAIChat() {
             `;
             chatMessages.appendChild(aiDiv);
 
-            // Play voice response automatically via Jarvis Voice Manager
+            // Play voice response automatically via Jarvis Voice Manager using Electron/Chromium SpeechSynthesis
             if (window.jarvisVoice && typeof window.jarvisVoice.playVoiceResponse === 'function') {
-                window.jarvisVoice.playVoiceResponse(result.audioData, result.mimeType, result.reply || result.message || '');
+                window.jarvisVoice.playVoiceResponse(null, null, result.reply || result.message || '');
             }
 
             // Live refresh Graph View & Token Progress Bars

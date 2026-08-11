@@ -8,9 +8,11 @@ async function chat(prompt, options = {}) {
   }
 
   try {
-    const requestedModel = options.model || (options.tts ? 'gemini-2.5-flash-tts' : (geminiConfig.fastModel || geminiConfig.defaultModel));
-    const isTTS = options.tts || requestedModel.includes('tts') || options.voice;
-    const voiceName = options.voice || 'Orus';
+    const requestedModel = (options.model && !options.model.includes('tts')) 
+      ? options.model 
+      : (geminiConfig.fastModel || geminiConfig.defaultModel || 'gemini-1.5-flash');
+    const isTTS = options.tts && options.model && options.model.includes('tts');
+    const voiceName = options.voice || 'Electron/Chromium';
 
     const buildPayload = (modelName) => {
       const payload = {

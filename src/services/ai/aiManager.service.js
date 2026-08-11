@@ -23,10 +23,8 @@ class AIManagerService {
   }
 
   async processRequest(prompt, category = '', options = {}) {
-    // 1. Select optimal provider (if TTS/voice requested, default to gemini)
-    const targetProvider = (options.tts || options.voice || options.model?.includes('tts')) 
-      ? 'gemini' 
-      : routerService.selectProvider(prompt, category);
+    // 1. Select optimal provider
+    const targetProvider = options.provider || routerService.selectProvider(prompt, category);
     const providerInstance = this.providers[targetProvider] || geminiService;
 
     // 2. Add to conversation history

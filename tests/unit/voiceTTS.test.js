@@ -2,21 +2,21 @@ const assert = require('assert');
 const aiManagerService = require('../../src/services/ai/aiManager.service');
 
 async function runVoiceTests() {
-  console.log('🧪 Running Gemini Voice & TTS Unit Tests...');
+  console.log('🧪 Running Electron/Chromium Voice Unit Tests...');
 
-  // Test 1: Verify AI Manager accepts TTS options and defaults provider to gemini
-  const mockOptions = { tts: true, voice: 'Orus', model: 'gemini-2.5-flash-tts' };
+  // Test 1: Verify AI Manager processes voice prompts cleanly using optimal provider routing
+  const mockOptions = { provider: 'gemini', voice: 'Electron/Chromium' };
   const res = await aiManagerService.processRequest('Xin chào Jarvis', 'general', mockOptions);
 
-  assert.strictEqual(res.provider, 'gemini', 'Provider for TTS should be routed to gemini');
-  assert.strictEqual(res.voice, 'Orus', 'Voice should match Orus');
+  assert.strictEqual(res.provider, 'gemini', 'Provider should match gemini');
   assert.strictEqual(typeof res.reply, 'string', 'Reply should be a string');
-  assert.strictEqual(res.hasOwnProperty('audioData'), true, 'Response should include audioData property');
+  assert.strictEqual(res.reply.length > 0, true, 'Reply should not be empty');
 
-  console.log('✅ Gemini 2.5 Flash TTS (Orus Voice) Test Passed: Voice options and routing verified successfully!');
+  console.log('✅ Electron/Chromium Web Speech Voice Architecture Test Passed successfully!');
 }
 
 runVoiceTests().catch(err => {
-  console.error('❌ Voice TTS Test Failed:', err);
+  console.error('❌ Voice Unit Test Failed:', err);
   process.exit(1);
 });
+

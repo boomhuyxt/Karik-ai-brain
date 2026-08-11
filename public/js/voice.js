@@ -1,6 +1,6 @@
 /**
  * Jarvis AI Voice Manager
- * Handles 'Hey Jarvis' Wake Word Detection & Gemini 3.1 Flash TTS (Iapetus Voice) Playback
+ * Handles 'Hey Jarvis' Wake Word Detection & Electron/Chromium Web Speech API Voice Playback
  */
 class JarvisVoiceManager {
     constructor() {
@@ -8,33 +8,56 @@ class JarvisVoiceManager {
         this.isListeningForPrompt = false;
         this.isSpeaking = false;
         this.recognition = null;
+        this.synth = window.speechSynthesis || null;
+        this.selectedVoice = null;
         this.currentAudio = null;
         this.audioCtx = null;
         
         // Target keywords for wake word trigger (including Vietnamese phonetic variations)
         this.wakeKeywords = [
-            'nối hay jarvis', 'nói hay jarvis', 'nối hay harvis', 'nói hay harvis', 'nối hay davis', 'nói hay davis',
-            'hey jarvis', 'hey harvis', 'hey davis',
-            'hay jarvis', 'hay harvis', 'hay davis',
-            'hi jarvis', 'hi harvis', 'hi davis',
-            'chào jarvis', 'chào harvis', 'chào davis',
-            'ơi jarvis', 'ơi harvis', 'ơi davis',
-            'ok jarvis', 'ok harvis', 'ok davis',
-            'jarvis', 'harvis', 'davis',
-            'gia vít', 'ha vít', 'đa vít'
+            'nối hay jarvis', 'nói hay jarvis', 'nối hay harvis', 'nói hay harvis', 'nối hay davis', 'nói hay davis', 'nối hey da vít', 'nói hey da vít',
+            'hey jarvis', 'hey harvis', 'hey davis', 'hey da vít', 'hey đa vít', 'hey davit',
+            'hay jarvis', 'hay harvis', 'hay davis', 'hay da vít', 'hay đa vít',
+            'hi jarvis', 'hi harvis', 'hi davis', 'hi da vít',
+            'chào jarvis', 'chào harvis', 'chào davis', 'chào da vít',
+            'ơi jarvis', 'ơi harvis', 'ơi davis', 'ơi da vít',
+            'ok jarvis', 'ok harvis', 'ok davis', 'ok da vít',
+            'jarvis', 'harvis', 'davis', 'da vít', 'đa vít',
+            'gia vít', 'ha vít'
         ].sort((a, b) => b.length - a.length);
     }
 
     init() {
         this.setupSpeechRecognition();
+        this.initVoices();
         this.bindUIControls();
-        this.updateStatusBadge('Lắng nghe "Hey Jarvis"...');
+        this.updateStatusBadge('Lắng nghe "Hey Jarvis / Hey Da Vít"...');
+    }
+
+    initVoices() {
+        if (!this.synth) return;
+        const loadVoices = () => {
+            try {
+                const voices = this.synth.getVoices();
+                if (voices && voices.length > 0) {
+                    this.selectedVoice = voices.find(v => v.lang === 'vi-VN' || v.lang.startsWith('vi')) || 
+                                        voices.find(v => v.lang.includes('vi')) || 
+                                        voices[0];
+                }
+            } catch (e) {
+                console.warn('[Voices Load Error]:', e);
+            }
+        };
+        loadVoices();
+        if (typeof this.synth.onvoiceschanged !== 'undefined') {
+            this.synth.onvoiceschanged = loadVoices;
+        }
     }
 
     setupSpeechRecognition() {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!SpeechRecognition) {
-            console.warn('⚠️ Web Speech API không được hỗ trợ trên trình duyệt này. Giọng nói vẫn có thể phát qua Gemini TTS.');
+            console.warn('⚠️ Web Speech API không được hỗ trợ trên trình duyệt này. Giọng nói vẫn có thể phát qua Chromium Speech Synthesis.');
             this.updateStatusBadge('Trình duyệt không hỗ trợ Mic');
             return;
         }
@@ -91,12 +114,19 @@ class JarvisVoiceManager {
 
         const combinedText = (finalTranscript + interimTranscript).trim();
 
-        // 1. Check for Wake Word "Hey Jarvis"
+        // 1. Check for Wake Word in wakeKeywords list
         if (!this.isListeningForPrompt) {
             const detectedKeyword = this.wakeKeywords.find(kw => combinedText.includes(kw));
             if (detectedKeyword) {
-                console.log(`🎙️ Wake Word Detected: "${detectedKeyword}"`);
-                this.triggerWakeWordActivation();
+                console.log(`🎙️ Wake Word Detected: "${detectedKeyword}" in "${combinedText}"`);
+                
+                // Extract any prompt text spoken immediately after wake word
+                let trailingPrompt = combinedText;
+                this.wakeKeywords.forEach(kw => {
+                    trailingPrompt = trailingPrompt.replace(new RegExp(`^.*?${kw}`, 'i'), '').trim();
+                });
+
+                this.triggerWakeWordActivation(trailingPrompt);
             }
             return;
         }
@@ -132,7 +162,7 @@ class JarvisVoiceManager {
         }
     }
 
-    async triggerWakeWordActivation() {
+    async triggerWakeWordActivation(initialPrompt = '') {
         if (this.isSpeaking) return;
 
         // Auto open / pop up AI Chat window!
@@ -142,20 +172,39 @@ class JarvisVoiceManager {
         this.isSpeaking = true;
         this.stopListening();
 
-        const greetingText = "Sếp cần gì ạ?";
+        const cleanInitialPrompt = (initialPrompt || '')
+            .replace(new RegExp(this.wakeKeywords.join('|'), 'gi'), '')
+            .trim();
+
+        if (cleanInitialPrompt.length > 2) {
+            // Case: User said wake word + request in one sentence (e.g. "Hey da vít phân tích ghi chú")
+            const ackText = `Dạ! Đã nhận yêu cầu của sếp, em đang xử lý đây ạ!`;
+            this.updateStatusBadge(`⚡ Jarvis: "${ackText}"`);
+            this.showWaveAnimation(`Jarvis: Đã nhận yêu cầu...`);
+            this.appendGreetingMessage(ackText);
+
+            await this.speakText("Dạ! Đã nhận yêu cầu của sếp, em đang xử lý đây ạ!");
+
+            this.isSpeaking = false;
+            this.submitVoiceQuery(cleanInitialPrompt);
+            return;
+        }
+
+        // Case: User called wake word ("Hey Da Vít" / "Hey Jarvis") -> AI MUST RESPOND FIRST OUT LOUD
+        const greetingText = "Dạ! Em nghe đây sếp, sếp cần gì ạ?";
         this.updateStatusBadge(`⚡ Jarvis: "${greetingText}"`);
         this.showWaveAnimation(`Jarvis: ${greetingText}`);
         this.appendGreetingMessage(greetingText);
 
-        // Speak "Sếp cần gì ạ?" out loud to the user
-        await this.speakWithFallback(greetingText);
+        // Speak greeting out loud via Electron/Chromium SpeechSynthesis BEFORE listening for command
+        await this.speakText(greetingText);
 
-        // Transition to active prompt capture mode after greeting
+        // Transition to active prompt capture mode AFTER greeting completes
         this.isSpeaking = false;
         this.isListeningForPrompt = true;
         this.initAudioAnalyser();
 
-        this.updateStatusBadge('🎤 Đang lắng nghe sếp nói...');
+        this.updateStatusBadge('🎤 Đang lắng nghe sếp nói yêu cầu...');
         this.showWaveAnimation('Sếp ơi, hãy nói câu hỏi/yêu cầu...');
 
         const chatInput = document.getElementById('chatInput');
@@ -214,7 +263,7 @@ class JarvisVoiceManager {
                 <span class="flex items-center gap-1.5">
                     <span class="material-symbols-outlined text-sm text-cyan-400">smart_toy</span>
                     AI JarVis Assistant:
-                    <span class="text-[9px] bg-purple-500/20 text-purple-300 border border-purple-400/40 px-1 py-0.2 rounded font-mono">Orus Voice</span>
+                    <span class="text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 px-1 py-0.2 rounded font-mono">Chromium Voice</span>
                 </span>
             </strong>
             <div class="text-slate-100 font-medium text-xs leading-relaxed border-t border-purple-500/20 pt-1 mt-0.5">
@@ -254,7 +303,7 @@ class JarvisVoiceManager {
                     this.startListening();
                     if (wakeWordIcon) wakeWordIcon.className = 'material-symbols-outlined text-[13px] text-emerald-400';
                     if (wakeWordBtnLabel) wakeWordBtnLabel.textContent = 'Hey Jarvis: ON';
-                    this.updateStatusBadge('Lắng nghe "Hey Jarvis"...');
+                    this.updateStatusBadge('Lắng nghe "Hey Jarvis / Hey Da Vít"...');
                 } else {
                     this.stopListening();
                     if (wakeWordIcon) wakeWordIcon.className = 'material-symbols-outlined text-[13px] text-slate-400';
@@ -284,7 +333,18 @@ class JarvisVoiceManager {
         }
     }
 
-    submitVoiceQuery(query) {
+    async submitVoiceQuery(query) {
+        if (!query) return;
+
+        this.isSpeaking = true;
+        this.stopListening();
+        this.updateStatusBadge('⚡ Đã nhận yêu cầu, đang xử lý...');
+        
+        // Speak vocal acknowledgment out loud
+        await this.speakText("Dạ! Đã nhận yêu cầu của sếp, em đang xử lý đây ạ!");
+        
+        this.isSpeaking = false;
+
         const chatForm = document.getElementById('chatForm');
         const chatInput = document.getElementById('chatInput');
         if (chatInput) chatInput.value = query;
@@ -294,29 +354,119 @@ class JarvisVoiceManager {
         }
     }
 
-    // Play Gemini 3.1 Flash TTS Audio or fallback
+    // Play Voice Response using Electron/Chromium SpeechSynthesis
     async playVoiceResponse(audioData, mimeType, replyText) {
         this.isSpeaking = true;
         this.stopListening();
-        this.showWaveAnimation('Jarvis đang trả lời (Giọng Iapetus)...');
+        this.showWaveAnimation('Jarvis đang trả lời (Electron/Chromium Voice)...');
 
         if (audioData) {
             try {
                 await this.playAudioFromBase64(audioData, mimeType || 'audio/wav');
             } catch (err) {
-                console.warn('[Audio Playback Failed, using SpeechSynthesis]:', err);
-                await this.speakWithFallback(replyText);
+                await this.speakText(replyText);
             }
         } else {
-            await this.speakWithFallback(replyText);
+            await this.speakText(replyText);
         }
 
         this.isSpeaking = false;
         this.hideWaveAnimation();
-        this.updateStatusBadge('Lắng nghe "Hey Jarvis"...');
+        this.updateStatusBadge('Lắng nghe "Hey Jarvis / Hey Da Vít"...');
         if (this.isWakeWordActive) {
             this.startListening();
         }
+    }
+
+    speakText(text) {
+        return new Promise((resolve) => {
+            if (!this.synth) {
+                console.warn('⚠️ Web Speech Synthesis (SpeechSynthesis) không được hỗ trợ trên môi trường này.');
+                return resolve();
+            }
+
+            try {
+                if (this.synth.paused) {
+                    this.synth.resume();
+                }
+                this.synth.cancel();
+            } catch (e) {}
+
+            const cleanText = this.cleanTextForSpeech(text);
+            if (!cleanText) return resolve();
+
+            if (!this.selectedVoice) {
+                this.initVoices();
+            }
+
+            const utterance = new SpeechSynthesisUtterance(cleanText);
+            utterance.lang = 'vi-VN';
+            utterance.rate = 1.0;
+            utterance.pitch = 1.0;
+
+            if (this.selectedVoice) {
+                utterance.voice = this.selectedVoice;
+            }
+
+            let completed = false;
+            const finish = () => {
+                if (completed) return;
+                completed = true;
+                clearInterval(simulatedVolInterval);
+                clearTimeout(safetyTimeout);
+                this.updateOrbBubble(0);
+                resolve();
+            };
+
+            const simulatedVolInterval = setInterval(() => {
+                if (this.isSpeaking) {
+                    const simulatedVol = Math.floor(Math.random() * 45) + 35;
+                    this.updateOrbBubble(simulatedVol);
+                } else {
+                    clearInterval(simulatedVolInterval);
+                }
+            }, 100);
+
+            const timeoutMs = Math.max(3000, (cleanText.length / 10) * 1000 + 3000);
+            const safetyTimeout = setTimeout(() => {
+                console.warn('[SpeechSynthesis Safety Timeout triggered]');
+                finish();
+            }, timeoutMs);
+
+            utterance.onend = () => finish();
+            utterance.onerror = (err) => {
+                console.warn('[SpeechSynthesis Error]:', err);
+                finish();
+            };
+
+            try {
+                this.synth.speak(utterance);
+                if (this.synth.paused) {
+                    this.synth.resume();
+                }
+            } catch (err) {
+                console.error('[SpeechSynthesis Speak Error]:', err);
+                finish();
+            }
+        });
+    }
+
+    cleanTextForSpeech(text) {
+        if (!text) return '';
+        return text
+            .replace(/```[\s\S]*?```/g, ' Đã có đoạn mã đính kèm. ')
+            .replace(/`([^`]+)`/g, '$1')
+            .replace(/[*#_~>]/g, '')
+            .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+            .replace(/https?:\/\/\S+/g, '')
+            .replace(/---\n?/g, '')
+            .replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '')
+            .slice(0, 500)
+            .trim();
+    }
+
+    speakWithFallback(text) {
+        return this.speakText(text);
     }
 
     playAudioFromBase64(base64Data, mimeType) {
@@ -333,32 +483,6 @@ class JarvisVoiceManager {
             } catch (err) {
                 reject(err);
             }
-        });
-    }
-
-    speakWithFallback(text) {
-        return new Promise((resolve) => {
-            if (!('speechSynthesis' in window)) {
-                return resolve();
-            }
-            window.speechSynthesis.cancel();
-
-            // Clean text markdown before speaking
-            const cleanText = text
-                .replace(/[*#`_~>]/g, '')
-                .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-                .replace(/---/g, '')
-                .slice(0, 300); // Limit fallback speech length
-
-            const utterance = new SpeechSynthesisUtterance(cleanText);
-            utterance.lang = 'vi-VN';
-            utterance.rate = 1.0;
-            utterance.pitch = 1.0;
-
-            utterance.onend = () => resolve();
-            utterance.onerror = () => resolve();
-
-            window.speechSynthesis.speak(utterance);
         });
     }
 
@@ -451,7 +575,6 @@ class JarvisVoiceManager {
             orbContainer.classList.remove('hidden');
             orbContainer.classList.add('flex');
 
-            // Dynamic scale (from 1.0 up to 1.6x) and pulsing glow shadow according to real-time audio volume
             const scale = 1 + (volumePercent / 100) * 0.55;
             const glowRadius = 25 + Math.round((volumePercent / 100) * 45);
             const glowOpacity = 0.5 + (volumePercent / 100) * 0.5;
@@ -492,3 +615,4 @@ class JarvisVoiceManager {
 
 // Global instance initialization
 window.jarvisVoice = new JarvisVoiceManager();
+
