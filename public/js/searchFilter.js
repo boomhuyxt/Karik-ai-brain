@@ -1,5 +1,5 @@
 /**
- * Search & Filter Nodes Module (Supports 3D Galaxy & 2D Circular Disc)
+ * Search & Filter Nodes Module
  */
 function initSearchAndFilter() {
     const graphSearchInput = document.getElementById('graphSearchInput');
@@ -31,29 +31,6 @@ function filterGraphByQuery(query) {
             });
         }
     }
-
-    // 3D Force Graph Node Filtering
-    const graph3D = window.getGraph3DInstance ? window.getGraph3DInstance() : null;
-    if (graph3D) {
-        const graphData = graph3D.graphData();
-        if (graphData && graphData.nodes) {
-            graphData.nodes.forEach(n => {
-                const isMatch = !query ||
-                    (n.name || '').toLowerCase().includes(query) ||
-                    (n.path || '').toLowerCase().includes(query) ||
-                    (n.folder || '').toLowerCase().includes(query) ||
-                    (n.type || '').toLowerCase().includes(query);
-
-                if (n.__meshMat) {
-                    n.__meshMat.opacity = isMatch ? 0.95 : 0.12;
-                    n.__meshMat.emissiveIntensity = isMatch ? 0.6 : 0.05;
-                }
-                if (n.__sprite) {
-                    n.__sprite.color = isMatch ? '#ffffff' : '#475569';
-                }
-            });
-        }
-    }
 }
 
 function filterGraphByFolder(folderName) {
@@ -66,23 +43,5 @@ function filterGraphByFolder(folderName) {
             if (!folderLower) return 1;
             return ((d.folder || '').toLowerCase() === folderLower) ? 1 : 0.15;
         });
-    }
-
-    // 3D Force Graph Folder Filtering
-    const graph3D = window.getGraph3DInstance ? window.getGraph3DInstance() : null;
-    if (graph3D) {
-        const graphData = graph3D.graphData();
-        if (graphData && graphData.nodes) {
-            graphData.nodes.forEach(n => {
-                const isMatch = !folderLower || (n.folder || '').toLowerCase() === folderLower;
-                if (n.__meshMat) {
-                    n.__meshMat.opacity = isMatch ? 0.95 : 0.12;
-                    n.__meshMat.emissiveIntensity = isMatch ? 0.6 : 0.05;
-                }
-                if (n.__sprite) {
-                    n.__sprite.color = isMatch ? '#ffffff' : '#475569';
-                }
-            });
-        }
     }
 }

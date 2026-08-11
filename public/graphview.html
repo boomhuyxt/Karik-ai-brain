@@ -9,10 +9,6 @@
     <!-- D3.js & Marked.js for Force Graph & Markdown rendering -->
     <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <!-- Three.js, Three-SpriteText & 3D-Force-Graph for 3D Sphere Obsidian Graph -->
-    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three-spritetext@1.8.2/dist/three-spritetext.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/3d-force-graph@1.73.3/dist/3d-force-graph.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         rel="stylesheet">
     <link
@@ -290,12 +286,10 @@
     <main class="h-full w-full pt-16 flex relative">
         <!-- Interactive Graph Container -->
         <div id="graphContainer" class="flex-1 h-full w-full relative overflow-hidden flex items-center justify-center">
-            <!-- 3D WebGL Sphere Obsidian Graph Canvas -->
-            <div id="graph3dContainer" class="absolute inset-0 w-full h-full z-0"></div>
-            <!-- 2D SVG Graph Canvas (Fallback) -->
-            <svg id="graphSvg" class="w-full h-full absolute inset-0 hidden z-0"></svg>
+            <!-- 2D SVG Graph Canvas -->
+            <svg id="graphSvg" class="w-full h-full absolute inset-0 z-0"></svg>
 
-            <!-- Floating Graph Layout Toolbar (3D Galaxy & 2D Graph) -->
+            <!-- Floating Graph Layout Toolbar -->
             <div id="controlsGraphBox"
                 class="absolute top-4 left-6 z-20 glass-panel px-4 py-2 rounded-2xl border border-white/15 text-xs flex items-center gap-3 shadow-2xl backdrop-blur-xl bg-[#10131a]/90 pointer-events-auto">
                 <div class="flex items-center gap-1.5 text-primary font-bold text-glow">
@@ -304,29 +298,6 @@
                 </div>
 
                 <div class="h-4 w-[1px] bg-white/15"></div>
-
-                <!-- Mode Selector buttons (3D Galaxy & 2D Graph) -->
-                <div class="flex items-center bg-white/5 p-1 rounded-xl border border-white/10 text-xs gap-1">
-                    <button id="btnMode3D" title="Chế độ 3D Galaxy (Hình cầu đặc ruột 3D)"
-                        onclick="window.setGraphMode('3d')"
-                        class="px-3 py-1 rounded-lg font-bold bg-primary/20 text-primary border border-primary/30 flex items-center gap-1.5 transition-all shadow-[0_0_10px_rgba(211,187,255,0.3)]">
-                        <span class="material-symbols-outlined text-xs">blur_on</span> 3D Galaxy
-                    </button>
-                    <button id="btnMode2D" title="Chế độ 2D Graph (Mạng lưới liên kết Constellation)"
-                        onclick="window.setGraphMode('2d')"
-                        class="px-3 py-1 rounded-lg font-semibold text-on-surface-variant hover:bg-white/10 flex items-center gap-1.5 transition-all">
-                        <span class="material-symbols-outlined text-xs">hub</span> 2D Graph
-                    </button>
-                </div>
-
-                <div class="h-4 w-[1px] bg-white/15"></div>
-
-                <!-- Auto Rotate Toggle -->
-                <button id="btnToggleRotate" title="Bật/Tắt tự xoay 3D Galaxy" onclick="window.toggleAutoRotate()"
-                    class="px-2.5 py-1 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 flex items-center gap-1.5 font-semibold transition-all shadow-[0_0_8px_rgba(52,211,153,0.2)]">
-                    <span class="material-symbols-outlined text-xs animate-spin"
-                        style="animation-duration: 8s;">sync</span> Tự Xoay
-                </button>
 
                 <!-- Recenter Button -->
                 <button title="Căn lại vị trí góc nhìn trung tâm" onclick="window.recenterGraphView()"
