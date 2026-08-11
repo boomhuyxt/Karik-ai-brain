@@ -42,11 +42,9 @@ class AIManagerService {
     try {
       const topic = knowledgePipelineService.extractTopic(prompt);
       if (knowledgePipelineService.isLearnIntent(prompt)) {
-        const digestResult = await knowledgePipelineService.digestToWiki(topic, prompt, reply, providerInstance);
-        reply += `\n\n---\n🎓 **Đã tiêu thụ & chuyển đổi kiến thức**: AI đã tự động tổng hợp bài học **${topic}** thành các ghi chú chuẩn Wiki tại thư mục riêng \`wiki/${topic}/\` trên GitHub Repository.`;
+        await knowledgePipelineService.digestToWiki(topic, prompt, reply, providerInstance);
       } else {
-        const rawResult = await knowledgePipelineService.saveRawKnowledge(topic, prompt, reply);
-        reply += `\n\n---\n📂 **Tự động lưu trữ**: Kiến thức thô về **${topic}** đã được tự động biến thành file Markdown và lưu tại \`raw/${topic}.md\` trên GitHub Vault.`;
+        await knowledgePipelineService.saveRawKnowledge(topic, prompt, reply);
       }
     } catch (err) {
       console.warn('[KnowledgePipeline Error]:', err.message);
