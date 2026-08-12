@@ -33,7 +33,8 @@ router.use('/github', githubRoute);
 router.get('/tts', async (req, res, next) => {
   try {
     const text = req.query.text || '';
-    const buffer = await ttsService.generateSpeechBuffer(text, 'vi');
+    const lang = req.query.lang || 'auto';
+    const buffer = await ttsService.generateSpeechBuffer(text, lang);
     if (!buffer) return res.status(400).send('Text is empty');
 
     res.set({
@@ -49,8 +50,8 @@ router.get('/tts', async (req, res, next) => {
 
 router.post('/tts', async (req, res, next) => {
   try {
-    const { text } = req.body;
-    const buffer = await ttsService.generateSpeechBuffer(text, 'vi');
+    const { text, lang } = req.body;
+    const buffer = await ttsService.generateSpeechBuffer(text, lang || 'auto');
     if (!buffer) return res.status(400).json({ error: 'Text is empty' });
 
     res.json({

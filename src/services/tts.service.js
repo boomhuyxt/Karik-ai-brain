@@ -1,7 +1,12 @@
 const https = require('https');
 
 class TTSService {
-  async generateSpeechBuffer(text, lang = 'vi') {
+  detectLanguage(text) {
+    const vietnameseRegex = /[àáảãạâầấẩẫậăằắẳẵặèéẻẽẹêềếểễệìíỉĩịòóỏõọôồốổỗộơờớởỡợùúủũụưừứửữựỳýỷỹỵđ]/i;
+    return vietnameseRegex.test(text) ? 'vi' : 'en';
+  }
+
+  async generateSpeechBuffer(text, lang = 'auto') {
     if (!text || !text.trim()) return null;
 
     const cleanText = text
@@ -17,8 +22,10 @@ class TTSService {
 
     if (!cleanText) return null;
 
+    const targetLang = (!lang || lang === 'auto') ? this.detectLanguage(cleanText) : lang;
+
     return new Promise((resolve, reject) => {
-      const url = `https://translate.google.com/translate_tts?ie=UTF-8&tl=${encodeURIComponent(lang)}&client=tw-ob&q=${encodeURIComponent(cleanText)}`;
+      const url = `https://translate.google.com/translate_tts?ie=UTF-8&tl=${encodeURIComponent(targetLang)}&client=tw-ob&q=${encodeURIComponent(cleanText)}`;
       const options = {
         headers: {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'

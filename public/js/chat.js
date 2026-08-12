@@ -41,6 +41,15 @@ function initAIChat() {
             }, 100);
         }
 
+        // Play immediate vocal acknowledgment when user submits question (both Voice & Typed chat)
+        if (!isVoice && window.jarvisVoice && typeof window.jarvisVoice.speakText === 'function') {
+            const isEnglish = window.jarvisVoice.currentLang && window.jarvisVoice.currentLang.startsWith('en');
+            const ackText = isEnglish
+                ? "Yes! Processing your request right now, boss!"
+                : "Dạ! Đã nhận yêu cầu của sếp, em đang xử lý đây ạ!";
+            window.jarvisVoice.speakText(ackText).catch(() => {});
+        }
+
         try {
             const res = await fetch('/api/chat', {
                 method: 'POST',

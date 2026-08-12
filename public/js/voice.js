@@ -8,19 +8,24 @@ class JarvisVoiceManager {
         this.isListeningForPrompt = false;
         this.isSpeaking = false;
         this.isListeningState = false;
+        this.currentLang = 'vi-VN'; // Default recognition language (vi-VN or en-US)
+        this.speechQueue = Promise.resolve(); // Speech Queue for 100% continuous synchronized playback
         this.recognition = null;
         this.synth = window.speechSynthesis || null;
         this.selectedVoice = null;
+        this.viVoice = null;
+        this.enVoice = null;
         this.currentAudio = null;
         this.audioCtx = null;
         this.promptTimeout = null;
         this.silenceTimer = null;
         this.hearingSilenceTimer = null;
 
-        // Target keywords for wake word trigger (including extensive Vietnamese phonetic variations)
+        // Target keywords for wake word trigger (including extensive Vietnamese & English phonetic variations)
         this.wakeKeywords = [
             'nối hay jarvis', 'nói hay jarvis', 'nối hay harvis', 'nói hay harvis', 'nối hay davis', 'nói hay davis', 'nối hey da vít', 'nói hey da vít',
             'nói hey gia vít', 'nối hey gia vít', 'nói hay gia vít', 'nối hay gia vít',
+            'hello jarvis', 'hello harvis', 'hello davis', 'hello da vít', 'hello gia vít',
             'hey jarvis', 'hey harvis', 'hey davis', 'hey da vít', 'hey đa vít', 'hey davit', 'hey gia vít', 'hey ha vít', 'hey giá vít', 'hey già vít', 'hey dá vít',
             'hay jarvis', 'hay harvis', 'hay davis', 'hay da vít', 'hay đa vít', 'hay gia vít', 'hay ha vít',
             'hi jarvis', 'hi harvis', 'hi davis', 'hi da vít', 'hi gia vít',
@@ -63,13 +68,19 @@ class JarvisVoiceManager {
             try {
                 const voices = this.synth.getVoices();
                 if (voices && voices.length > 0) {
-                    // Set top priority to Microsoft NamMinh voice for direct browser speech
-                    this.selectedVoice = voices.find(v => v.name.toLowerCase().includes('namminh') || v.name.toLowerCase().includes('nam minh')) ||
+                    // Priority Vietnamese voice
+                    this.viVoice = voices.find(v => v.name.toLowerCase().includes('namminh') || v.name.toLowerCase().includes('nam minh')) ||
                         voices.find(v => v.lang === 'vi-VN' || v.lang.startsWith('vi')) ||
-                        voices.find(v => v.lang.includes('vi')) ||
-                        voices[0];
+                        voices.find(v => v.lang.includes('vi'));
+
+                    // Priority English voice
+                    this.enVoice = voices.find(v => (v.lang === 'en-US' || v.lang.startsWith('en')) && (v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Zira') || v.name.includes('Mark') || v.name.includes('David'))) ||
+                        voices.find(v => v.lang.startsWith('en')) ||
+                        voices.find(v => v.lang.includes('en'));
+
+                    this.selectedVoice = this.viVoice || this.enVoice || voices[0];
                     if (this.selectedVoice) {
-                        console.log(`🎙️ [Browser Voice]: Đã kích hoạt giọng "${this.selectedVoice.name}" (${this.selectedVoice.lang})`);
+                        console.log(`🎙️ [Browser Voices Loaded]: VI="${this.viVoice?.name || 'N/A'}", EN="${this.enVoice?.name || 'N/A'}"`);
                     }
                 }
             } catch (e) {
@@ -97,7 +108,7 @@ class JarvisVoiceManager {
             this.recognition = new SpeechRecognition();
             this.recognition.continuous = true;
             this.recognition.interimResults = true;
-            this.recognition.lang = 'vi-VN'; // Primary Vietnamese speech recognition
+            this.recognition.lang = this.currentLang; // Bilingual speech recognition (vi-VN or en-US)
 
             this.recognition.onstart = () => {
                 this.isListeningState = true;
@@ -117,6 +128,40 @@ class JarvisVoiceManager {
         } catch (err) {
             console.error('[VoiceManager Init Error]:', err);
         }
+    }
+
+    toggleLanguage(forcedLang = null) {
+        if (forcedLang) {
+            this.currentLang = forcedLang;
+        } else {
+            this.currentLang = (this.currentLang === 'vi-VN') ? 'en-US' : 'vi-VN';
+        }
+
+        if (this.recognition) {
+            this.recognition.lang = this.currentLang;
+        }
+
+        const isVi = this.currentLang.startsWith('vi');
+        const langIcon = document.getElementById('langIcon');
+        const langBtnLabel = document.getElementById('langBtnLabel');
+        if (langIcon) langIcon.textContent = isVi ? '🇻🇳' : '🇺🇸';
+        if (langBtnLabel) langBtnLabel.textContent = isVi ? 'VI' : 'EN';
+
+        const statusMsg = isVi ? '🟢 Lắng nghe "Hey Jarvis"...' : '🟢 Listening for "Hey Jarvis"...';
+        this.updateStatusBadge(statusMsg);
+
+        console.log(`🌐 [Voice Language]: Switched recognition to ${this.currentLang}`);
+
+        if (this.isListeningState) {
+            this.stopListening();
+            setTimeout(() => this.startListening(), 200);
+        }
+    }
+
+    detectLanguageOfText(text) {
+        if (!text) return 'vi';
+        const vietnameseRegex = /[àáảãạâầấẩẫậăằắẳẵặèéẻẽẹêềếểễệìíỉĩịòóỏõọôồốổỗộơờớởỡợùúủũụưừứửữựỳýỷỹỵđ]/i;
+        return vietnameseRegex.test(text) ? 'vi' : 'en';
     }
 
     startListening() {
@@ -289,16 +334,19 @@ class JarvisVoiceManager {
         this.stopListening();
 
         const cleanInitialPrompt = (initialPrompt || '').trim();
+        const isEnglishMode = this.currentLang.startsWith('en');
 
         // Only treat as one-sentence command if prompt is at least 6 chars (real command)
         if (cleanInitialPrompt.length >= 6) {
-            // Case: User said wake word + request in one sentence (e.g. "Hey da vít phân tích ghi chú")
-            const ackText = `Dạ! Đã nhận yêu cầu của sếp, em đang xử lý đây ạ!`;
+            const ackText = isEnglishMode
+                ? "Yes! Processing your request right now, boss!"
+                : "Dạ! Đã nhận yêu cầu của sếp, em đang xử lý đây ạ!";
+
             this.updateStatusBadge(`⚡ Jarvis: "${ackText}"`);
-            this.showWaveAnimation(`Jarvis: Đã nhận yêu cầu...`);
+            this.showWaveAnimation(`Jarvis: ${isEnglishMode ? 'Processing request...' : 'Đã nhận yêu cầu...'}`);
             this.appendGreetingMessage(ackText);
 
-            this.speakText("Dạ! Đã nhận yêu cầu của sếp, em đang xử lý đây ạ!").catch(() => { });
+            this.speakText(ackText).catch(() => { });
 
             this.isSpeaking = false;
             this.submitVoiceQuery(cleanInitialPrompt, true); // true = skip duplicate TTS acknowledgment
@@ -306,7 +354,10 @@ class JarvisVoiceManager {
         }
 
         // Case: User called wake word ("Hey Da Vít" / "Hey Jarvis") -> AI MUST RESPOND FIRST OUT LOUD
-        const greetingText = "Dạ! Em nghe đây sếp, sếp cần gì ạ?";
+        const greetingText = isEnglishMode
+            ? "Yes! I'm listening boss, how can I help you?"
+            : "Dạ! Em nghe đây sếp, sếp cần gì ạ?";
+
         this.updateStatusBadge(`⚡ Jarvis: "${greetingText}"`);
         this.showWaveAnimation(`Jarvis: ${greetingText}`);
         this.appendGreetingMessage(greetingText);
@@ -319,13 +370,16 @@ class JarvisVoiceManager {
         this.isListeningForPrompt = true;
         this.initAudioAnalyser();
 
-        this.updateStatusBadge('🎤 Đang lắng nghe sếp nói yêu cầu...');
-        this.showWaveAnimation('Sếp ơi, hãy nói câu hỏi/yêu cầu...');
+        const listenBadgeMsg = isEnglishMode ? '🎤 Listening for your command...' : '🎤 Đang lắng nghe sếp nói yêu cầu...';
+        const listenPlaceholderMsg = isEnglishMode ? 'Boss, please speak your command/question...' : 'Sếp ơi, hãy nói câu hỏi/yêu cầu...';
+
+        this.updateStatusBadge(listenBadgeMsg);
+        this.showWaveAnimation(listenPlaceholderMsg);
 
         const chatInput = document.getElementById('chatInput');
         if (chatInput) {
             chatInput.value = '';
-            chatInput.placeholder = 'Sếp ơi, hãy nói câu hỏi/yêu cầu...';
+            chatInput.placeholder = listenPlaceholderMsg;
             chatInput.focus();
         }
 
@@ -344,9 +398,10 @@ class JarvisVoiceManager {
                 console.log('⏱️ 8s Prompt timeout reached without speech, resetting to wake word mode.');
                 this.isListeningForPrompt = false;
                 this.hideWaveAnimation();
-                this.updateStatusBadge('🟢 Lắng nghe "Hey Jarvis"...');
+                const resetBadgeMsg = isEnglishMode ? '🟢 Listening for "Hey Jarvis"...' : '🟢 Lắng nghe "Hey Jarvis"...';
+                this.updateStatusBadge(resetBadgeMsg);
                 if (chatInput) {
-                    chatInput.placeholder = 'Nói "Hey Jarvis" hoặc nhập câu hỏi...';
+                    chatInput.placeholder = isEnglishMode ? 'Say "Hey Jarvis" or type question...' : 'Nói "Hey Jarvis" hoặc nhập câu hỏi...';
                 }
                 this.stopListening();
                 setTimeout(() => this.startListening(), 200);
@@ -428,10 +483,18 @@ class JarvisVoiceManager {
     }
 
     bindUIControls() {
+        const btnLangToggle = document.getElementById('btnLangToggle');
         const btnWakeWordToggle = document.getElementById('btnWakeWordToggle');
         const btnMicToggle = document.getElementById('btnMicToggle');
         const btnMinimizeChat = document.getElementById('btnMinimizeChat');
         const jarvisMinPill = document.getElementById('jarvisMinPill');
+
+        if (btnLangToggle) {
+            btnLangToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.toggleLanguage();
+            });
+        }
 
         if (btnWakeWordToggle) {
             btnWakeWordToggle.addEventListener('click', (e) => {
@@ -494,14 +557,19 @@ class JarvisVoiceManager {
         const chatInput = document.getElementById('chatInput');
         if (chatInput) chatInput.value = query;
 
-        // 1. Immediately send chat message to AI backend without delay!
-        if (typeof window.sendChatMessage === 'function') {
-            window.sendChatMessage(query, true); // true = voice request
+        const isEnglishMode = this.currentLang.startsWith('en');
+        const ackText = isEnglishMode
+            ? "Yes! Processing your request right now, boss!"
+            : "Dạ! Đã nhận yêu cầu của sếp, em đang xử lý đây ạ!";
+
+        // 1. Play vocal acknowledgment in background if requested
+        if (!skipAck) {
+            this.speakText(ackText).catch(() => { });
         }
 
-        // 2. Play vocal acknowledgment in background if requested
-        if (!skipAck) {
-            this.speakText("Dạ! Đã nhận yêu cầu của sếp, em đang xử lý đây ạ!").catch(() => { });
+        // 2. Immediately send chat message to AI backend without delay!
+        if (typeof window.sendChatMessage === 'function') {
+            window.sendChatMessage(query, true); // true = voice request
         }
     }
 
@@ -529,16 +597,107 @@ class JarvisVoiceManager {
         }
     }
 
-    async speakText(text) {
+    stopSpeaking() {
+        this.speechQueue = Promise.resolve();
+        if (this.currentAudio) {
+            try { this.currentAudio.pause(); } catch (e) { }
+            this.currentAudio = null;
+        }
+        if (this.synth) {
+            try { this.synth.cancel(); } catch (e) { }
+        }
+        this.isSpeaking = false;
+        this.updateOrbBubble(0);
+    }
+
+    speakText(text, forcedLang = null) {
+        // Enqueue audio requests to play sequentially without cutting off preceding speech!
+        this.speechQueue = this.speechQueue.then(() => {
+            return this._internalSpeakText(text, forcedLang);
+        }).catch(err => {
+            console.warn('[SpeechQueue Exception]:', err);
+        });
+        return this.speechQueue;
+    }
+
+    async _internalSpeakText(text, forcedLang = null) {
         const cleanText = this.cleanTextForSpeech(text);
         if (!cleanText) return;
 
-        // 1. Try playing via Server Audio Stream API (/api/tts) first for 100% guaranteed voice playback
+        // Force consistent voice tone matching user language setting (vi-VN => 'vi', en-US => 'en')
+        const lang = forcedLang || (this.currentLang.startsWith('vi') ? 'vi' : 'en');
+
+        // 1. Primary Engine: Chromium Web Speech Synthesis (100% Native Chromium Voice - Single Unified Voice Profile)
+        if (this.synth) {
+            try {
+                if (this.synth.paused) {
+                    this.synth.resume();
+                }
+                this.synth.cancel();
+            } catch (e) { }
+
+            if (!this.selectedVoice) {
+                this.initVoices();
+            }
+
+            const targetVoice = (lang === 'vi') ? (this.viVoice || this.selectedVoice) : (this.enVoice || this.selectedVoice);
+
+            const playedSuccessfully = await new Promise((resolve) => {
+                const utterance = new SpeechSynthesisUtterance(cleanText);
+                utterance.lang = (lang === 'vi') ? 'vi-VN' : 'en-US';
+                utterance.rate = 1.0;
+                utterance.pitch = 1.0;
+
+                if (targetVoice) {
+                    utterance.voice = targetVoice;
+                }
+
+                let completed = false;
+                const finish = (success = true) => {
+                    if (completed) return;
+                    completed = true;
+                    clearInterval(simulatedVolInterval);
+                    clearTimeout(safetyTimeout);
+                    this.updateOrbBubble(0);
+                    resolve(success);
+                };
+
+                const simulatedVolInterval = setInterval(() => {
+                    if (this.isSpeaking) {
+                        const simulatedVol = Math.floor(Math.random() * 45) + 35;
+                        this.updateOrbBubble(simulatedVol);
+                    } else {
+                        clearInterval(simulatedVolInterval);
+                    }
+                }, 100);
+
+                const timeoutMs = Math.max(3000, (cleanText.length / 10) * 1000 + 3000);
+                const safetyTimeout = setTimeout(() => {
+                    finish(true);
+                }, timeoutMs);
+
+                utterance.onend = () => finish(true);
+                utterance.onerror = (err) => finish(false);
+
+                try {
+                    this.synth.speak(utterance);
+                    if (this.synth.paused) {
+                        this.synth.resume();
+                    }
+                } catch (err) {
+                    finish(false);
+                }
+            });
+
+            if (playedSuccessfully) return;
+        }
+
+        // 2. Fallback Engine: Server Audio Stream (/api/tts) if Chromium SpeechSynthesis is not supported
         try {
             if (this.currentAudio) {
                 try { this.currentAudio.pause(); } catch (e) { }
             }
-            const ttsUrl = `/api/tts?text=${encodeURIComponent(cleanText)}`;
+            const ttsUrl = `/api/tts?text=${encodeURIComponent(cleanText)}&lang=${encodeURIComponent(lang)}`;
             this.currentAudio = new Audio(ttsUrl);
 
             await new Promise((resolve, reject) => {
@@ -567,74 +726,9 @@ class JarvisVoiceManager {
                     reject(err);
                 });
             });
-            return;
         } catch (err) {
-            console.warn('[Server Audio Playback fallback to SpeechSynthesis]:', err);
+            console.warn('[Server Audio Fallback Error]:', err);
         }
-
-        // 2. Fallback to Web SpeechSynthesis if server audio stream fails
-        return new Promise((resolve) => {
-            if (!this.synth) {
-                console.warn('⚠️ Web Speech Synthesis (SpeechSynthesis) không được hỗ trợ trên môi trường này.');
-                return resolve();
-            }
-
-            try {
-                if (this.synth.paused) {
-                    this.synth.resume();
-                }
-                this.synth.cancel();
-            } catch (e) { }
-
-            if (!this.selectedVoice) {
-                this.initVoices();
-            }
-
-            const utterance = new SpeechSynthesisUtterance(cleanText);
-            utterance.lang = 'vi-VN';
-            utterance.rate = 1.0;
-            utterance.pitch = 1.0;
-
-            if (this.selectedVoice) {
-                utterance.voice = this.selectedVoice;
-            }
-
-            let completed = false;
-            const finish = () => {
-                if (completed) return;
-                completed = true;
-                clearInterval(simulatedVolInterval);
-                clearTimeout(safetyTimeout);
-                this.updateOrbBubble(0);
-                resolve();
-            };
-
-            const simulatedVolInterval = setInterval(() => {
-                if (this.isSpeaking) {
-                    const simulatedVol = Math.floor(Math.random() * 45) + 35;
-                    this.updateOrbBubble(simulatedVol);
-                } else {
-                    clearInterval(simulatedVolInterval);
-                }
-            }, 100);
-
-            const timeoutMs = Math.max(3000, (cleanText.length / 10) * 1000 + 3000);
-            const safetyTimeout = setTimeout(() => {
-                finish();
-            }, timeoutMs);
-
-            utterance.onend = () => finish();
-            utterance.onerror = (err) => finish();
-
-            try {
-                this.synth.speak(utterance);
-                if (this.synth.paused) {
-                    this.synth.resume();
-                }
-            } catch (err) {
-                finish();
-            }
-        });
     }
 
     cleanTextForSpeech(text) {

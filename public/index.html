@@ -1,11 +1,628 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html class="dark" lang="vi">
+
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="refresh" content="0; url=/graphview.html">
-    <title>Astraeus AI - Redirecting</title>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>AI Brain JarVis - GitHub Graph View & Daily Journal</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <!-- D3.js & Marked.js for Force Graph & Markdown rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&family=Sora:wght@600;700&display=swap"
+        rel="stylesheet">
+
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-dim": "#10131a",
+                        "surface": "#10131a",
+                        "surface-container-low": "#191c22",
+                        "surface-container-high": "#272a31",
+                        "surface-container": "#1d2026",
+                        "on-surface-variant": "#ccc3d7",
+                        "on-background": "#e1e2eb",
+                        "surface-tint": "#d3bbff",
+                        "primary": "#d3bbff",
+                        "primary-container": "#6d28d9",
+                        "secondary": "#5de6ff",
+                        "mint": "#34d399",
+                        "background": "#10131a"
+                    },
+                    fontFamily: {
+                        "body-lg": ["Inter"],
+                        "headline-lg": ["Sora"],
+                        "display-lg": ["Sora"],
+                        "body-md": ["Inter"],
+                        "label-caps": ["JetBrains Mono"]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-panel {
+            background: rgba(16, 19, 26, 0.82);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .glow-active {
+            box-shadow: 0 0 20px rgba(211, 187, 255, 0.4);
+        }
+
+        .text-glow {
+            text-shadow: 0 0 8px rgba(211, 187, 255, 0.6);
+        }
+
+        .animate-fadeIn {
+            animation: chatFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes chatFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px) scale(0.97);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .bg-stars {
+            background-image:
+                radial-gradient(1px 1px at 20px 30px, #ffffff, rgba(0, 0, 0, 0)),
+                radial-gradient(1px 1px at 40px 70px, #ffffff, rgba(0, 0, 0, 0)),
+                radial-gradient(2px 2px at 90px 40px, rgba(255, 255, 255, 0.8), rgba(0, 0, 0, 0)),
+                radial-gradient(1px 1px at 160px 120px, #ffffff, rgba(0, 0, 0, 0));
+            background-repeat: repeat;
+            background-size: 200px 200px;
+            animation: moveStars 120s linear infinite;
+        }
+
+        @keyframes moveStars {
+            from {
+                background-position: 0 0;
+            }
+
+            to {
+                background-position: -1000px 1000px;
+            }
+        }
+
+        /* D3 Node Styling */
+        .node-circle {
+            cursor: pointer;
+            transition: r 0.2s ease, stroke-width 0.2s ease;
+        }
+
+        .node-circle:hover {
+            r: 12px;
+            stroke: #ffffff;
+            stroke-width: 3px;
+        }
+
+        .node-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            pointer-events: none;
+            fill: #e1e2eb;
+            text-shadow: 0 0 6px rgba(0, 0, 0, 0.8);
+        }
+
+        .graph-link {
+            stroke-opacity: 0.4;
+            stroke-dasharray: 4;
+            animation: dash 30s linear infinite;
+        }
+
+        @keyframes dash {
+            to {
+                stroke-dashoffset: -1000;
+            }
+        }
+
+        /* Enhanced Markdown Reader Typography & Highlighting */
+        .markdown-body {
+            color: #f8fafc !important;
+            font-size: 0.95rem;
+            line-height: 1.75;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        .markdown-body h1 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: #d3bbff;
+            text-shadow: 0 0 12px rgba(211, 187, 255, 0.4);
+            margin-top: 1.25rem;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid rgba(211, 187, 255, 0.25);
+            padding-bottom: 0.5rem;
+            letter-spacing: -0.01em;
+        }
+
+        .markdown-body h2 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #5de6ff;
+            text-shadow: 0 0 10px rgba(93, 230, 255, 0.35);
+            margin-top: 1.25rem;
+            margin-bottom: 0.75rem;
+            border-bottom: 1px solid rgba(93, 230, 255, 0.15);
+            padding-bottom: 0.35rem;
+        }
+
+        .markdown-body h3 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #34d399;
+            text-shadow: 0 0 8px rgba(52, 211, 153, 0.3);
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .markdown-body h4,
+        .markdown-body h5,
+        .markdown-body h6 {
+            font-weight: 600;
+            color: #fbbf24;
+            margin-top: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .markdown-body p {
+            margin-bottom: 1rem;
+            color: #ffffff !important;
+            font-weight: 450;
+            line-height: 1.75;
+        }
+
+        .markdown-body strong,
+        .markdown-body b {
+            color: #fbbf24;
+            font-weight: 700;
+            text-shadow: 0 0 5px rgba(251, 191, 36, 0.3);
+        }
+
+        .markdown-body em,
+        .markdown-body i {
+            color: #e2e8f0;
+            font-style: italic;
+        }
+
+        .markdown-body ul {
+            list-style-type: disc;
+            padding-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .markdown-body ol {
+            list-style-type: decimal;
+            padding-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .markdown-body li {
+            margin-bottom: 0.4rem;
+            color: #ffffff !important;
+            font-weight: 500;
+        }
+
+        .markdown-body blockquote {
+            border-left: 4px solid #5de6ff;
+            background: rgba(93, 230, 255, 0.1);
+            padding: 0.75rem 1.25rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            color: #e2e8f0;
+            margin-bottom: 1rem;
+            font-style: italic;
+        }
+
+        .markdown-body code {
+            background: rgba(109, 40, 217, 0.4);
+            color: #a7f3d0;
+            border: 1px solid rgba(167, 243, 208, 0.35);
+            padding: 0.2rem 0.5rem;
+            border-radius: 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .markdown-body pre {
+            background: #11141c;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            padding: 1rem;
+            border-radius: 12px;
+            overflow-x: auto;
+            font-family: 'JetBrains Mono', monospace;
+            margin-bottom: 1rem;
+        }
+
+        .markdown-body pre code {
+            background: transparent !important;
+            border: none !important;
+            padding: 0 !important;
+            color: #f1f5f9;
+        }
+
+        .markdown-body a {
+            color: #5de6ff;
+            font-weight: 600;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+            transition: color 0.2s;
+        }
+
+        .markdown-body a:hover {
+            color: #99f6e4;
+        }
+
+        .markdown-body hr {
+            border: 0;
+            height: 1px;
+            background: linear-gradient(to right, transparent, rgba(211, 187, 255, 0.4), transparent);
+            margin: 1.5rem 0;
+        }
+    </style>
 </head>
-<body>
-    <p>Đang chuyển hướng tới <a href="/graphview.html">Graphview Dashboard</a>...</p>
+
+<body class="bg-background text-on-surface font-body-md overflow-hidden bg-stars relative w-full h-screen">
+
+    <!-- Dynamic Header Component Placeholder -->
+    <div id="headerContainer"></div>
+
+    <!-- Main Workspace -->
+    <main class="h-full w-full pt-16 flex relative">
+        <!-- Interactive Graph Container -->
+        <div id="graphContainer" class="flex-1 h-full w-full relative overflow-hidden flex items-center justify-center">
+            <!-- 2D SVG Graph Canvas -->
+            <svg id="graphSvg" class="w-full h-full absolute inset-0 z-0"></svg>
+
+            <!-- Floating Graph Layout Toolbar -->
+            <div id="controlsGraphBox"
+                class="absolute top-4 left-6 z-20 glass-panel px-4 py-2 rounded-2xl border border-white/15 text-xs flex items-center gap-3 shadow-2xl backdrop-blur-xl bg-[#10131a]/90 pointer-events-auto">
+                <div class="flex items-center gap-1.5 text-primary font-bold text-glow">
+                    <span class="material-symbols-outlined text-base text-primary">auto_awesome</span>
+                    <span class="tracking-wide">AI Graph OS</span>
+                </div>
+
+                <div class="h-4 w-[1px] bg-white/15"></div>
+
+                <!-- Recenter Button -->
+                <button title="Căn lại vị trí góc nhìn trung tâm" onclick="window.recenterGraphView()"
+                    class="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/15 text-on-surface border border-white/10 flex items-center gap-1 font-semibold transition-all">
+                    <span class="material-symbols-outlined text-xs text-secondary">center_focus_strong</span> Recenter
+                </button>
+            </div>
+
+            <!-- Dynamic Graph Legend / Info Overlay -->
+            <div id="legendBox"
+                class="absolute bottom-6 right-6 z-20 glass-panel p-4 rounded-2xl border border-white/15 text-xs flex flex-col gap-3 shadow-2xl pointer-events-auto bg-[#10131a]/95 min-w-[270px] backdrop-blur-xl">
+
+                <!-- System Progress Bars Section -->
+                <div class="flex flex-col gap-2.5 border-b border-white/10 pb-3 text-xs">
+                    <!-- Item 1: Phân tích Data -->
+                    <div class="flex flex-col gap-1">
+                        <div class="flex justify-between items-center">
+                            <span
+                                class="font-headline-md text-xs font-bold text-purple-300 text-glow flex items-center gap-1">
+                                <span class="material-symbols-outlined text-xs text-purple-400">analytics</span>
+                                Phân tích Data
+                            </span>
+                            <span class="font-mono text-purple-300 font-extrabold text-xs">78%</span>
+                        </div>
+                        <div class="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
+                            <div class="bg-gradient-to-r from-purple-600 to-purple-400 h-full rounded-full transition-all duration-500 shadow-[0_0_10px_rgba(168,85,247,0.6)]"
+                                style="width: 78%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Item 2: Đồng bộ Node -->
+                    <div class="flex flex-col gap-1">
+                        <div class="flex justify-between items-center">
+                            <span
+                                class="font-headline-md text-xs font-bold text-cyan-300 text-glow flex items-center gap-1">
+                                <span class="material-symbols-outlined text-xs text-cyan-400">sync_alt</span>
+                                Đồng bộ Node
+                            </span>
+                            <span class="font-mono text-cyan-300 font-extrabold text-xs">42%</span>
+                        </div>
+                        <div class="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
+                            <div class="bg-gradient-to-r from-cyan-500 to-cyan-300 h-full rounded-full transition-all duration-500 shadow-[0_0_10px_rgba(6,182,212,0.6)]"
+                                style="width: 42%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Item 3: Mã hóa bảo mật -->
+                    <div class="flex flex-col gap-1">
+                        <div class="flex justify-between items-center">
+                            <span
+                                class="font-headline-md text-xs font-bold text-emerald-300 text-glow flex items-center gap-1">
+                                <span class="material-symbols-outlined text-xs text-emerald-400">security</span>
+                                Mã hóa bảo mật
+                            </span>
+                            <span class="font-mono text-emerald-300 font-extrabold text-xs">95%</span>
+                        </div>
+                        <div class="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
+                            <div class="bg-gradient-to-r from-emerald-500 to-emerald-300 h-full rounded-full transition-all duration-500 shadow-[0_0_10px_rgba(16,185,129,0.6)]"
+                                style="width: 95%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- API Token Consumption Section -->
+                <div class="flex flex-col gap-2.5 border-b border-white/10 pb-3">
+                    <div class="flex items-center justify-between my-0.5">
+                        <h3
+                            class="font-headline-md text-xs font-bold text-white tracking-wide text-glow flex items-center gap-1">
+                            <span class="material-symbols-outlined text-sm text-amber-400">api</span>
+                            Tiêu thụ API Token
+                        </h3>
+                        <span id="liveApiStatus"
+                            class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Direct Realtime
+                        </span>
+                    </div>
+
+                    <div id="tokenProviderBars" class="flex flex-col gap-2">
+                        <!-- Dynamic real-time provider bars populated via /api/tokens -->
+                        <div class="text-[11px] text-on-surface-variant/70 italic text-center py-1">Đang tải token
+                            realtime...</div>
+                    </div>
+
+                    <!-- Total Tokens Row -->
+                    <div class="flex items-center justify-between pt-1 border-t border-white/5">
+                        <span
+                            class="font-headline-md text-xs font-extrabold text-white text-glow tracking-wider flex items-center gap-1.5 uppercase">
+                            <span class="material-symbols-outlined text-sm text-primary">toll</span>
+                            Tổng Token
+                        </span>
+                        <span id="legendTotalTokensValue"
+                            class="font-mono text-lg font-bold text-primary text-glow">0</span>
+                    </div>
+                </div>
+
+                <!-- Directory Legend Section -->
+                <div class="flex flex-col gap-1.5">
+                    <div
+                        class="font-headline-md text-xs font-bold text-primary text-glow flex items-center gap-1.5 border-b border-white/10 pb-1.5">
+                        <span class="material-symbols-outlined text-base text-secondary">folder_special</span>
+                        <span>Chú Thích Thư Mục Node</span>
+                    </div>
+                    <div id="legendList" class="flex flex-col gap-1.5 max-h-40 overflow-y-auto pr-1">
+                        <div class="text-xs text-on-surface-variant italic">Đang tải danh mục từ repo...</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Dynamic Floating Chat Component Placeholder -->
+        <div id="chatContainer"></div>
+    </main>
+
+    <!-- Drawer / Modal: Markdown Reader & Editor -->
+    <div id="noteDrawer"
+        class="fixed inset-y-0 right-0 z-50 w-full max-w-2xl glass-panel border-l border-white/10 shadow-2xl flex flex-col transform translate-x-full transition-transform duration-300">
+        <!-- Drawer Header -->
+        <div class="h-16 px-6 border-b border-white/10 flex items-center justify-between bg-surface-container-low/80">
+            <div class="flex items-center gap-2 overflow-hidden">
+                <span class="material-symbols-outlined text-secondary text-xl">description</span>
+                <div>
+                    <h2 id="drawerTitle" class="font-headline-md text-sm font-semibold text-on-surface truncate">
+                        Path/To/Note.md</h2>
+                    <div class="flex items-center gap-2">
+                        <span id="drawerShaBadge" class="text-[10px] font-label-caps text-on-surface-variant/70">SHA:
+                            synced</span>
+                        <span id="headerDrawerTokenBadge"
+                            class="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20 flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[11px]">token</span>
+                            <span id="drawerHeaderTokens">0 tok</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <!-- Obsidian Mode Switcher -->
+                <div class="flex items-center bg-white/5 p-1 rounded-lg border border-white/10">
+                    <button id="btnTabRead" title="Chế độ đọc (Double click để sửa)"
+                        class="px-2.5 py-1 text-xs font-semibold rounded-md bg-primary/20 text-primary border border-primary/30 flex items-center gap-1">
+                        <span class="material-symbols-outlined text-xs">visibility</span> Reader
+                    </button>
+                    <button id="btnTabEdit" title="Chế độ sửa Markdown (Ctrl+E)"
+                        class="px-2.5 py-1 text-xs font-semibold rounded-md text-on-surface-variant hover:bg-white/10 flex items-center gap-1">
+                        <span class="material-symbols-outlined text-xs">edit_note</span> Live Edit
+                    </button>
+                    <button id="btnTabSplit" title="Chế độ Live Split View"
+                        class="px-2.5 py-1 text-xs font-semibold rounded-md text-on-surface-variant hover:bg-white/10 flex items-center gap-1">
+                        <span class="material-symbols-outlined text-xs">vertical_split</span> Split View
+                    </button>
+                </div>
+
+                <!-- Save Button (Ctrl+S) -->
+                <button id="btnSaveNote" title="Lưu về GitHub (Ctrl+S)"
+                    class="bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1 transition-all ml-2">
+                    <span class="material-symbols-outlined text-sm">cloud_upload</span>
+                    <span>Lưu GitHub (Ctrl+S)</span>
+                </button>
+
+                <!-- Close Button -->
+                <button id="btnCloseDrawer"
+                    class="text-on-surface-variant hover:text-on-surface p-1 rounded-lg hover:bg-white/10 ml-2">
+                    <span class="material-symbols-outlined text-xl">close</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Drawer Content -->
+        <div class="flex-1 overflow-y-auto p-6 flex flex-col min-h-0">
+            <!-- Token Usage & Cost Consumption Banner (Phần hiển thị độ tiêu thụ token) -->
+            <div id="noteTokenStatsBar"
+                class="mb-3.5 p-3.5 bg-surface-container-low/95 rounded-xl border border-white/10 hover:border-amber-500/30 transition-all shadow-lg flex flex-col gap-2.5">
+                <div class="flex items-center justify-between border-b border-white/10 pb-2">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-amber-400 text-base">token</span>
+                        <span class="font-headline-md text-xs font-semibold text-amber-300 tracking-wide">Độ tiêu thụ
+                            Token & Chi phí ghi chú</span>
+                    </div>
+                    <span id="tokenModelBadge"
+                        class="text-[10px] font-label-caps px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20 flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span> Gemini 3.5 Flash (~4
+                        chars/token)
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-4 gap-2 text-xs">
+                    <!-- Note Tokens -->
+                    <div class="bg-surface-container-high/60 p-2 rounded-lg border border-white/5 flex flex-col">
+                        <span class="text-[10px] text-on-surface-variant/70 font-medium">Token Ghi chú</span>
+                        <div class="flex items-baseline gap-1 mt-0.5">
+                            <span id="statNoteTokens" class="font-mono text-sm font-bold text-amber-300">0</span>
+                            <span class="text-[9px] text-amber-400/80">tok</span>
+                        </div>
+                    </div>
+
+                    <!-- Estimated Cost -->
+                    <div class="bg-surface-container-high/60 p-2 rounded-lg border border-white/5 flex flex-col">
+                        <span class="text-[10px] text-on-surface-variant/70 font-medium">Chi phí AI ước tính</span>
+                        <div class="flex items-baseline gap-1 mt-0.5">
+                            <span id="statEstimatedCost"
+                                class="font-mono text-xs font-bold text-emerald-400">$0.000000</span>
+                            <span id="statCostVnd" class="text-[9px] text-emerald-400/80 font-mono">(~0 VNĐ)</span>
+                        </div>
+                    </div>
+
+                    <!-- Words & Chars -->
+                    <div class="bg-surface-container-high/60 p-2 rounded-lg border border-white/5 flex flex-col">
+                        <span class="text-[10px] text-on-surface-variant/70 font-medium">Ký tự / Số từ</span>
+                        <div class="flex items-baseline gap-1 mt-0.5">
+                            <span id="statCharCount" class="font-mono text-xs font-bold text-secondary">0</span>
+                            <span class="text-[9px] text-on-surface-variant/70">char</span>
+                            <span id="statWordCount" class="text-[9px] font-mono text-on-surface-variant/80 ml-0.5">(0
+                                từ)</span>
+                        </div>
+                    </div>
+
+                    <!-- System Total Tokens -->
+                    <div class="bg-surface-container-high/60 p-2 rounded-lg border border-white/5 flex flex-col">
+                        <span class="text-[10px] text-on-surface-variant/70 font-medium">Tổng hệ thống</span>
+                        <div class="flex items-baseline gap-1 mt-0.5">
+                            <span id="statSystemTokens" class="font-mono text-xs font-bold text-primary">0</span>
+                            <span class="text-[9px] text-primary/80">tok</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Obsidian Formatting Toolbar -->
+            <div id="obsidianToolbar"
+                class="flex items-center gap-1.5 p-2 bg-surface-container-high/90 rounded-xl border border-white/10 mb-3 flex-wrap text-xs">
+                <button onclick="window.insertFormatting('**', '**')"
+                    class="px-2 py-1 bg-white/5 hover:bg-white/15 rounded text-white font-bold"
+                    title="In đậm">B</button>
+                <button onclick="window.insertFormatting('*', '*')"
+                    class="px-2 py-1 bg-white/5 hover:bg-white/15 rounded text-white italic"
+                    title="In nghiêng">I</button>
+                <button onclick="window.insertFormatting('# ', '')"
+                    class="px-2 py-1 bg-white/5 hover:bg-white/15 rounded text-primary font-bold"
+                    title="Tiêu đề 1">H1</button>
+                <button onclick="window.insertFormatting('## ', '')"
+                    class="px-2 py-1 bg-white/5 hover:bg-white/15 rounded text-secondary font-bold"
+                    title="Tiêu đề 2">H2</button>
+                <button onclick="window.insertFormatting('[[', ']]')"
+                    class="px-2 py-1 bg-primary/20 hover:bg-primary/30 text-primary border border-primary/30 rounded font-semibold"
+                    title="Obsidian WikiLink">[[WikiLink]]</button>
+                <button onclick="window.insertFormatting('- [ ] ', '')"
+                    class="px-2 py-1 bg-white/5 hover:bg-white/15 rounded text-emerald-400 font-semibold"
+                    title="Checklist">☑ Todo</button>
+                <button onclick="window.insertFormatting('```\n', '\n```')"
+                    class="px-2 py-1 bg-white/5 hover:bg-white/15 rounded text-amber-300 font-mono"
+                    title="Code Block">&lt;/&gt; Code</button>
+                <button onclick="window.insertFormatting('> ', '')"
+                    class="px-2 py-1 bg-white/5 hover:bg-white/15 rounded text-slate-300 italic"
+                    title="Trích dẫn">Quote</button>
+            </div>
+
+            <!-- Content Area Container (Supports Reader, Editor, and Split View) -->
+            <div id="drawerContentContainer" class="flex-1 flex gap-4 min-h-0 overflow-hidden">
+                <!-- Reader View -->
+                <div id="readView" title="Double-click để chỉnh sửa trực tiếp"
+                    class="markdown-body text-on-surface text-sm flex-1 overflow-y-auto pr-2 select-text cursor-text border border-transparent rounded-lg p-2 hover:border-white/10 transition-colors">
+                    <p class="text-on-surface-variant italic">Đang tải nội dung...</p>
+                </div>
+
+                <!-- Editor View -->
+                <div id="editView" class="hidden flex-1 flex flex-col gap-2 min-h-0">
+                    <textarea id="noteContentTextarea"
+                        class="flex-1 w-full bg-[#11141c] border-2 border-primary/40 rounded-xl p-4 text-xs font-mono text-white outline-none focus:border-primary focus:shadow-[0_0_15px_rgba(211,187,255,0.3)] transition-all resize-none leading-relaxed font-medium"
+                        placeholder="# Tiêu đề ghi chú Markdown..."></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dynamic Create New Note Modal Component Placeholder -->
+    <div id="newNoteModalContainer"></div>
+
+    <!-- Application Script Modules -->
+    <script src="/js/graph.js"></script>
+    <script src="/js/drawer.js"></script>
+    <script src="/js/searchFilter.js"></script>
+    <script src="/js/dailyNote.js"></script>
+    <script src="/js/newNote.js"></script>
+    <script src="/js/voice.js"></script>
+    <script src="/js/chat.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Helper function to load external component HTML files
+            async function loadComponent(containerId, url) {
+                try {
+                    const res = await fetch(url);
+                    if (!res.ok) throw new Error(`Failed to load ${url}`);
+                    const html = await res.text();
+                    const container = document.getElementById(containerId);
+                    if (container) container.innerHTML = html;
+                } catch (err) {
+                    console.error(`Component load error (${url}):`, err);
+                }
+            }
+
+            // Load components asynchronously before initializing modules
+            await Promise.all([
+                loadComponent('headerContainer', '/components/header.html'),
+                loadComponent('chatContainer', '/components/chat.html'),
+                loadComponent('newNoteModalContainer', '/components/newNoteModal.html')
+            ]);
+
+            // Initialize all feature modules
+            initNoteDrawer();
+            initSearchAndFilter();
+            initDailyNote();
+            initNewNoteModal();
+            initAIChat();
+
+            // Bind Refresh Graph action
+            const btnRefreshGraph = document.getElementById('btnRefreshGraph');
+            if (btnRefreshGraph) {
+                btnRefreshGraph.addEventListener('click', fetchAndRenderGraph);
+            }
+
+            // Initial graph render
+            fetchAndRenderGraph();
+        });
+    </script>
 </body>
+
 </html>
