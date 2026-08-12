@@ -8,9 +8,8 @@ const PORT = env.port || 3000;
 const startServer = (portToTry) => {
   const server = app.listen(portToTry, () => {
     console.log(`=======================================================`);
-    console.log(`🚀 AI Brain OS (Clean Architecture + Modules) Active!`);
+    console.log(`🚀 AI Brain JarVis (Clean Architecture + Modules) Active!`);
     console.log(`🌐 Dashboard URL: http://localhost:${portToTry}`);
-    console.log(`🌐 Direct Graph View: http://localhost:${portToTry}/graphview.html`);
     console.log(`📡 API Endpoints: http://localhost:${portToTry}/api/dashboard`);
     console.log(`=======================================================`);
 
