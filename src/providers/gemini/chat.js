@@ -17,7 +17,7 @@ async function chat(prompt, options = {}) {
     const buildPayload = (modelName) => {
       const payload = {
         systemInstruction: {
-          parts: [{ text: `${systemPrompt.systemPrompt || 'You are Jarvis.'}\n\nLƯU Ý QUAN TRỌNG: Bạn là trợ lý Jarvis. Luôn luôn hiểu và trả lời bằng tiếng Việt tự nhiên, ngắn gọn, thân thiện.` }]
+          parts: [{ text: `${systemPrompt.systemPrompt || 'You are Karik.'}\n\nLƯU Ý QUAN TRỌNG: Bạn là trợ lý AI Karik. Luôn luôn hiểu và trả lời bằng tiếng Việt tự nhiên, ngắn gọn, cá tính, phong cách Karik.` }]
         },
         contents: [{ parts: [{ text: prompt }] }]
       };
@@ -125,7 +125,7 @@ async function chat(prompt, options = {}) {
 
 function generateFallbackResponse(prompt, reason) {
   const lower = prompt.toLowerCase();
-  let text = `Tôi là JarVis. Tôi đã tiếp nhận yêu cầu: "${prompt}".`;
+  let text = `Tôi là Karik. Tôi đã tiếp nhận yêu cầu: "${prompt}".`;
 
   if (lower.includes('trạng thái') || lower.includes('status') || lower.includes('node')) {
     text = `Hiện tại 7/7 Node đang hoạt động bình thường. Core Nexus và Anomaly Orange đang ghi nhận tải ổn định.`;

@@ -1,4 +1,5 @@
 const groqConfig = require('../../config/groq');
+const systemPrompt = require('../../prompts/system.prompt');
 
 async function chat(prompt, options = {}) {
   if (!groqConfig.apiKey) {
@@ -13,7 +14,10 @@ async function chat(prompt, options = {}) {
       },
       body: JSON.stringify({
         model: options.model || groqConfig.defaultModel,
-        messages: [{ role: 'user', content: prompt }]
+        messages: [
+          { role: 'system', content: systemPrompt.systemPrompt },
+          { role: 'user', content: prompt }
+        ]
       })
     });
     const data = await response.json();

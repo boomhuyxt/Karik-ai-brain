@@ -23,19 +23,8 @@ class JarvisVoiceManager {
 
         // Target keywords for wake word trigger (including extensive Vietnamese & English phonetic variations)
         this.wakeKeywords = [
-            'nối hay jarvis', 'nói hay jarvis', 'nối hay harvis', 'nói hay harvis', 'nối hay davis', 'nói hay davis', 'nối hey da vít', 'nói hey da vít',
-            'nói hey gia vít', 'nối hey gia vít', 'nói hay gia vít', 'nối hay gia vít',
-            'hello jarvis', 'hello harvis', 'hello davis', 'hello da vít', 'hello gia vít',
-            'hey jarvis', 'hey harvis', 'hey davis', 'hey da vít', 'hey đa vít', 'hey davit', 'hey gia vít', 'hey ha vít', 'hey giá vít', 'hey già vít', 'hey dá vít',
-            'hay jarvis', 'hay harvis', 'hay davis', 'hay da vít', 'hay đa vít', 'hay gia vít', 'hay ha vít',
-            'hi jarvis', 'hi harvis', 'hi davis', 'hi da vít', 'hi gia vít',
-            'chào jarvis', 'chào harvis', 'chào davis', 'chào da vít', 'chào gia vít',
-            'ơi jarvis', 'ơi harvis', 'ơi davis', 'ơi da vít', 'ơi gia vít', 'ơi ha vít',
-            'ok jarvis', 'ok harvis', 'ok davis', 'ok da vít', 'ok gia vít',
-            'ê jarvis', 'ê da vít', 'ê gia vít', 'alo jarvis', 'alo da vít', 'alo gia vít',
-            'hây da vít', 'nói hây da vít', 'hây đa vít', 'nói hây đa vít', 'hây gia vít', 'nói hây gia vít',
-            'giao vít', 'diao vít', 'dzo vít', 'dô vít', 'zơ vít', 'dơ vít', 'da vịt', 'gia vịt', 'hay ra buýt', 'hay javic',
-            'jarvis', 'harvis', 'davis', 'da vít', 'đa vít', 'gia vít', 'ha vít', 'giá vít', 'già vít', 'dá vít', 'dà vít', 'xa vít', 'cha vít', 'tra vít', 'ra vít', 'xe buýt', 'jabit', 'tra vính', 'trà vinh'
+            'nối hay karik', 'nói hay karik', 'hello karik', 'hey karik', 'hay karik', 'hi karik', 'chào karik', 'ơi karik', 'ok karik', 'ê karik', 'alo karik',
+            'karik ơi', 'chào karik ơi', 'ca rik', 'kha rik', 'ca rít', 'kha rít', 'karik'
         ].sort((a, b) => b.length - a.length);
     }
 
@@ -44,7 +33,7 @@ class JarvisVoiceManager {
         this.initVoices();
         this.bindUIControls();
         this.setupGlobalUnlock();
-        this.updateStatusBadge('🟢 Lắng nghe "Hey Jarvis"...');
+        this.updateStatusBadge('🟢 Lắng nghe "Hey Karik"...');
     }
 
     setupGlobalUnlock() {
@@ -114,7 +103,7 @@ class JarvisVoiceManager {
                 this.isListeningState = true;
                 console.log('🎙️ [SpeechRecognition]: Micro đã bật và đang lắng nghe...');
                 if (!this.isListeningForPrompt && !this.isSpeaking) {
-                    this.updateStatusBadge('🟢 Lắng nghe "Hey Jarvis"...');
+                    this.updateStatusBadge('🟢 Lắng nghe "Hey Karik"...');
                 }
             };
 
@@ -147,7 +136,7 @@ class JarvisVoiceManager {
         if (langIcon) langIcon.textContent = isVi ? '🇻🇳' : '🇺🇸';
         if (langBtnLabel) langBtnLabel.textContent = isVi ? 'VI' : 'EN';
 
-        const statusMsg = isVi ? '🟢 Lắng nghe "Hey Jarvis"...' : '🟢 Listening for "Hey Jarvis"...';
+        const statusMsg = isVi ? '🟢 Lắng nghe "Hey Karik"...' : '🟢 Listening for "Hey Karik"...';
         this.updateStatusBadge(statusMsg);
 
         console.log(`🌐 [Voice Language]: Switched recognition to ${this.currentLang}`);
@@ -231,7 +220,7 @@ class JarvisVoiceManager {
             this.hearingSilenceTimer = setTimeout(() => {
                 if (!this.isListeningForPrompt && !this.isSpeaking) {
                     console.log('⏱️ 3s silence reached, resetting listening state...');
-                    this.updateStatusBadge('🟢 Lắng nghe "Hey Jarvis"...');
+                    this.updateStatusBadge('🟢 Lắng nghe "Hey Karik"...');
                     this.stopListening();
                     setTimeout(() => this.startListening(), 200);
                 }
