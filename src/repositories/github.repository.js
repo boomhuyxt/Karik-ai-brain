@@ -18,7 +18,7 @@ class GithubRepository {
 
   async getTree() {
     const owner = env.github.owner || 'boomhuyxt';
-    const repo = env.github.repo || 'Obsidian-JarVis-Ai';
+    const repo = env.github.repo || 'Obsidian-Karik-Ai';
 
     try {
       // 1. Get default branch
@@ -57,7 +57,7 @@ class GithubRepository {
 
   async getFile(path) {
     const owner = env.github.owner || 'boomhuyxt';
-    const repo = env.github.repo || 'Obsidian-JarVis-Ai';
+    const repo = env.github.repo || 'Obsidian-Karik-Ai';
 
     try {
       const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${encodeURI(path)}`, {
@@ -84,16 +84,25 @@ class GithubRepository {
 
   async updateFile(path, content, message = 'Update note via AI Brain OS', sha) {
     const owner = env.github.owner || 'boomhuyxt';
-    const repo = env.github.repo || 'Obsidian-JarVis-Ai';
+    const repo = env.github.repo || 'Obsidian-Karik-Ai';
     const encoded = Buffer.from(content).toString('base64');
-    let newSha = sha || `sha_${Date.now()}`;
+
+    let targetSha = sha;
+    if (!targetSha) {
+      const existing = await this.getFile(path);
+      if (existing && existing.sha) {
+        targetSha = existing.sha;
+      }
+    }
+
+    let newSha = targetSha || `sha_${Date.now()}`;
 
     try {
       const body = {
         message,
         content: encoded
       };
-      if (sha) body.sha = sha;
+      if (targetSha) body.sha = targetSha;
 
       const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${encodeURI(path)}`, {
         method: 'PUT',

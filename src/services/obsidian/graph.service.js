@@ -116,7 +116,7 @@ class GraphService {
       }
 
       const currentOwner = process.env.GITHUB_OWNER || env.github.owner || 'boomhuyxt';
-      const currentRepo = process.env.GITHUB_REPO || env.github.repo || 'Obsidian-JarVis-Ai';
+      const currentRepo = process.env.GITHUB_REPO || env.github.repo || 'Obsidian-Karik-Ai';
 
       return {
         repo: `${currentOwner}/${currentRepo}`,

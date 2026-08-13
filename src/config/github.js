@@ -21,5 +21,5 @@ module.exports = {
   octokit,
   token: env.github.token,
   get owner() { return process.env.GITHUB_OWNER || env.github.owner || 'boomhuyxt'; },
-  get repo() { return process.env.GITHUB_REPO || env.github.repo || 'Obsidian-JarVis-Ai'; }
+  get repo() { return process.env.GITHUB_REPO || env.github.repo || 'Obsidian-Karik-Ai'; }
 };

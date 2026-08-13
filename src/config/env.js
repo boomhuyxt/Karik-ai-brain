@@ -6,7 +6,7 @@ module.exports = {
   github: {
     token: process.env.GITHUB_PAT || '',
     owner: process.env.GITHUB_OWNER || 'boomhuyxt',
-    repo: process.env.GITHUB_REPO || 'Obsidian-JarVis-Ai'
+    repo: process.env.GITHUB_REPO || 'Obsidian-Karik-Ai'
   },
   supabase: {
     url: process.env.SUPABASE_URL || 'https://blrimwahpwfqewfmmtet.supabase.co',
