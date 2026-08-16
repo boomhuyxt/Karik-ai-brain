@@ -15,11 +15,25 @@ module.exports = {
     secretKey: process.env.SUPABASE_SECRET_KEY || '',
     jwksUrl: process.env.SUPABASE_JWKS_URL || ''
   },
+  db: {
+    host: process.env.DB_HOST || 'aws-0-ap-south-1.pooler.supabase.com',
+    port: parseInt(process.env.DB_PORT || '6543', 10),
+    database: process.env.DB_NAME || 'postgres',
+    user: process.env.DB_USER || 'postgres.blrimwahpwfqewfmmtet',
+    password: process.env.DB_PASSWORD || 'JarvisAi@123data',
+    connectionString: process.env.DATABASE_URL || ''
+  },
   ai: {
     geminiApiKey: process.env.GEMINI_API_KEY || '',
     openaiApiKey: process.env.OPENAI_API_KEY || '',
     groqApiKey: process.env.GROQ_API_KEY || '',
     claudeApiKey: process.env.CLAUDE_API_KEY || '',
     openrouterApiKey: process.env.OPENROUTER_API_KEY || ''
+  },
+  smtp: {
+    host: process.env.SMTP_HOST || 'smtp.gmail.com',
+    port: parseInt(process.env.SMTP_PORT || '587', 10),
+    user: process.env.SMTP_USER || '',
+    pass: process.env.SMTP_PASS || ''
   }
 };

@@ -2,6 +2,7 @@
 <html class="dark" lang="vi">
 
 <head>
+    <script src="/js/authGuard.js"></script>
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>AI Brain JarVis - GitHub Graph View & Daily Journal</title>
@@ -577,6 +578,7 @@
     <div id="newNoteModalContainer"></div>
 
     <!-- Application Script Modules -->
+    <script src="/js/header.js"></script>
     <script src="/js/graph.js"></script>
     <script src="/js/drawer.js"></script>
     <script src="/js/searchFilter.js"></script>
@@ -607,6 +609,7 @@
             ]);
 
             // Initialize all feature modules
+            if (typeof initHeaderModule === 'function') initHeaderModule();
             initNoteDrawer();
             initSearchAndFilter();
             initDailyNote();

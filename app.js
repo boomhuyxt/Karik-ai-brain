@@ -30,6 +30,11 @@ app.get('/graphview', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'graphview.html'));
 });
 
+// Login & Register shortcut endpoint
+app.get('/login', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'login.html'));
+});
+
 // Primary REST API Router
 app.use('/api', apiRoutes);
 

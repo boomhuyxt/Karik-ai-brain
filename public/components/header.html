@@ -1,44 +1,123 @@
-<!-- Top Action Bar Component -->
-<header
-    class="absolute top-0 left-0 right-0 z-30 h-16 glass-panel px-6 flex items-center justify-between border-b border-white/10">
-    <div class="flex items-center gap-3">
-        <span class="material-symbols-outlined text-primary text-2xl">hub</span>
-        <div>
-            <h1 class="font-headline-md text-base font-semibold text-primary text-glow flex items-center gap-2">
-                GitHub Vault Graph View
-                <span id="repoNameBadge"
-                    class="text-[10px] font-label-caps px-2 py-0.5 rounded bg-primary/20 text-primary border border-primary/30">Obsidian-Karik-Ai/AI_Brain_Karik</span>
-            </h1>
+<!-- Top Action Bar Component (Responsive) -->
+<header class="absolute top-0 left-0 right-0 z-30 min-h-[64px] glass-panel px-4 md:px-6 flex flex-col justify-center border-b border-white/10">
+    <div class="flex items-center justify-between h-16 w-full">
+        <!-- Logo & Brand -->
+        <div class="flex items-center gap-2.5 min-w-0">
+            <span class="material-symbols-outlined text-primary text-2xl flex-shrink-0">hub</span>
+            <div class="min-w-0">
+                <h1 class="font-headline-md text-sm md:text-base font-semibold text-primary text-glow flex items-center gap-2 truncate">
+                    <span class="truncate">GitHub Vault Graph</span>
+                    <span id="repoNameBadge" class="hidden sm:inline-block text-[10px] font-label-caps px-2 py-0.5 rounded bg-primary/20 text-primary border border-primary/30 truncate max-w-[160px] md:max-w-none">
+                        Obsidian-Karik-Ai/AI_Brain_Karik
+                    </span>
+                </h1>
+            </div>
+        </div>
+
+        <!-- Desktop Action Buttons (Hidden on Mobile) -->
+        <div class="hidden md:flex items-center gap-3">
+            <!-- Admin Only Header Controls -->
+            <div id="adminHeaderActions" class="flex items-center gap-3">
+                <!-- Search Input -->
+                <div class="relative">
+                    <span class="material-symbols-outlined absolute left-2.5 top-2 text-base text-on-surface-variant">search</span>
+                    <input id="graphSearchInput" type="text" placeholder="Tìm kiếm note / tag..."
+                        class="bg-surface-container-high/80 border border-white/10 rounded-lg pl-8 pr-3 py-1.5 text-xs text-on-surface placeholder:text-on-surface-variant/50 outline-none focus:border-primary/50 transition-all w-44 lg:w-56">
+                </div>
+
+                <!-- Daily Action Button -->
+                <button id="btnOpenDaily"
+                    class="bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all shadow-[0_0_10px_rgba(52,211,153,0.2)]">
+                    <span class="material-symbols-outlined text-base">calendar_today</span>
+                    <span>Ghi Daily</span>
+                </button>
+
+                <!-- New Note Button -->
+                <button id="btnNewNote"
+                    class="bg-primary/20 hover:bg-primary/30 text-primary border border-primary/40 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all shadow-[0_0_10px_rgba(211,187,255,0.2)]">
+                    <span class="material-symbols-outlined text-base">note_add</span>
+                    <span>+ Tạo Note</span>
+                </button>
+
+                <!-- Refresh Button -->
+                <button id="btnRefreshGraph" title="Tải lại dữ liệu từ GitHub"
+                    class="bg-surface-container-high hover:brightness-125 text-on-surface border border-white/10 px-2.5 py-1.5 rounded-lg text-xs transition-all flex items-center justify-center">
+                    <span class="material-symbols-outlined text-base">refresh</span>
+                </button>
+
+                <div class="h-4 w-[1px] bg-white/15 mx-1"></div>
+            </div>
+
+            <!-- User Info Badge (Visible to All Logged In Users) -->
+            <div id="userBadge" class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-surface-container-high/60 border border-white/10 text-xs">
+                <span class="material-symbols-outlined text-purple-300 text-base">account_circle</span>
+                <span id="userNameDisplay" class="font-medium text-gray-200 truncate max-w-[140px]">AI Admin</span>
+                <span id="userRoleTag" class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-purple-500/20 text-purple-300 border border-purple-400/30">ADMIN</span>
+            </div>
+
+            <!-- Logout Button -->
+            <button id="btnLogout" title="Đăng xuất khỏi hệ thống"
+                class="bg-red-500/15 hover:bg-red-500/25 text-red-300 border border-red-500/35 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all shadow-[0_0_10px_rgba(239,68,68,0.15)]">
+                <span class="material-symbols-outlined text-base">logout</span>
+                <span>Đăng xuất</span>
+            </button>
+        </div>
+
+        <!-- Mobile Controls (Hamburger Menu Button) -->
+        <div class="flex md:hidden items-center gap-2">
+            <button id="btnRefreshGraphMobile" title="Tải lại dữ liệu"
+                class="bg-surface-container-high hover:brightness-125 text-on-surface border border-white/10 p-2 rounded-lg text-xs transition-all flex items-center justify-center">
+                <span class="material-symbols-outlined text-base">refresh</span>
+            </button>
+
+            <button id="btnMobileMenuToggle" aria-label="Mở menu"
+                class="bg-primary/20 text-primary border border-primary/30 p-2 rounded-lg transition-all hover:bg-primary/30 flex items-center justify-center">
+                <span id="mobileMenuIcon" class="material-symbols-outlined text-xl">menu</span>
+            </button>
         </div>
     </div>
 
-    <div class="flex items-center gap-3">
-        <!-- Search Input -->
-        <div class="relative">
-            <span
-                class="material-symbols-outlined absolute left-2.5 top-2 text-base text-on-surface-variant">search</span>
-            <input id="graphSearchInput" type="text" placeholder="Tìm kiếm note / tag..."
-                class="bg-surface-container-high/80 border border-white/10 rounded-lg pl-8 pr-3 py-1.5 text-xs text-on-surface placeholder:text-on-surface-variant/50 outline-none focus:border-primary/50 transition-all w-48">
+    <!-- Mobile Navigation Drawer / Dropdown Menu -->
+    <div id="mobileNavMenu" class="hidden md:hidden pb-4 pt-2 border-t border-white/10 space-y-3 animate-fadeIn">
+        <!-- User Info Mobile -->
+        <div class="flex items-center justify-between px-3 py-2 rounded-xl bg-surface-container-high/60 border border-white/10 text-xs">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-purple-300 text-base">account_circle</span>
+                <span id="userNameDisplayMobile" class="font-semibold text-gray-200">AI Admin</span>
+            </div>
+            <span id="userRoleTagMobile" class="text-[10px] text-emerald-400 font-mono bg-emerald-900/40 px-2 py-0.5 rounded border border-emerald-500/30">ADMIN</span>
         </div>
 
-        <!-- Daily Action Button -->
-        <button id="btnOpenDaily"
-            class="bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all shadow-[0_0_10px_rgba(52,211,153,0.2)]">
-            <span class="material-symbols-outlined text-base">calendar_today</span>
-            <span>Ghi Daily Hôm Nay</span>
-        </button>
+        <!-- Admin Only Mobile Controls -->
+        <div id="adminMobileActions" class="space-y-3">
+            <!-- Search Input Mobile -->
+            <div class="relative">
+                <span class="material-symbols-outlined absolute left-3 top-2.5 text-base text-on-surface-variant">search</span>
+                <input id="graphSearchInputMobile" type="text" placeholder="Tìm kiếm note / tag..."
+                    class="w-full bg-surface-container-high/90 border border-white/15 rounded-xl pl-9 pr-3 py-2 text-xs text-on-surface placeholder:text-on-surface-variant/50 outline-none focus:border-primary/50">
+            </div>
 
-        <!-- New Note Button -->
-        <button id="btnNewNote"
-            class="bg-primary/20 hover:bg-primary/30 text-primary border border-primary/40 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all shadow-[0_0_10px_rgba(211,187,255,0.2)]">
-            <span class="material-symbols-outlined text-base">note_add</span>
-            <span>+ Tạo Note Mới</span>
-        </button>
+            <!-- Action Buttons Grid -->
+            <div class="grid grid-cols-2 gap-2">
+                <button id="btnOpenDailyMobile"
+                    class="w-full bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all">
+                    <span class="material-symbols-outlined text-base">calendar_today</span>
+                    <span>Ghi Daily</span>
+                </button>
 
-        <!-- Refresh Button -->
-        <button id="btnRefreshGraph" title="Tải lại dữ liệu từ GitHub"
-            class="bg-surface-container-high hover:brightness-125 text-on-surface border border-white/10 px-2.5 py-1.5 rounded-lg text-xs transition-all flex items-center justify-center">
-            <span class="material-symbols-outlined text-base">refresh</span>
+                <button id="btnNewNoteMobile"
+                    class="w-full bg-primary/20 hover:bg-primary/30 text-primary border border-primary/40 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all">
+                    <span class="material-symbols-outlined text-base">note_add</span>
+                    <span>+ Tạo Note</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Logout Button Mobile -->
+        <button id="btnMobileLogout"
+            class="w-full bg-red-500/15 hover:bg-red-500/25 text-red-300 border border-red-500/35 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all">
+            <span class="material-symbols-outlined text-base">logout</span>
+            <span>Đăng xuất hệ thống</span>
         </button>
     </div>
 </header>
