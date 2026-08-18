@@ -1,0 +1,172 @@
+<!-- Interactive Obsidian Graph Component -->
+<div id="graphContainer" class="flex-1 h-full w-full relative overflow-hidden flex items-center justify-center">
+    <!-- 2D SVG Graph Canvas -->
+    <svg id="graphSvg" class="w-full h-full absolute inset-0 z-0"></svg>
+
+    <!-- Floating Graph Layout & Obsidian Controls Toolbar -->
+    <div id="controlsGraphBox"
+        class="absolute top-4 left-6 z-20 glass-panel px-3.5 py-2 rounded-2xl border border-white/15 text-xs flex items-center gap-2.5 shadow-2xl backdrop-blur-xl bg-[#10131a]/90 pointer-events-auto flex-wrap max-w-[calc(100vw-3rem)]">
+        <div class="flex items-center gap-1.5 text-primary font-extrabold text-glow mr-1 bg-primary/10 border border-primary/25 px-2.5 py-1 rounded-xl shadow-[0_0_12px_rgba(211,187,255,0.25)]">
+            <span class="material-symbols-outlined text-base text-primary animate-pulse">hub</span>
+            <span class="tracking-wide text-xs text-white font-headline-md font-bold">Obsidian Graph</span>
+        </div>
+
+        <!-- Vault Name & Stats Badge -->
+        <div class="flex items-center gap-1.5 bg-purple-500/20 text-purple-300 border border-purple-400/30 px-2 py-0.5 rounded-full font-mono text-[10px]">
+            <span class="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse"></span>
+            <span id="graphRepoBadge">Obsidian Vault</span>
+        </div>
+        <span id="totalNotesCount" class="text-[10px] text-cyan-300 font-mono bg-cyan-500/20 border border-cyan-400/30 px-2 py-0.5 rounded-full hidden sm:inline-block">189 Notes</span>
+
+        <div class="h-4 w-[1px] bg-white/15 hidden xs:block"></div>
+
+        <!-- Quick Search Input inside Graph Toolbar -->
+        <div class="relative flex items-center">
+            <span class="material-symbols-outlined text-slate-400 text-xs absolute left-2 pointer-events-none">search</span>
+            <input id="graphSearchInput" type="text" placeholder="Tìm note hoặc link..."
+                class="bg-white/5 border border-white/10 rounded-lg pl-6 pr-2 py-0.5 text-xs text-white placeholder:text-slate-400 outline-none focus:border-cyan-400 focus:bg-slate-900/90 transition-all w-28 sm:w-40 font-mono">
+        </div>
+
+        <!-- Toggle Labels Button -->
+        <button id="btnToggleLabels" title="Bật/Tắt hiển thị tất cả nhãn chữ" onclick="window.toggleGraphLabels()"
+            class="px-2.5 py-1.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/25 text-cyan-300 hover:text-white border border-cyan-400/40 flex items-center gap-1.5 font-bold transition-all text-xs shadow-[0_0_10px_rgba(6,182,212,0.15)] hover:shadow-[0_0_15px_rgba(6,182,212,0.35)] hover:scale-105 active:scale-95">
+            <span class="material-symbols-outlined text-sm text-cyan-400">label</span>
+            <span class="tracking-wide">Nhãn</span>
+        </button>
+
+        <!-- Toggle Arrows (Directional Links) Button -->
+        <button id="btnToggleArrows" title="Bật/Tắt mũi tên hướng liên kết [[WikiLink]]" onclick="window.toggleGraphArrows()"
+            class="px-2.5 py-1.5 rounded-xl bg-purple-500/10 hover:bg-purple-500/25 text-purple-300 hover:text-white border border-purple-400/40 flex items-center gap-1.5 font-bold transition-all text-xs shadow-[0_0_10px_rgba(168,85,247,0.15)] hover:shadow-[0_0_15px_rgba(168,85,247,0.35)] hover:scale-105 active:scale-95">
+            <span class="material-symbols-outlined text-sm text-purple-400">arrow_right_alt</span>
+            <span class="tracking-wide">Mũi tên</span>
+        </button>
+
+        <!-- Toggle Orphan Notes (Notes with no links) -->
+        <button id="btnToggleOrphans" title="Ẩn/Hiện ghi chú mồ côi (không có liên kết)" onclick="window.toggleOrphanNodes()"
+            class="px-2.5 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/25 text-emerald-300 hover:text-white border border-emerald-400/40 flex items-center gap-1.5 font-bold transition-all text-xs shadow-[0_0_10px_rgba(16,185,129,0.15)] hover:shadow-[0_0_15px_rgba(16,185,129,0.35)] hover:scale-105 active:scale-95">
+            <span class="material-symbols-outlined text-sm text-emerald-400">filter_alt</span>
+            <span class="tracking-wide">Lọc liên kết</span>
+        </button>
+
+        <!-- Zoom In & Zoom Out -->
+        <div class="flex items-center bg-white/10 rounded-xl border border-white/20 p-0.5 shadow-sm">
+            <button title="Phóng to (+)" onclick="window.zoomInGraph()"
+                class="px-2 py-1 rounded-lg hover:bg-cyan-500/20 text-cyan-300 hover:text-white font-bold flex items-center justify-center transition-all active:scale-90 hover:scale-110 gap-0.5 text-xs">
+                <span class="material-symbols-outlined text-sm">add</span>
+            </button>
+            <div class="h-3 w-[1px] bg-white/20"></div>
+            <button title="Thu nhỏ (-)" onclick="window.zoomOutGraph()"
+                class="px-2 py-1 rounded-lg hover:bg-cyan-500/20 text-cyan-300 hover:text-white font-bold flex items-center justify-center transition-all active:scale-90 hover:scale-110 gap-0.5 text-xs">
+                <span class="material-symbols-outlined text-sm">remove</span>
+            </button>
+        </div>
+
+        <!-- Recenter Button -->
+        <button title="Căn lại vị trí góc nhìn trung tâm" onclick="window.recenterGraphView()"
+            class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-blue-600/30 via-indigo-600/30 to-cyan-500/30 hover:from-blue-600/50 hover:to-cyan-500/50 text-cyan-200 hover:text-white border border-cyan-400/50 flex items-center gap-1.5 font-bold transition-all text-xs shadow-[0_0_12px_rgba(34,211,238,0.25)] hover:shadow-[0_0_18px_rgba(34,211,238,0.45)] hover:scale-105 active:scale-95">
+            <span class="material-symbols-outlined text-sm text-cyan-300 animate-pulse">center_focus_strong</span>
+            <span class="tracking-wide">Recenter</span>
+        </button>
+    </div>
+
+    <!-- Dynamic Graph Legend / Info Overlay -->
+    <div id="legendBox"
+        class="absolute bottom-6 right-6 z-20 glass-panel p-4 rounded-2xl border border-white/15 text-xs flex flex-col gap-3 shadow-2xl pointer-events-auto bg-[#10131a]/95 min-w-[270px] backdrop-blur-xl">
+
+        <!-- System Progress Bars Section -->
+        <div class="flex flex-col gap-2.5 border-b border-white/10 pb-3 text-xs">
+            <!-- Item 1: Phân tích Data -->
+            <div class="flex flex-col gap-1">
+                <div class="flex justify-between items-center">
+                    <span
+                        class="font-headline-md text-xs font-bold text-purple-300 text-glow flex items-center gap-1">
+                        <span class="material-symbols-outlined text-xs text-purple-400">analytics</span>
+                        Phân tích Data
+                    </span>
+                    <span class="font-mono text-purple-300 font-extrabold text-xs">78%</span>
+                </div>
+                <div class="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
+                    <div class="bg-gradient-to-r from-purple-600 to-purple-400 h-full rounded-full transition-all duration-500 shadow-[0_0_10px_rgba(168,85,247,0.6)]"
+                        style="width: 78%"></div>
+                </div>
+            </div>
+
+            <!-- Item 2: Đồng bộ Node -->
+            <div class="flex flex-col gap-1">
+                <div class="flex justify-between items-center">
+                    <span
+                        class="font-headline-md text-xs font-bold text-cyan-300 text-glow flex items-center gap-1">
+                        <span class="material-symbols-outlined text-xs text-cyan-400">sync_alt</span>
+                        Đồng bộ Node
+                    </span>
+                    <span class="font-mono text-cyan-300 font-extrabold text-xs">42%</span>
+                </div>
+                <div class="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
+                    <div class="bg-gradient-to-r from-cyan-500 to-cyan-300 h-full rounded-full transition-all duration-500 shadow-[0_0_10px_rgba(6,182,212,0.6)]"
+                        style="width: 42%"></div>
+                </div>
+            </div>
+
+            <!-- Item 3: Mã hóa bảo mật -->
+            <div class="flex flex-col gap-1">
+                <div class="flex justify-between items-center">
+                    <span
+                        class="font-headline-md text-xs font-bold text-emerald-300 text-glow flex items-center gap-1">
+                        <span class="material-symbols-outlined text-xs text-emerald-400">security</span>
+                        Mã hóa bảo mật
+                    </span>
+                    <span class="font-mono text-emerald-300 font-extrabold text-xs">95%</span>
+                </div>
+                <div class="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
+                    <div class="bg-gradient-to-r from-emerald-500 to-emerald-300 h-full rounded-full transition-all duration-500 shadow-[0_0_10px_rgba(16,185,129,0.6)]"
+                        style="width: 95%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- API Token Consumption Section -->
+        <div class="flex flex-col gap-2.5 border-b border-white/10 pb-3">
+            <div class="flex items-center justify-between my-0.5">
+                <h3
+                    class="font-headline-md text-xs font-bold text-white tracking-wide text-glow flex items-center gap-1">
+                    <span class="material-symbols-outlined text-sm text-amber-400">api</span>
+                    Tiêu thụ API Token
+                </h3>
+                <span id="liveApiStatus"
+                    class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Direct Realtime
+                </span>
+            </div>
+
+            <div id="tokenProviderBars" class="flex flex-col gap-2">
+                <!-- Dynamic real-time provider bars populated via /api/tokens -->
+                <div class="text-[11px] text-on-surface-variant/70 italic text-center py-1">Đang tải token
+                    realtime...</div>
+            </div>
+
+            <!-- Total Tokens Row -->
+            <div class="flex items-center justify-between pt-1 border-t border-white/5">
+                <span
+                    class="font-headline-md text-xs font-extrabold text-white text-glow tracking-wider flex items-center gap-1.5 uppercase">
+                    <span class="material-symbols-outlined text-sm text-primary">toll</span>
+                    Tổng Token
+                </span>
+                <span id="legendTotalTokensValue"
+                    class="font-mono text-lg font-bold text-primary text-glow">0</span>
+            </div>
+        </div>
+
+        <!-- Directory Legend Section -->
+        <div class="flex flex-col gap-1.5">
+            <div
+                class="font-headline-md text-xs font-bold text-primary text-glow flex items-center gap-1.5 border-b border-white/10 pb-1.5">
+                <span class="material-symbols-outlined text-base text-secondary">folder_special</span>
+                <span>Chú Thích Thư Mục Node</span>
+            </div>
+            <div id="legendList" class="flex flex-col gap-1.5 max-h-40 overflow-y-auto pr-1">
+                <div class="text-xs text-on-surface-variant italic">Đang tải danh mục từ repo...</div>
+            </div>
+        </div>
+
+    </div>
+</div>

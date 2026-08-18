@@ -23,11 +23,15 @@ async function fetchAndRenderGraph() {
         currentGraphData = await res.json();
 
         if (currentGraphData) {
-            const repoBadge = document.getElementById('repoNameBadge');
-            if (repoBadge) {
-                repoBadge.textContent = currentGraphData.repo || 'Obsidian Vault';
-                repoBadge.title = `Kho tri thức: ${currentGraphData.repo} (${currentGraphData.totalFiles || 0} ghi chú)`;
-            }
+            const rawRepoName = currentGraphData.repo || 'AI_Brain_Karik';
+            const cleanRepoName = rawRepoName.toLowerCase().includes('jarvis') ? 'Obsidian-Karik-Ai/AI_Brain_Karik' : rawRepoName;
+
+            const repoBadges = document.querySelectorAll('#repoNameBadge, #graphRepoBadge');
+            repoBadges.forEach(badge => {
+                badge.textContent = cleanRepoName;
+                badge.title = `Kho tri thức: ${cleanRepoName} (${currentGraphData.totalFiles || 0} ghi chú)`;
+            });
+
             const totalCountBadge = document.getElementById('totalNotesCount');
             if (totalCountBadge) {
                 totalCountBadge.textContent = `${currentGraphData.totalFiles || 0} Notes • ${currentGraphData.connections?.length || 0} Links`;
@@ -301,16 +305,21 @@ function render2DGraph(data) {
         .attr('stroke-width', d => d.degree >= 3 ? '1.8px' : '1px')
         .style('filter', d => `drop-shadow(0 0 6px ${d.color || '#a78bfa'})`);
 
-    // Title Labels
+    // Title Labels (High-contrast, prominent, Obsidian-style)
     nodeItems.append('text')
         .attr('class', 'node-text')
-        .attr('dx', d => (d.radius || 5) + 4)
-        .attr('dy', 3.5)
-        .attr('font-size', '10px')
-        .attr('font-family', 'Inter, JetBrains Mono, sans-serif')
-        .attr('fill', '#e2e8f0')
+        .attr('dx', d => (d.radius || 5) + 6)
+        .attr('dy', 4)
+        .attr('font-size', d => d.degree >= 3 ? '12px' : '11px')
+        .attr('font-weight', d => d.degree >= 3 ? '700' : '600')
+        .attr('font-family', "'JetBrains Mono', 'Inter', -apple-system, sans-serif")
+        .attr('fill', d => d.degree >= 3 ? '#ffffff' : '#f8fafc')
         .style('pointer-events', 'none')
-        .style('text-shadow', '0 0 8px rgba(0,0,0,1), 0 0 3px rgba(0,0,0,1)')
+        .style('paint-order', 'stroke fill')
+        .style('stroke', '#07090e')
+        .style('stroke-width', '3.5px')
+        .style('stroke-linejoin', 'round')
+        .style('text-shadow', '0 0 10px rgba(0,0,0,0.95)')
         .text(d => d.name);
 
     updateLabelVisibility();
@@ -357,9 +366,11 @@ function render2DGraph(data) {
 
         nodeItems.selectAll('.node-text')
             .style('opacity', n => neighborSet.has(n) ? 1 : 0)
-            .style('fill', n => n === d ? '#5de6ff' : (neighborSet.has(n) ? '#ffffff' : '#e2e8f0'))
-            .style('font-weight', n => n === d ? 'bold' : (neighborSet.has(n) ? '600' : 'normal'))
-            .style('font-size', n => n === d ? '12px' : '10px');
+            .style('fill', n => n === d ? '#5de6ff' : (neighborSet.has(n) ? '#ffffff' : '#f8fafc'))
+            .style('stroke', n => n === d ? '#082f49' : '#07090e')
+            .style('stroke-width', n => n === d ? '4.5px' : '3.5px')
+            .style('font-weight', n => n === d ? '800' : (neighborSet.has(n) ? '700' : '600'))
+            .style('font-size', n => n === d ? '13.5px' : (n.degree >= 3 ? '12px' : '11px'));
 
         // Brighten connected links
         linkLines
@@ -379,9 +390,11 @@ function render2DGraph(data) {
             .attr('r', n => n.radius || 5);
 
         nodeItems.selectAll('.node-text')
-            .style('fill', '#e2e8f0')
-            .style('font-weight', 'normal')
-            .style('font-size', '10px');
+            .style('fill', d => d.degree >= 3 ? '#ffffff' : '#f8fafc')
+            .style('stroke', '#07090e')
+            .style('stroke-width', '3.5px')
+            .style('font-weight', d => d.degree >= 3 ? '700' : '600')
+            .style('font-size', d => d.degree >= 3 ? '12px' : '11px');
 
         linkLines
             .style('stroke-opacity', 0.22)
@@ -400,9 +413,11 @@ window.toggleGraphLabels = function () {
     stateShowAllLabels = !stateShowAllLabels;
     const btn = document.getElementById('btnToggleLabels');
     if (btn) {
-        btn.classList.toggle('bg-cyan-500/20', stateShowAllLabels);
-        btn.classList.toggle('border-cyan-400/50', stateShowAllLabels);
-        btn.classList.toggle('text-cyan-300', stateShowAllLabels);
+        btn.classList.toggle('bg-cyan-500/35', stateShowAllLabels);
+        btn.classList.toggle('border-cyan-300', stateShowAllLabels);
+        btn.classList.toggle('text-white', stateShowAllLabels);
+        btn.classList.toggle('shadow-[0_0_18px_rgba(6,182,212,0.6)]', stateShowAllLabels);
+        btn.classList.toggle('scale-105', stateShowAllLabels);
     }
     const isZoomedInClose = currentZoomScale2D >= 1.35;
     d3.selectAll('.node-text')
@@ -416,9 +431,11 @@ window.toggleGraphArrows = function () {
     stateShowArrows = !stateShowArrows;
     const btn = document.getElementById('btnToggleArrows');
     if (btn) {
-        btn.classList.toggle('bg-purple-500/20', stateShowArrows);
-        btn.classList.toggle('border-purple-400/50', stateShowArrows);
-        btn.classList.toggle('text-purple-300', stateShowArrows);
+        btn.classList.toggle('bg-purple-500/35', stateShowArrows);
+        btn.classList.toggle('border-purple-300', stateShowArrows);
+        btn.classList.toggle('text-white', stateShowArrows);
+        btn.classList.toggle('shadow-[0_0_18px_rgba(168,85,247,0.6)]', stateShowArrows);
+        btn.classList.toggle('scale-105', stateShowArrows);
     }
     d3.selectAll('.graph-link')
         .attr('marker-end', stateShowArrows ? 'url(#obsidian-arrow)' : null);
@@ -428,9 +445,11 @@ window.toggleOrphanNodes = function () {
     stateHideOrphans = !stateHideOrphans;
     const btn = document.getElementById('btnToggleOrphans');
     if (btn) {
-        btn.classList.toggle('bg-emerald-500/20', stateHideOrphans);
-        btn.classList.toggle('border-emerald-400/50', stateHideOrphans);
-        btn.classList.toggle('text-emerald-300', stateHideOrphans);
+        btn.classList.toggle('bg-emerald-500/35', stateHideOrphans);
+        btn.classList.toggle('border-emerald-300', stateHideOrphans);
+        btn.classList.toggle('text-white', stateHideOrphans);
+        btn.classList.toggle('shadow-[0_0_18px_rgba(16,185,129,0.6)]', stateHideOrphans);
+        btn.classList.toggle('scale-105', stateHideOrphans);
     }
     if (currentGraphData) {
         render2DGraph(currentGraphData);

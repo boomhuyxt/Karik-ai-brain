@@ -66,7 +66,10 @@ class GraphService {
       const localPath = this.findLocalVaultPath();
       if (localPath) {
         mdFiles = this.scanLocalVault(localPath);
-        vaultSource = path.basename(localPath);
+        const baseName = path.basename(localPath);
+        vaultSource = baseName.toLowerCase().includes('jarvis')
+          ? `${env.github.owner}/${env.github.repo}`
+          : baseName;
       }
 
       // 2. If local is empty, try GitHub API
