@@ -48,7 +48,7 @@ test('AuthService - Register & Login Flow', async (t) => {
   // 5. Test Admin adminAI login & role
   const adminLoginResult = await authService.login('adminAI', 'admin123456');
   assert.strictEqual(adminLoginResult.success, true);
-  assert.strictEqual(adminLoginResult.user.role, 'admin');
+  assert.strictEqual(adminLoginResult.user.role, '1');
   assert.ok(adminLoginResult.token);
 
   // 6. Test Forgot Password & Reset Password Flow

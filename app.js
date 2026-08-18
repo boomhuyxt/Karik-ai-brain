@@ -16,14 +16,15 @@ const app = express();
 
 // Middlewares
 app.use(corsMiddleware);
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '60mb' }));
+app.use(express.urlencoded({ extended: true, limit: '60mb' }));
 app.use(requestLogger);
 app.use(rateLimit({ windowMs: 60000, max: 200 }));
 app.use(authMiddleware);
 
-// Serve static dashboard files
+// Serve static dashboard files and uploaded files
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/uploads', express.static(path.join(__dirname, 'src/storage/uploads')));
 
 // Graphview shortcut endpoint
 app.get('/graphview', (req, res) => {

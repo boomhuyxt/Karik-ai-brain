@@ -577,6 +577,9 @@
     <!-- Dynamic Create New Note Modal Component Placeholder -->
     <div id="newNoteModalContainer"></div>
 
+    <!-- Component Containers -->
+    <div id="userManagementModalContainer"></div>
+
     <!-- Application Script Modules -->
     <script src="/js/header.js"></script>
     <script src="/js/graph.js"></script>
@@ -586,6 +589,7 @@
     <script src="/js/newNote.js"></script>
     <script src="/js/voice.js"></script>
     <script src="/js/chat.js"></script>
+    <script src="/js/userManagement.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             // Helper function to load external component HTML files
@@ -605,11 +609,13 @@
             await Promise.all([
                 loadComponent('headerContainer', '/components/header.html'),
                 loadComponent('chatContainer', '/components/chat.html'),
-                loadComponent('newNoteModalContainer', '/components/newNoteModal.html')
+                loadComponent('newNoteModalContainer', '/components/newNoteModal.html'),
+                loadComponent('userManagementModalContainer', '/components/userManagementModal.html')
             ]);
 
             // Initialize all feature modules
             if (typeof initHeaderModule === 'function') initHeaderModule();
+            if (typeof initUserManagementModule === 'function') initUserManagementModule();
             initNoteDrawer();
             initSearchAndFilter();
             initDailyNote();

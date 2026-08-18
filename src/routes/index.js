@@ -10,6 +10,8 @@ const dashboardRoute = require('./dashboard.route');
 const knowledgeRoute = require('./knowledge.route');
 const workflowRoute = require('./workflow.route');
 const githubRoute = require('./github.route');
+const uploadRoute = require('./upload.route');
+const adminRoute = require('./admin.route');
 
 // Service dependencies for legacy / standalone graph dashboard endpoints
 const graphService = require('../services/obsidian/graph.service');
@@ -28,6 +30,8 @@ router.use('/dashboard', dashboardRoute);
 router.use('/knowledge', knowledgeRoute);
 router.use('/workflow', workflowRoute);
 router.use('/github', githubRoute);
+router.use('/upload', uploadRoute);
+router.use('/admin', adminRoute);
 
 // Server-side TTS Endpoint (Guaranteed Audio Stream for all browsers)
 router.get('/tts', async (req, res, next) => {
