@@ -73,3 +73,53 @@ CREATE TABLE IF NOT EXISTS public.memories (
 CREATE INDEX IF NOT EXISTS idx_memories_user_id ON public.memories(user_id);
 CREATE INDEX IF NOT EXISTS idx_memories_key ON public.memories(key);
 
+
+-- 6. Extension pgvector & Bảng Embeddings (RAG Search System)
+CREATE EXTENSION IF NOT EXISTS vector;
+
+CREATE TABLE IF NOT EXISTS public.embeddings (
+  id BIGSERIAL PRIMARY KEY,
+  path VARCHAR(500) NOT NULL,
+  chunk_index INTEGER DEFAULT 0,
+  content TEXT NOT NULL,
+  embedding vector(768),
+  metadata JSONB DEFAULT '{}'::jsonb,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  CONSTRAINT unique_path_chunk UNIQUE (path, chunk_index)
+);
+
+CREATE INDEX IF NOT EXISTS idx_embeddings_path ON public.embeddings(path);
+
+-- Hàm RPC match_documents cho Vector Search (Supabase / PGAdmin4)
+CREATE OR REPLACE FUNCTION public.match_documents(
+  query_embedding vector(768),
+  match_threshold float DEFAULT 0.7,
+  match_count int DEFAULT 5
+)
+RETURNS TABLE (
+  id bigint,
+  path varchar,
+  chunk_index int,
+  content text,
+  metadata jsonb,
+  similarity float
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
+    public.embeddings.id,
+    public.embeddings.path,
+    public.embeddings.chunk_index,
+    public.embeddings.content,
+    public.embeddings.metadata,
+    (1 - (public.embeddings.embedding <=> query_embedding))::float AS similarity
+  FROM public.embeddings
+  WHERE (1 - (public.embeddings.embedding <=> query_embedding)) > match_threshold
+  ORDER BY public.embeddings.embedding <=> query_embedding
+  LIMIT match_count;
+END;
+$$;
+
+

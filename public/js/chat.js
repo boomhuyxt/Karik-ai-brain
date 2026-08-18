@@ -144,14 +144,15 @@ function initAIChat() {
 
         const userText = message ? message.trim() : '';
 
-        // Hiển thị tin nhắn người dùng kèm file đính kèm
+        // Hiển thị tin nhắn người dùng (Bên Phải - User Bubble tự động vừa chiều dài chữ)
         const userDiv = document.createElement('div');
-        userDiv.className = 'bg-transparent p-1.5 text-white self-end ml-4 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] transition-all animate-fadeIn';
+        userDiv.className = 'flex flex-col items-end self-end ml-auto w-fit min-w-[120px] max-w-[85%] sm:max-w-[75%] p-3 rounded-2xl bg-purple-900/50 border border-purple-500/40 text-white rounded-tr-none shadow-lg transition-all animate-fadeIn';
         userDiv.innerHTML = `
-            <strong class="text-purple-300 font-bold text-xs flex items-center gap-1.5 mb-0.5 text-glow">
-                <span class="material-symbols-outlined text-sm text-purple-400">account_circle</span> Bạn ${isVoice ? '(Giọng nói)' : ''}:
+            <strong class="text-purple-300 font-bold text-xs flex items-center justify-end gap-1.5 mb-1 text-glow w-full">
+                <span>Bạn ${isVoice ? '(Giọng nói)' : ''}</span>
+                <span class="material-symbols-outlined text-sm text-purple-400">account_circle</span>
             </strong>
-            ${userText ? `<div class="text-white font-semibold text-xs leading-relaxed tracking-wide">${escapeHtml(userText)}</div>` : ''}
+            ${userText ? `<div class="text-white font-semibold text-xs sm:text-sm leading-relaxed tracking-wide text-right break-words w-full">${escapeHtml(userText)}</div>` : ''}
             ${attachmentHtml}
         `;
         chatMessages.appendChild(userDiv);
@@ -199,14 +200,15 @@ function initAIChat() {
 
             const totalDuration = ((performance.now() - startTime) / 1000).toFixed(2);
 
+            // Hiển thị phản hồi từ AI (Bên Trái - AI Bubble tự động vừa chiều dài chữ)
             const aiDiv = document.createElement('div');
-            aiDiv.className = 'bg-transparent p-1.5 text-slate-100 self-start mr-4 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] transition-all animate-fadeIn';
+            aiDiv.className = 'flex flex-col items-start self-start mr-auto w-fit min-w-[200px] max-w-[90%] sm:max-w-[85%] p-3.5 rounded-2xl bg-slate-900/90 border border-cyan-500/40 text-slate-100 rounded-tl-none shadow-lg transition-all animate-fadeIn';
             const renderFn = typeof window.renderCustomMarkdown === 'function' ? window.renderCustomMarkdown : (t => t);
 
             const voiceBadgeHtml = `<span class="text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 px-1 py-0.2 rounded font-mono flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">volume_up</span> Chromium Voice</span>`;
 
             aiDiv.innerHTML = `
-                <strong class="text-cyan-300 font-bold text-xs flex items-center justify-between mb-1 text-glow">
+                <strong class="text-cyan-300 font-bold text-xs flex items-center justify-between w-full mb-1 text-glow">
                     <span class="flex items-center gap-1.5">
                         <span class="material-symbols-outlined text-sm text-cyan-400">smart_toy</span>
                         AI JarVis Assistant:
@@ -216,7 +218,7 @@ function initAIChat() {
                         <span class="material-symbols-outlined text-[11px]">timer</span> ${totalDuration}s
                     </span>
                 </strong>
-                <div class="text-slate-100 font-medium text-xs leading-relaxed border-t border-purple-500/20 pt-1 mt-0.5">
+                <div class="text-slate-100 font-medium text-xs sm:text-sm leading-relaxed border-t border-cyan-500/20 pt-1.5 mt-1 w-full break-words">
                     ${renderFn(result.reply || result.message || 'Không có phản hồi')}
                 </div>
             `;
