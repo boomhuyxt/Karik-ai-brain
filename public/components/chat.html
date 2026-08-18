@@ -1,8 +1,56 @@
-<!-- Floating AI Chat Assistant Component (Fully Transparent / Text-Only Floating Style) -->
+<!-- AI Chat Assistant Component (Floating style by default for Admin Dashboard, Full-bleed for Users) -->
+<style>
+    /* Fullscreen Mode applied for User mode or expanded view */
+    #chatBoxContainer.user-fullscreen-chat {
+        position: fixed !important;
+        inset: 0 !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100vw !important;
+        height: 100dvh !important;
+        max-width: 100vw !important;
+        max-height: 100dvh !important;
+        border-radius: 0 !important;
+        border: none !important;
+        margin: 0 !important;
+        padding: 0.75rem 1rem !important;
+        background: #090c13 !important;
+        box-shadow: none !important;
+        z-index: 40 !important;
+    }
+
+    #chatBoxContainer.user-fullscreen-chat .chat-header-inner,
+    #chatBoxContainer.user-fullscreen-chat #chatMessages,
+    #chatBoxContainer.user-fullscreen-chat .chat-footer-inner {
+        max-width: 48rem !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        width: 100% !important;
+    }
+
+    #chatBoxContainer.user-fullscreen-chat #chatMessages {
+        height: 100% !important;
+        max-height: none !important;
+        flex: 1 1 0% !important;
+        padding-top: 1.5rem !important;
+        padding-bottom: 1.5rem !important;
+    }
+
+    #chatBoxContainer.user-fullscreen-chat #chatForm {
+        background: rgba(24, 27, 38, 0.95) !important;
+        border: 1px solid rgba(255, 255, 255, 0.16) !important;
+        border-radius: 1.25rem !important;
+        padding: 0.6rem 0.85rem !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6) !important;
+    }
+</style>
+
 <div id="chatBoxContainer"
-    class="fixed bottom-2 left-2 right-2 sm:bottom-6 sm:left-6 sm:right-auto sm:w-96 p-2.5 flex flex-col gap-2 bg-slate-950/95 backdrop-blur-md border border-purple-500/40 rounded-2xl shadow-[0_0_25px_rgba(109,40,217,0.35)] transition-all pointer-events-auto z-40 max-h-[calc(100dvh-5rem)] overflow-hidden">
+    class="fixed bottom-2 left-2 right-2 sm:bottom-6 sm:left-6 sm:right-auto sm:w-96 p-2.5 sm:p-3 flex flex-col gap-2 bg-slate-950/95 backdrop-blur-md border border-purple-500/40 rounded-2xl shadow-[0_0_25px_rgba(109,40,217,0.35)] transition-all duration-300 pointer-events-auto z-40 max-h-[calc(100dvh-2rem)] sm:max-h-[calc(100dvh-5rem)] overflow-hidden">
     <!-- Header -->
-    <div class="flex items-center justify-between pb-1.5 border-b border-purple-500/20 gap-1">
+    <div class="chat-header-inner flex items-center justify-between pb-1.5 border-b border-purple-500/20 gap-1 w-full">
         <div class="flex items-center gap-1.5 min-w-0">
             <span class="material-symbols-outlined text-purple-400 text-lg sm:text-xl text-glow animate-pulse flex-shrink-0">psychology</span>
             <div class="min-w-0">
@@ -53,7 +101,7 @@
     </div>
 
     <!-- Live Call Status Banner (Hiển thị khi đang trong cuộc gọi) -->
-    <div id="liveCallBanner" class="hidden items-center justify-between bg-emerald-950/60 border border-emerald-500/40 rounded-lg px-3 py-1.5 animate-fadeIn">
+    <div id="liveCallBanner" class="hidden items-center justify-between bg-emerald-950/60 border border-emerald-500/40 rounded-lg px-3 py-1.5 animate-fadeIn w-full">
         <div class="flex items-center gap-2">
             <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
             <span class="text-[11px] text-emerald-200 font-bold font-mono">ĐANG TRONG CUỘC GỌI TRỰC TIẾP</span>
@@ -68,7 +116,7 @@
     </div>
 
     <!-- Voice Audio Wave Animation Banner -->
-    <div id="voiceWaveContainer" class="hidden items-center justify-between bg-purple-950/40 border border-cyan-500/30 rounded-lg px-2.5 py-1 animate-fadeIn">
+    <div id="voiceWaveContainer" class="hidden items-center justify-between bg-purple-950/40 border border-cyan-500/30 rounded-lg px-2.5 py-1 animate-fadeIn w-full">
         <div class="flex items-center gap-1.5 min-w-0">
             <span id="voiceWaveIcon" class="material-symbols-outlined text-cyan-400 text-xs sm:text-sm animate-pulse flex-shrink-0">graphic_eq</span>
             <span id="voiceWaveLabel" class="text-[10px] sm:text-[11px] text-cyan-200 font-medium font-mono truncate">Karik đang lắng nghe giọng nói...</span>
@@ -81,8 +129,8 @@
         </div>
     </div>
 
-    <!-- Dynamic Audio Pulsing Orb Bubble (Bong bóng phập phồng theo cường độ âm thanh thực tế) -->
-    <div id="voiceOrbContainer" class="hidden relative my-1.5 flex-col items-center justify-center py-2 animate-fadeIn transition-all">
+    <!-- Dynamic Audio Pulsing Orb Bubble -->
+    <div id="voiceOrbContainer" class="hidden relative my-1.5 flex-col items-center justify-center py-2 animate-fadeIn transition-all w-full">
         <div id="voiceOrbOuterRing" class="absolute w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-cyan-500/20 border border-cyan-400/30 animate-ping"></div>
         <div id="voiceOrbBubble" class="relative z-10 w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-purple-600 via-cyan-400 to-indigo-500 flex items-center justify-center shadow-[0_0_30px_rgba(56,189,248,0.8)] transition-transform duration-75 ease-out border-2 border-white/50">
             <span id="voiceOrbIcon" class="material-symbols-outlined text-white text-xl sm:text-2xl text-glow">graphic_eq</span>
@@ -93,24 +141,24 @@
         </div>
     </div>
 
-    <!-- Chat Messages Box (Fully Transparent, Text-Only View) -->
-    <div id="chatMessages" class="h-36 sm:h-60 max-h-[35dvh] sm:max-h-none overflow-y-auto flex flex-col gap-2 pr-1 text-xs select-text">
-        <div class="bg-transparent p-1 text-slate-100 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
-            <strong class="text-cyan-300 font-bold text-xs flex items-center justify-between mb-1 text-glow">
-                <span class="flex items-center gap-1.5">
-                    <span class="material-symbols-outlined text-sm text-cyan-400">smart_toy</span>
+    <!-- Chat Messages Thread Area -->
+    <div id="chatMessages" class="h-44 sm:h-64 flex-1 min-h-[140px] overflow-y-auto flex flex-col gap-2.5 pr-1 text-xs select-text w-full">
+        <div class="flex flex-col items-start self-start mr-auto w-fit max-w-[90%] sm:max-w-[85%] p-3.5 rounded-2xl bg-slate-900/90 border border-cyan-500/40 text-slate-100 rounded-tl-none shadow-lg">
+            <strong class="text-cyan-300 font-bold text-xs sm:text-sm flex items-center justify-between w-full mb-1.5 text-glow">
+                <span class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-base text-cyan-400">smart_toy</span>
                     AI Karik Assistant:
                 </span>
-                <span class="text-[10px] text-cyan-400/80 font-mono">⚡ Flash Engine</span>
+                <span class="text-xs text-cyan-400/80 font-mono">⚡ Flash Engine</span>
             </strong>
-            <p class="text-slate-100 text-xs leading-relaxed font-medium">
-                Chào bạn! Nhắn tin để nhận kết quả văn bản siêu tốc. Bấm <strong class="text-emerald-300 font-semibold">"Gọi AI"</strong> hoặc nói <strong class="text-emerald-300">"Hey Karik"</strong> khi muốn đàm thoại bằng giọng nói.
+            <p class="text-slate-100 text-xs sm:text-sm leading-relaxed font-medium">
+                Chào bạn! Nhắn tin hoặc bấm <strong class="text-emerald-300 font-semibold">"Gọi AI"</strong> hoặc nói <strong class="text-emerald-300">"Hey Karik"</strong> để trò chuyện trực tiếp cùng AI Assistant.
             </p>
         </div>
     </div>
 
-    <!-- File Attachment Preview Container (Hiển thị file đính kèm trước khi gửi) -->
-    <div id="filePreviewContainer" class="hidden items-center justify-between bg-purple-950/60 border border-cyan-400/40 rounded-xl px-2.5 py-1.5 text-xs animate-fadeIn">
+    <!-- File Attachment Preview Container -->
+    <div id="filePreviewContainer" class="hidden items-center justify-between bg-purple-950/60 border border-cyan-400/40 rounded-xl px-2.5 py-1.5 text-xs animate-fadeIn w-full">
         <div class="flex items-center gap-2 min-w-0">
             <span id="filePreviewIcon" class="material-symbols-outlined text-cyan-400 text-base flex-shrink-0">description</span>
             <div class="min-w-0">
@@ -126,31 +174,33 @@
     <!-- Hidden File Input -->
     <input type="file" id="chatFileInput" accept="image/*,video/*,.pdf,.doc,.docx" class="hidden">
 
-    <!-- Input Form (Transparent Borderless Input Field with Speech Mic & File Attach Button) -->
-    <form id="chatForm" class="flex items-center gap-1.5 pt-1 border-t border-purple-500/30">
-        <!-- Attach File Button -->
-        <button type="button" id="btnAttachFile" title="Đính kèm file (Ảnh, Video, Word, PDF dưới 50MB)"
-            class="bg-purple-500/20 hover:bg-purple-500/40 border border-purple-400/40 text-purple-300 p-1.5 rounded-lg transition-all active:scale-95 flex items-center justify-center flex-shrink-0">
-            <span class="material-symbols-outlined text-base">attach_file</span>
-        </button>
+    <!-- Chat Footer Container -->
+    <div class="chat-footer-inner flex flex-col gap-2 w-full pt-1">
+        <!-- Input Form (ChatGPT Pill Style) -->
+        <form id="chatForm" class="flex items-center gap-1 sm:gap-1.5 pt-1 border-t border-purple-500/30 w-full">
+            <!-- Attach File Button -->
+            <button type="button" id="btnAttachFile" title="Đính kèm file (Ảnh, Video, Word, PDF dưới 50MB)"
+                class="bg-purple-500/20 hover:bg-purple-500/40 border border-purple-400/40 text-purple-300 p-1.5 rounded-lg transition-all active:scale-95 flex items-center justify-center flex-shrink-0">
+                <span class="material-symbols-outlined text-base">attach_file</span>
+            </button>
 
-        <!-- Voice Speech Mic Button -->
-        <button type="button" id="btnMicToggle" title="Nói trực tiếp với AI Karik (hoặc bật Gọi AI)"
-            class="bg-cyan-500/20 hover:bg-cyan-500/40 border border-cyan-400/40 text-cyan-300 p-1.5 rounded-lg transition-all active:scale-95 flex items-center justify-center flex-shrink-0">
-            <span id="micBtnIcon" class="material-symbols-outlined text-base">mic</span>
-        </button>
+            <!-- Voice Speech Mic Button -->
+            <button type="button" id="btnMicToggle" title="Nói trực tiếp với AI Karik (hoặc bật Gọi AI)"
+                class="bg-cyan-500/20 hover:bg-cyan-500/40 border border-cyan-400/40 text-cyan-300 p-1.5 rounded-lg transition-all active:scale-95 flex items-center justify-center flex-shrink-0">
+                <span id="micBtnIcon" class="material-symbols-outlined text-base">mic</span>
+            </button>
 
-        <input id="chatInput" type="text" placeholder="Nhập tin nhắn hoặc nói 'Hey Karik'..."
-            class="bg-transparent border-b border-purple-500/40 px-2 py-1 text-sm sm:text-xs text-white placeholder:text-slate-400 flex-1 outline-none focus:border-cyan-400 transition-all font-medium drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] min-w-0">
-
-        <button type="submit" id="sendBtn"
-            class="bg-purple-600/40 hover:bg-purple-500/60 text-white px-2.5 py-1.5 rounded-lg transition-all border border-purple-400/40 shadow-sm active:scale-95 flex items-center justify-center font-bold flex-shrink-0">
-            <span class="material-symbols-outlined text-base">send</span>
-        </button>
-    </form>
+            <input id="chatInput" type="text" placeholder="Nhập tin nhắn hoặc nói 'Hey Karik'..."
+                class="bg-transparent border-b border-purple-500/40 px-1.5 sm:px-2 py-1 text-xs sm:text-sm text-white placeholder:text-slate-400 flex-1 min-w-0 outline-none focus:border-cyan-400 transition-all font-medium drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+            <button type="submit" id="sendBtn"
+                class="bg-purple-600/40 hover:bg-purple-500/60 text-white px-2.5 py-1.5 rounded-lg transition-all border border-purple-400/40 shadow-sm active:scale-95 flex items-center justify-center font-bold flex-shrink-0">
+                <span class="material-symbols-outlined text-base">send</span>
+            </button>
+        </form>
+    </div>
 </div>
 
-<!-- Floating Minimized Karik Pill (Hiển thị khi thu nhỏ, bấm vào hoặc nói "Hey Karik" sẽ hiện cửa sổ chat lên) -->
+<!-- Floating Minimized Karik Pill -->
 <button id="jarvisMinPill" type="button" title="Mở khung AI Karik (Nói 'Hey Karik' để gọi trực tiếp)"
     class="hidden fixed bottom-4 left-4 sm:bottom-6 sm:left-6 z-40 items-center gap-2 bg-slate-950/90 hover:bg-slate-900 border border-purple-500/50 rounded-full px-3.5 py-1.5 sm:px-4 sm:py-2 shadow-[0_0_25px_rgba(109,40,217,0.4)] transition-all pointer-events-auto active:scale-95 group">
     <span class="material-symbols-outlined text-purple-400 text-base sm:text-lg text-glow animate-pulse group-hover:scale-110 transition-transform">psychology</span>

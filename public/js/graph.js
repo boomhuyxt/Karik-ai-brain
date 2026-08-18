@@ -335,8 +335,8 @@ function render2DGraph(data) {
                     return isHovered ? 1 : 0.08;
                 }
                 if (stateShowAllLabels) return 0.95;
-                if (d.degree >= 3 || d.isHub) return 0.95;
-                return isZoomedInClose ? 0.9 : 0;
+                // Chỉ hiện nhãn khi zoom đủ to (scale >= 1.35)
+                return isZoomedInClose ? 0.95 : 0;
             });
     }
 
@@ -408,8 +408,7 @@ window.toggleGraphLabels = function () {
     d3.selectAll('.node-text')
         .style('opacity', d => {
             if (stateShowAllLabels) return 0.95;
-            if (d.degree >= 3 || d.isHub) return 0.95;
-            return isZoomedInClose ? 0.9 : 0;
+            return isZoomedInClose ? 0.95 : 0;
         });
 };
 

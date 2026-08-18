@@ -151,8 +151,8 @@ function applyGeminiUserLayout(retryCount = 0) {
     }
 
     if (chatBoxContainer) {
-        // Expand Chatbox UI to fill entire viewport area below Header
-        chatBoxContainer.className = "relative inset-auto z-20 w-full max-w-5xl h-full max-h-[calc(100vh-95px)] p-5 md:p-7 flex flex-col justify-between bg-surface-container/95 backdrop-blur-xl border border-purple-500/35 rounded-3xl shadow-2xl overflow-hidden my-auto mx-auto";
+        // Expand Chatbox UI to fill entire viewport area for normal users
+        chatBoxContainer.classList.add('user-fullscreen-chat');
         
         // Hide minimize chat button for standalone user mode
         const btnMinimizeChat = document.getElementById('btnMinimizeChat');
