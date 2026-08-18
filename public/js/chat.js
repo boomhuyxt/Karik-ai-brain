@@ -1,5 +1,5 @@
 /**
- * Floating AI Chat Module - Fully Transparent Text-Only Style with Live Timer & Gemini 3.1 Flash TTS Voice
+ * Floating AI Chat Module - Ultra-Fast Silent Text Chat with On-Demand Voice Support
  */
 function initAIChat() {
     const chatForm = document.getElementById('chatForm');
@@ -38,16 +38,7 @@ function initAIChat() {
             timerInterval = setInterval(() => {
                 const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
                 aiTimerValue.textContent = `${elapsed}s`;
-            }, 100);
-        }
-
-        // Play immediate vocal acknowledgment when user submits question (both Voice & Typed chat)
-        if (!isVoice && window.jarvisVoice && typeof window.jarvisVoice.speakText === 'function') {
-            const isEnglish = window.jarvisVoice.currentLang && window.jarvisVoice.currentLang.startsWith('en');
-            const ackText = isEnglish
-                ? "Yes! Processing your request right now, boss!"
-                : "Dạ! Đã nhận yêu cầu của sếp, em đang xử lý đây ạ!";
-            window.jarvisVoice.speakText(ackText).catch(() => {});
+            }, 50);
         }
 
         try {
@@ -55,41 +46,63 @@ function initAIChat() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    message
+                    message,
+                    provider: 'gemini'
                 })
             });
             const result = await res.json();
 
             // Calculate total execution time
             const totalDuration = ((performance.now() - startTime) / 1000).toFixed(2);
+            const replyText = result.reply || result.message || 'Không có phản hồi';
 
             // Fully transparent AI Message
             const aiDiv = document.createElement('div');
             aiDiv.className = 'bg-transparent p-1.5 text-slate-100 self-start mr-4 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] transition-all animate-fadeIn';
             const renderFn = typeof window.renderCustomMarkdown === 'function' ? window.renderCustomMarkdown : (t => t);
 
-            const voiceBadgeHtml = `<span class="text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 px-1 py-0.2 rounded font-mono flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">volume_up</span> Chromium Voice</span>`;
+            const badgeHtml = isVoice
+                ? `<span class="text-[9px] bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 px-1 py-0.2 rounded font-mono flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">graphic_eq</span> Voice</span>`
+                : `<span class="text-[9px] bg-blue-500/20 text-blue-300 border border-blue-400/40 px-1 py-0.2 rounded font-mono flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">bolt</span> Gemini Flash</span>`;
+
+            const msgId = 'aimsg_' + Date.now();
 
             aiDiv.innerHTML = `
                 <strong class="text-cyan-300 font-bold text-xs flex items-center justify-between mb-1 text-glow">
                     <span class="flex items-center gap-1.5">
                         <span class="material-symbols-outlined text-sm text-cyan-400">smart_toy</span>
-                        AI JarVis Assistant:
-                        ${voiceBadgeHtml}
+                        AI Karik:
+                        ${badgeHtml}
                     </span>
-                    <span class="text-[10px] text-cyan-300 font-mono flex items-center gap-1 bg-cyan-500/20 border border-cyan-400/40 px-1.5 py-0.5 rounded-full" title="Thời gian AI xử lý và phản hồi">
-                        <span class="material-symbols-outlined text-[11px]">timer</span> ${totalDuration}s
+                    <span class="flex items-center gap-1.5">
+                        <button type="button" class="btn-speak-msg text-slate-400 hover:text-cyan-300 transition-colors p-0.5 rounded" title="Nghe đọc nội dung này" data-msg-id="${msgId}">
+                            <span class="material-symbols-outlined text-[12px]">volume_up</span>
+                        </button>
+                        <span class="text-[10px] text-cyan-300 font-mono flex items-center gap-1 bg-cyan-500/20 border border-cyan-400/40 px-1.5 py-0.5 rounded-full" title="Thời gian AI xử lý và phản hồi">
+                            <span class="material-symbols-outlined text-[11px]">timer</span> ${totalDuration}s
+                        </span>
                     </span>
                 </strong>
-                <div class="text-slate-100 font-medium text-xs leading-relaxed border-t border-purple-500/20 pt-1 mt-0.5">
-                    ${renderFn(result.reply || result.message || 'Không có phản hồi')}
+                <div id="${msgId}" class="text-slate-100 font-medium text-xs leading-relaxed border-t border-purple-500/20 pt-1 mt-0.5">
+                    ${renderFn(replyText)}
                 </div>
             `;
             chatMessages.appendChild(aiDiv);
 
-            // Play voice response automatically via Jarvis Voice Manager using Electron/Chromium SpeechSynthesis
-            if (window.jarvisVoice && typeof window.jarvisVoice.playVoiceResponse === 'function') {
-                window.jarvisVoice.playVoiceResponse(null, null, result.reply || result.message || '');
+            // Bind manual speak button for on-demand playback only
+            const speakBtn = aiDiv.querySelector('.btn-speak-msg');
+            if (speakBtn) {
+                speakBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (window.jarvisVoice && typeof window.jarvisVoice.speakText === 'function') {
+                        window.jarvisVoice.speakText(replyText).catch(() => {});
+                    }
+                });
+            }
+
+            // ONLY auto-speak voice if user initiated via live voice call
+            if (isVoice && window.jarvisVoice && typeof window.jarvisVoice.speakText === 'function') {
+                window.jarvisVoice.speakText(replyText).catch(() => {});
             }
 
             // Live refresh Graph View & Token Progress Bars
@@ -126,3 +139,4 @@ function initAIChat() {
         return str.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
     }
 }
+

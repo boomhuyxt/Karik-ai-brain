@@ -79,11 +79,15 @@ class GraphService {
         }
       }
 
-      // 2. Parse Links & Connections
-      for (const file of mdFiles) {
-        const fileData = await githubRepository.getFile(file.path);
-        const content = fileData.content || '';
+      // 2. Parse Links & Connections (Parallel Fetching)
+      const fileResults = await Promise.all(
+        mdFiles.map(async (file) => {
+          const fileData = await githubRepository.getFile(file.path);
+          return { path: file.path, content: fileData.content || '' };
+        })
+      );
 
+      for (const { path: filePath, content } of fileResults) {
         // Extract Obsidian WikiLinks: [[Target Note]] or [[Folder/Target Note]]
         const wikiLinkRegex = /\[\[([^\]|]+)(?:\|[^\]]+)?\]\]/g;
         let match;
@@ -93,9 +97,9 @@ class GraphService {
           const targetKey = rawTarget.toLowerCase();
 
           const targetPath = nodesMap.get(targetKey) || nodesMap.get(targetName);
-          if (targetPath && typeof targetPath === 'string' && targetPath !== file.path) {
+          if (targetPath && typeof targetPath === 'string' && targetPath !== filePath) {
             connections.push({
-              source: file.path,
+              source: filePath,
               target: targetPath,
               type: 'wikilink'
             });

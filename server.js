@@ -8,9 +8,10 @@ const PORT = env.port || 3000;
 const startServer = (portToTry) => {
   const server = app.listen(portToTry, () => {
     console.log(`=======================================================`);
-    console.log(`🚀 AI Brain JarVis (Clean Architecture + Modules) Active!`);
+    console.log(`🚀 AI Brain JarVis (Clean Architecture + JS Voice Engine) Active!`);
     console.log(`🌐 Dashboard URL: http://localhost:${portToTry}`);
     console.log(`📡 API Endpoints: http://localhost:${portToTry}/api/dashboard`);
+    console.log(`🎙️ Voice Engine: Pure JavaScript Web Speech & Live TTS`);
     console.log(`=======================================================`);
 
     // Trigger initial background sync job in non-blocking fashion

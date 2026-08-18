@@ -1,5 +1,5 @@
 const openrouterConfig = require('../../config/openrouter');
-const systemPrompt = require('../../prompts/system.prompt');
+const promptService = require('../../services/ai/prompt.service');
 
 async function chat(prompt, options = {}) {
   if (!openrouterConfig.apiKey) {
@@ -15,7 +15,7 @@ async function chat(prompt, options = {}) {
       body: JSON.stringify({
         model: options.model || openrouterConfig.defaultModel,
         messages: [
-          { role: 'system', content: systemPrompt.systemPrompt },
+          { role: 'system', content: promptService.systemPrompt },
           { role: 'user', content: prompt }
         ]
       })

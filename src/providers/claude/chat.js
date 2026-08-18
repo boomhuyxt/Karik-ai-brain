@@ -1,5 +1,5 @@
 const claudeConfig = require('../../config/claude');
-const systemPrompt = require('../../prompts/system.prompt');
+const promptService = require('../../services/ai/prompt.service');
 
 async function chat(prompt, options = {}) {
   if (!claudeConfig.apiKey) {
@@ -15,7 +15,7 @@ async function chat(prompt, options = {}) {
       },
       body: JSON.stringify({
         model: options.model || claudeConfig.defaultModel,
-        system: systemPrompt.systemPrompt,
+        system: promptService.systemPrompt,
         max_tokens: 1024,
         messages: [{ role: 'user', content: prompt }]
       })

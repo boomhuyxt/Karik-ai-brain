@@ -20,11 +20,21 @@ class GithubRepository {
     const owner = env.github.owner || 'boomhuyxt';
     const repo = env.github.repo || 'Obsidian-Karik-Ai';
 
+    if (!env.github.token) {
+      return Array.from(this.memoryFiles.values()).map(f => ({
+        path: f.path,
+        type: 'blob',
+        sha: f.sha || `mock_sha_${Date.now()}`,
+        size: Buffer.byteLength(f.content || '')
+      }));
+    }
+
     try {
       // 1. Get default branch
       let branch = 'main';
       const repoRes = await fetch(`https://api.github.com/repos/${owner}/${repo}`, {
-        headers: this.getHeaders()
+        headers: this.getHeaders(),
+        signal: AbortSignal.timeout(2000)
       });
       if (repoRes.ok) {
         const repoData = await repoRes.json();
@@ -33,7 +43,8 @@ class GithubRepository {
 
       // 2. Fetch full tree
       const treeRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/trees/${branch}?recursive=1`, {
-        headers: this.getHeaders()
+        headers: this.getHeaders(),
+        signal: AbortSignal.timeout(2000)
       });
 
       if (treeRes.ok) {
@@ -59,9 +70,19 @@ class GithubRepository {
     const owner = env.github.owner || 'boomhuyxt';
     const repo = env.github.repo || 'Obsidian-Karik-Ai';
 
+    if (this.memoryFiles.has(path)) {
+      return this.memoryFiles.get(path);
+    }
+
+    if (!env.github.token) {
+      return { path, content: `# ${path}\n\nFile mới hoặc chưa tồn tại trên GitHub repository (${owner}/${repo}).`, sha: null };
+    }
+
+    const safePath = path.split('/').map(p => encodeURIComponent(p)).join('/');
     try {
-      const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${encodeURI(path)}`, {
-        headers: this.getHeaders()
+      const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${safePath}`, {
+        headers: this.getHeaders(),
+        signal: AbortSignal.timeout(2000)
       });
 
       if (res.ok) {
@@ -73,10 +94,6 @@ class GithubRepository {
       }
     } catch (err) {
       console.warn(`[GithubRepo] getFile error for ${path}:`, err.message);
-    }
-
-    if (this.memoryFiles.has(path)) {
-      return this.memoryFiles.get(path);
     }
 
     return { path, content: `# ${path}\n\nFile mới hoặc chưa tồn tại trên GitHub repository (${owner}/${repo}).`, sha: null };
@@ -97,6 +114,13 @@ class GithubRepository {
 
     let newSha = targetSha || `sha_${Date.now()}`;
 
+    if (!env.github.token) {
+      const fileObj = { path, content, sha: newSha, updatedAt: new Date().toISOString() };
+      this.memoryFiles.set(path, fileObj);
+      return fileObj;
+    }
+
+    const safePath = path.split('/').map(p => encodeURIComponent(p)).join('/');
     try {
       const body = {
         message,
@@ -104,13 +128,14 @@ class GithubRepository {
       };
       if (targetSha) body.sha = targetSha;
 
-      const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${encodeURI(path)}`, {
+      const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${safePath}`, {
         method: 'PUT',
         headers: {
           ...this.getHeaders(),
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(body)
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(2000)
       });
 
       if (res.ok) {
