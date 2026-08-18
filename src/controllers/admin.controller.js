@@ -39,6 +39,28 @@ class AdminController {
     }
   }
 
+  async changeUserRole(req, res, next) {
+    try {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+      const { id } = req.params;
+      const { role } = req.body;
+
+      if (!id || role === undefined) {
+        return res.status(400).json({ success: false, error: 'Thiếu thông tin người dùng hoặc vai trò.' });
+      }
+
+      await userRepository.updateUserRole(id, role);
+
+      const isTargetAdmin = String(role) === '1' || role === 'admin';
+      return res.json({
+        success: true,
+        message: isTargetAdmin ? 'Đã cấp quyền Quản trị viên (Admin) thành công!' : 'Đã chuyển thành Người dùng thông thường (User) thành công!'
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
   async deleteUser(req, res, next) {
     try {
       const { id } = req.params;

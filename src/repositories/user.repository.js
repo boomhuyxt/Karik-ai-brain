@@ -194,11 +194,12 @@ class UserRepository {
       }
     }
 
-    // Apply memory status overrides if present
+    // Apply memory status & role overrides if present
     for (const user of usersList) {
       const memUser = this.memoryUsers.get((user.email || '').toLowerCase());
-      if (memUser && memUser.status) {
-        user.status = memUser.status;
+      if (memUser) {
+        if (memUser.status) user.status = memUser.status;
+        if (memUser.role !== undefined) user.role = String(memUser.role);
       }
     }
 
@@ -231,6 +232,42 @@ class UserRepository {
         blockedUsers
       }
     };
+  }
+
+  async updateUserRole(userId, role) {
+    const validRole = String(role === '1' || role === 'admin' ? '1' : '0');
+
+    if (supabase) {
+      try {
+        let res = await supabase.from('users').update({ role: validRole, role_id: validRole }).eq('id', userId).select();
+        if (res.error) {
+          await supabase.from('users').update({ role: validRole }).eq('id', userId);
+        }
+      } catch (err) {
+        console.warn('[UserRepository] Supabase updateUserRole notice:', err.message);
+      }
+    }
+
+    // Update in memory users map
+    let foundInMem = false;
+    for (const [key, memUser] of this.memoryUsers.entries()) {
+      if (memUser.id === userId) {
+        memUser.role = validRole;
+        this.memoryUsers.set(key, memUser);
+        foundInMem = true;
+      }
+    }
+
+    // If user is from Supabase and not in memoryUsers Map yet, fetch & store role override
+    if (!foundInMem) {
+      const user = await this.findById(userId);
+      if (user) {
+        user.role = validRole;
+        this.memoryUsers.set((user.email || '').toLowerCase(), user);
+      }
+    }
+
+    return true;
   }
 
   async updateUserStatus(userId, status) {

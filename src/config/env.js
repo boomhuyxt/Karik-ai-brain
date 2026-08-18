@@ -8,6 +8,7 @@ module.exports = {
     owner: process.env.GITHUB_OWNER || 'boomhuyxt',
     repo: process.env.GITHUB_REPO || 'Obsidian-Karik-Ai'
   },
+  obsidianVaultPath: process.env.OBSIDIAN_VAULT_PATH || 'C:/Users/boomh/OneDrive/Documents/Jarvis Ai',
   supabase: {
     url: process.env.SUPABASE_URL || 'https://blrimwahpwfqewfmmtet.supabase.co',
     key: process.env.SUPABASE_KEY || '',

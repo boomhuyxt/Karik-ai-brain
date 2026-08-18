@@ -290,15 +290,62 @@
             <!-- 2D SVG Graph Canvas -->
             <svg id="graphSvg" class="w-full h-full absolute inset-0 z-0"></svg>
 
-            <!-- Floating Graph Layout Toolbar -->
+            <!-- Floating Graph Layout & Obsidian Controls Toolbar -->
             <div id="controlsGraphBox"
-                class="absolute top-4 left-6 z-20 glass-panel px-4 py-2 rounded-2xl border border-white/15 text-xs flex items-center gap-3 shadow-2xl backdrop-blur-xl bg-[#10131a]/90 pointer-events-auto">
-                <div class="flex items-center gap-1.5 text-primary font-bold text-glow">
-                    <span class="material-symbols-outlined text-base text-primary">auto_awesome</span>
-                    <span class="tracking-wide">AI Graph OS</span>
+                class="absolute top-4 left-6 z-20 glass-panel px-3.5 py-2 rounded-2xl border border-white/15 text-xs flex items-center gap-2.5 shadow-2xl backdrop-blur-xl bg-[#10131a]/90 pointer-events-auto flex-wrap max-w-[calc(100vw-3rem)]">
+                <div class="flex items-center gap-1.5 text-primary font-bold text-glow mr-1">
+                    <span class="material-symbols-outlined text-base text-primary">hub</span>
+                    <span class="tracking-wide">Obsidian Graph</span>
                 </div>
 
-                <div class="h-4 w-[1px] bg-white/15"></div>
+                <!-- Vault Name & Stats Badge -->
+                <div class="flex items-center gap-1.5 bg-purple-500/20 text-purple-300 border border-purple-400/30 px-2 py-0.5 rounded-full font-mono text-[10px]">
+                    <span class="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse"></span>
+                    <span id="repoNameBadge">Obsidian Vault</span>
+                </div>
+                <span id="totalNotesCount" class="text-[10px] text-cyan-300 font-mono bg-cyan-500/20 border border-cyan-400/30 px-2 py-0.5 rounded-full hidden sm:inline-block">189 Notes</span>
+
+                <div class="h-4 w-[1px] bg-white/15 hidden xs:block"></div>
+
+                <!-- Quick Search Input inside Graph Toolbar -->
+                <div class="relative flex items-center">
+                    <span class="material-symbols-outlined text-slate-400 text-xs absolute left-2 pointer-events-none">search</span>
+                    <input id="graphSearchInput" type="text" placeholder="Tìm note hoặc link..."
+                        class="bg-white/5 border border-white/10 rounded-lg pl-6 pr-2 py-0.5 text-xs text-white placeholder:text-slate-400 outline-none focus:border-cyan-400 focus:bg-slate-900/90 transition-all w-28 sm:w-40 font-mono">
+                </div>
+
+                <!-- Toggle Labels Button -->
+                <button id="btnToggleLabels" title="Bật/Tắt hiển thị tất cả nhãn chữ" onclick="window.toggleGraphLabels()"
+                    class="px-2 py-1 rounded-lg bg-white/5 hover:bg-white/15 text-on-surface border border-white/10 flex items-center gap-1 font-medium transition-all text-[11px]">
+                    <span class="material-symbols-outlined text-xs text-cyan-400">label</span>
+                    <span class="hidden sm:inline">Nhãn</span>
+                </button>
+
+                <!-- Toggle Arrows (Directional Links) Button -->
+                <button id="btnToggleArrows" title="Bật/Tắt mũi tên hướng liên kết [[WikiLink]]" onclick="window.toggleGraphArrows()"
+                    class="px-2 py-1 rounded-lg bg-white/5 hover:bg-white/15 text-on-surface border border-white/10 flex items-center gap-1 font-medium transition-all text-[11px]">
+                    <span class="material-symbols-outlined text-xs text-purple-400">arrow_right_alt</span>
+                    <span class="hidden sm:inline">Mũi tên</span>
+                </button>
+
+                <!-- Toggle Orphan Notes (Notes with no links) -->
+                <button id="btnToggleOrphans" title="Ẩn/Hiện ghi chú mồ côi (không có liên kết)" onclick="window.toggleOrphanNodes()"
+                    class="px-2 py-1 rounded-lg bg-white/5 hover:bg-white/15 text-on-surface border border-white/10 flex items-center gap-1 font-medium transition-all text-[11px]">
+                    <span class="material-symbols-outlined text-xs text-emerald-400">filter_alt</span>
+                    <span class="hidden sm:inline">Lọc liên kết</span>
+                </button>
+
+                <!-- Zoom In & Zoom Out -->
+                <div class="flex items-center bg-white/5 rounded-lg border border-white/10 p-0.5">
+                    <button title="Phóng to (+)" onclick="window.zoomInGraph()"
+                        class="p-1 rounded hover:bg-white/15 text-on-surface flex items-center justify-center transition-all">
+                        <span class="material-symbols-outlined text-xs">add</span>
+                    </button>
+                    <button title="Thu nhỏ (-)" onclick="window.zoomOutGraph()"
+                        class="p-1 rounded hover:bg-white/15 text-on-surface flex items-center justify-center transition-all">
+                        <span class="material-symbols-outlined text-xs">remove</span>
+                    </button>
+                </div>
 
                 <!-- Recenter Button -->
                 <button title="Căn lại vị trí góc nhìn trung tâm" onclick="window.recenterGraphView()"
