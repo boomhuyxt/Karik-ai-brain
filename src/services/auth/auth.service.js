@@ -21,7 +21,7 @@ class AuthService {
         id: user.id,
         email: user.email,
         fullName: user.fullName,
-        role: user.role || 'user'
+        role: String(user.role || '0')
       },
       token
     };
@@ -32,6 +32,12 @@ class AuthService {
     if (!user) {
       const error = new Error('Email hoặc mật khẩu không chính xác.');
       error.statusCode = 401;
+      throw error;
+    }
+
+    if (user.status === 'blocked') {
+      const error = new Error('Tài khoản của bạn đã bị khóa do vi phạm điều khoản dịch vụ. Vui lòng liên hệ Admin!');
+      error.statusCode = 403;
       throw error;
     }
 
@@ -51,7 +57,7 @@ class AuthService {
         id: user.id,
         email: user.email,
         fullName: user.fullName || user.name || 'User',
-        role: user.role || (user.email.includes('admin') ? 'admin' : 'user')
+        role: String(user.role || (user.email.includes('admin') ? '1' : '0'))
       },
       token
     };
@@ -70,7 +76,7 @@ class AuthService {
         id: user.id,
         email: user.email,
         fullName: user.fullName,
-        role: user.role || (user.email.includes('admin') ? 'admin' : 'user')
+        role: String(user.role || (user.email.includes('admin') ? '1' : '0'))
       }
     };
   }
