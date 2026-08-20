@@ -257,7 +257,92 @@ function initAIChat() {
         }
     });
 
+    // --- Draggable Standalone Chat Window Feature ---
+    initDraggableChatWindow();
+
+    function initDraggableChatWindow() {
+        const chatBoxContainer = document.getElementById('chatBoxContainer');
+        const chatHeader = chatBoxContainer ? chatBoxContainer.querySelector('.chat-header-inner') : null;
+
+        if (!chatBoxContainer || !chatHeader) return;
+
+        let isDragging = false;
+        let startX = 0, startY = 0;
+        let initialLeft = 0, initialTop = 0;
+
+        chatHeader.addEventListener('mousedown', startDrag);
+        chatHeader.addEventListener('touchstart', startDrag, { passive: false });
+
+        function startDrag(e) {
+            if (chatBoxContainer.classList.contains('user-fullscreen-chat')) return;
+            if (e.target.closest('button') || e.target.closest('input') || e.target.closest('a')) return;
+
+            isDragging = true;
+            chatHeader.classList.add('cursor-grabbing');
+
+            const rect = chatBoxContainer.getBoundingClientRect();
+            const computedLeft = rect.left;
+            const computedTop = rect.top;
+
+            chatBoxContainer.style.bottom = 'auto';
+            chatBoxContainer.style.right = 'auto';
+            chatBoxContainer.style.left = `${computedLeft}px`;
+            chatBoxContainer.style.top = `${computedTop}px`;
+
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+            startX = clientX;
+            startY = clientY;
+            initialLeft = computedLeft;
+            initialTop = computedTop;
+
+            document.addEventListener('mousemove', onDrag);
+            document.addEventListener('touchmove', onDrag, { passive: false });
+            document.addEventListener('mouseup', stopDrag);
+            document.addEventListener('touchend', stopDrag);
+        }
+
+        function onDrag(e) {
+            if (!isDragging) return;
+            if (e.cancelable) e.preventDefault();
+
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+            const deltaX = clientX - startX;
+            const deltaY = clientY - startY;
+
+            let newLeft = initialLeft + deltaX;
+            let newTop = initialTop + deltaY;
+
+            // Viewport boundary protection (10px padding from screen edges)
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
+            const containerWidth = chatBoxContainer.offsetWidth;
+            const containerHeight = chatBoxContainer.offsetHeight;
+
+            newLeft = Math.max(10, Math.min(newLeft, windowWidth - containerWidth - 10));
+            newTop = Math.max(10, Math.min(newTop, windowHeight - containerHeight - 10));
+
+            chatBoxContainer.style.left = `${newLeft}px`;
+            chatBoxContainer.style.top = `${newTop}px`;
+        }
+
+        function stopDrag() {
+            if (!isDragging) return;
+            isDragging = false;
+            chatHeader.classList.remove('cursor-grabbing');
+
+            document.removeEventListener('mousemove', onDrag);
+            document.removeEventListener('touchmove', onDrag);
+            document.removeEventListener('mouseup', stopDrag);
+            document.removeEventListener('touchend', stopDrag);
+        }
+    }
+
     function escapeHtml(str) {
         return str.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
     }
 }
+
