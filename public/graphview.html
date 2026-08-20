@@ -27,6 +27,7 @@
                         "surface-container-low": "#191c22",
                         "surface-container-high": "#272a31",
                         "surface-container": "#1d2026",
+                        "on-surface": "#ffffff",
                         "on-surface-variant": "#ccc3d7",
                         "on-background": "#e1e2eb",
                         "surface-tint": "#d3bbff",
@@ -48,6 +49,15 @@
         }
     </script>
     <style>
+        /* Fix Input & Textarea Visibility in Dark Mode */
+        input, textarea, select {
+            color: #ffffff !important;
+        }
+
+        input::placeholder, textarea::placeholder {
+            color: rgba(204, 195, 215, 0.6) !important;
+        }
+
         .glass-panel {
             background: rgba(16, 19, 26, 0.82);
             backdrop-filter: blur(14px);

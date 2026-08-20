@@ -122,32 +122,38 @@ class UserRepository {
     };
 
     if (supabase) {
-      try {
-        let insertObj = {
-          id: newUser.id,
-          email: newUser.email,
-          full_name: newUser.fullName,
-          password_hash: newUser.passwordHash,
-          role: newUser.role,
-          status: newUser.status,
-          created_at: newUser.createdAt
-        };
+      let insertObj = {
+        id: newUser.id,
+        email: newUser.email,
+        full_name: newUser.fullName,
+        password_hash: newUser.passwordHash,
+        role: newUser.role,
+        role_id: newUser.role,
+        created_at: newUser.createdAt
+      };
 
-        let res = await supabase.from('users').insert([ { ...insertObj, role_id: newUser.role } ]).select().single();
-        
-        if (res.error && (res.error.message.includes('role_id') || res.error.message.includes('status'))) {
-          delete insertObj.status;
-          res = await supabase.from('users').insert([ insertObj ]).select().single();
-        }
+      let res = await supabase.from('users').insert([ insertObj ]).select().single();
 
-        if (!res.error && res.data) {
-          newUser.id = res.data.id;
-        } else if (res.error) {
-          console.warn('[UserRepository] Supabase insert notice:', res.error.message);
-        }
-      } catch (err) {
-        console.warn('[UserRepository] Supabase insert fallback to memory:', err.message);
+      if (res.error && res.error.message.includes('role_id')) {
+        delete insertObj.role_id;
+        res = await supabase.from('users').insert([ insertObj ]).select().single();
       }
+
+      if (res.error && res.error.message.includes('status')) {
+        delete insertObj.status;
+        res = await supabase.from('users').insert([ insertObj ]).select().single();
+      }
+
+      if (res.error) {
+        console.error('[UserRepository] Supabase insert failed:', res.error.message);
+        throw new Error(`Lỗi lưu vào Supabase Database: ${res.error.message}`);
+      }
+
+      if (res.data) {
+        newUser.id = res.data.id;
+      }
+    } else {
+      throw new Error('Chưa kết nối được tới cơ sở dữ liệu Supabase.');
     }
 
     this.memoryUsers.set(newUser.email, newUser);
