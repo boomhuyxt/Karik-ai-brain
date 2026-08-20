@@ -23,13 +23,12 @@ async function fetchAndRenderGraph() {
         currentGraphData = await res.json();
 
         if (currentGraphData) {
-            const rawRepoName = currentGraphData.repo || 'AI_Brain_Karik';
-            const cleanRepoName = rawRepoName.toLowerCase().includes('jarvis') ? 'Obsidian-Karik-Ai/AI_Brain_Karik' : rawRepoName;
+            const cleanRepoName = currentGraphData.repo || 'boomhuyxt/Obsidian-Karik-Ai';
 
             const repoBadges = document.querySelectorAll('#repoNameBadge, #graphRepoBadge');
             repoBadges.forEach(badge => {
                 badge.textContent = cleanRepoName;
-                badge.title = `Kho tri thức: ${cleanRepoName} (${currentGraphData.totalFiles || 0} ghi chú)`;
+                badge.title = `Kho tri thức GitHub: ${cleanRepoName} (${currentGraphData.totalFiles || 0} ghi chú)`;
             });
 
             const totalCountBadge = document.getElementById('totalNotesCount');

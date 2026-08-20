@@ -4,6 +4,12 @@ const githubRepository = require('../../repositories/github.repository');
 const env = require('../../config/env');
 
 class GraphService {
+  constructor() {
+    this.graphCache = null;
+    this.graphCacheTime = 0;
+    this.GRAPH_CACHE_TTL = 30 * 1000; // 30 seconds memory cache
+  }
+
   findLocalVaultPath() {
     const candidatePaths = [
       process.env.OBSIDIAN_VAULT_PATH,
@@ -17,7 +23,11 @@ class GraphService {
     for (const p of candidatePaths) {
       try {
         if (fs.existsSync(p) && fs.statSync(p).isDirectory()) {
-          return p;
+          const items = fs.readdirSync(p);
+          // Only use local vault if it has meaningful notes (> 5 items)
+          if (items.length > 5) {
+            return p;
+          }
         }
       } catch (e) {}
     }
@@ -57,42 +67,53 @@ class GraphService {
     return results;
   }
 
-  async getGraphData() {
+  async getGraphData(forceRefresh = false) {
     try {
-      let mdFiles = [];
-      let vaultSource = 'Local Obsidian Vault';
-
-      // 1. Try local Obsidian Vault first (instant, 0 rate limit, contains all 180+ real notes)
-      const localPath = this.findLocalVaultPath();
-      if (localPath) {
-        mdFiles = this.scanLocalVault(localPath);
-        const baseName = path.basename(localPath);
-        vaultSource = baseName.toLowerCase().includes('jarvis')
-          ? `${env.github.owner}/${env.github.repo}`
-          : baseName;
+      if (!forceRefresh && this.graphCache && (Date.now() - this.graphCacheTime < this.GRAPH_CACHE_TTL)) {
+        return this.graphCache;
       }
 
-      // 2. If local is empty, try GitHub API
-      if (mdFiles.length === 0) {
-        const tree = await githubRepository.getTree();
-        const gitMdFiles = (tree || []).filter(item => item.path && item.path.endsWith('.md'));
+      const owner = process.env.GITHUB_OWNER || env.github.owner || 'boomhuyxt';
+      const repo = process.env.GITHUB_REPO || env.github.repo || 'Obsidian-Karik-Ai';
+      const repoFullName = `${owner}/${repo}`;
+
+      let mdFiles = [];
+      let vaultSource = repoFullName;
+
+      // 1. PRIMARY SOURCE: Fetch directly from GitHub API Tree
+      try {
+        const tree = await githubRepository.getTree(forceRefresh);
+        const gitMdFiles = (tree || []).filter(item => 
+          item.path && 
+          item.path.endsWith('.md') && 
+          !item.path.startsWith('.') &&
+          !item.path.includes('/.') &&
+          item.type !== 'tree'
+        );
 
         if (gitMdFiles.length > 0) {
-          vaultSource = `${process.env.GITHUB_OWNER || env.github.owner}/${process.env.GITHUB_REPO || env.github.repo}`;
-          const CHUNK_SIZE = 8;
-          for (let i = 0; i < gitMdFiles.length; i += CHUNK_SIZE) {
-            const chunk = gitMdFiles.slice(i, i + CHUNK_SIZE);
-            const chunkRes = await Promise.all(
-              chunk.map(async (file) => {
-                const fileData = await githubRepository.getFile(file.path);
-                return { path: file.path, content: fileData.content || '', size: file.size || 0, sha: file.sha };
-              })
-            );
-            mdFiles.push(...chunkRes);
-          }
+          vaultSource = repoFullName;
+          mdFiles = gitMdFiles.map(file => ({
+            path: file.path,
+            size: file.size || 0,
+            sha: file.sha || '',
+            content: '' // Loaded on demand / cached
+          }));
+        }
+      } catch (gitErr) {
+        console.warn('[GraphService] GitHub tree fetch error:', gitErr.message);
+      }
+
+      // 2. SECONDARY SOURCE: Fallback to local Obsidian Vault if GitHub Tree is empty
+      if (mdFiles.length === 0) {
+        const localPath = this.findLocalVaultPath();
+        if (localPath) {
+          mdFiles = this.scanLocalVault(localPath);
+          vaultSource = path.basename(localPath);
         }
       }
 
+      // 3. Fallback to default sample graph if both sources are empty
       if (mdFiles.length === 0) {
         return this.getDefaultGraph();
       }
@@ -114,13 +135,19 @@ class GraphService {
         'projects': '#06b6d4',
         'system': '#ec4899',
         'clippings': '#8b5cf6',
-        'kubernetes': '#326ce5'
+        'kubernetes': '#326ce5',
+        'root': '#818cf8',
+        'journal': '#34d399'
       };
 
-      const fallbackColors = ['#a78bfa', '#38bdf8', '#f43f5e', '#fb7185', '#c084fc', '#4ade80', '#fb923c', '#e879f9'];
+      const fallbackColors = [
+        '#a78bfa', '#38bdf8', '#f43f5e', '#fb7185', '#c084fc', 
+        '#4ade80', '#fb923c', '#e879f9', '#2dd4bf', '#facc15'
+      ];
       let fallbackIndex = 0;
       const folderColorsMap = new Map();
       const categoriesMap = new Map();
+      const folderNodesMap = new Map();
 
       // 1. Build Nodes
       for (const file of mdFiles) {
@@ -132,7 +159,6 @@ class GraphService {
         if (parts.length === 1) {
           folder = parts[0];
         } else if (parts.length > 1) {
-          // If wiki/Docker -> folder is Docker
           folder = parts[parts.length - 1];
         }
 
@@ -148,11 +174,13 @@ class GraphService {
           folderColorsMap.set(folderLower, color);
         }
 
-        categoriesMap.set(folder, {
-          name: folder,
-          folder: folder,
-          color: color
-        });
+        if (!categoriesMap.has(folder)) {
+          categoriesMap.set(folder, {
+            name: folder,
+            folder: folder,
+            color: color
+          });
+        }
 
         const nodeObj = {
           id: p,
@@ -169,6 +197,11 @@ class GraphService {
 
         nodesMap.set(p, nodeObj);
 
+        if (!folderNodesMap.has(folder)) {
+          folderNodesMap.set(folder, []);
+        }
+        folderNodesMap.get(folder).push(nodeObj);
+
         // Populate lookup maps for flexible WikiLink resolution
         lookupMap.set(p.toLowerCase(), p);
         lookupMap.set(p.replace(/\.md$/, '').toLowerCase(), p);
@@ -179,29 +212,84 @@ class GraphService {
         }
       }
 
-      // 2. Parse Obsidian WikiLinks [[Target Note]]
+      // 2. Check for cached file content WikiLinks
       for (const file of mdFiles) {
         const sourcePath = file.path.split(path.sep).join('/');
-        const wikiLinkRegex = /\[\[([^\]|]+)(?:\|[^\]]+)?\]\]/g;
-        let match;
-        while ((match = wikiLinkRegex.exec(file.content || '')) !== null) {
-          const rawTarget = match[1].trim();
-          const targetKey = rawTarget.toLowerCase().replace(/\.md$/, '');
-          const targetName = rawTarget.split('/').pop().replace(/\.md$/, '').toLowerCase();
+        const cachedFile = githubRepository.memoryFiles.get(sourcePath);
+        const fileContent = (cachedFile && cachedFile.content) || file.content || '';
 
-          const targetPath = lookupMap.get(targetKey) || lookupMap.get(rawTarget.toLowerCase()) || lookupMap.get(targetName);
+        if (fileContent) {
+          const wikiLinkRegex = /\[\[([^\]|]+)(?:\|[^\]]+)?\]\]/g;
+          let match;
+          while ((match = wikiLinkRegex.exec(fileContent)) !== null) {
+            const rawTarget = match[1].trim();
+            const targetKey = rawTarget.toLowerCase().replace(/\.md$/, '');
+            const targetName = rawTarget.split('/').pop().replace(/\.md$/, '').toLowerCase();
 
-          if (targetPath && targetPath !== sourcePath && nodesMap.has(targetPath)) {
+            const targetPath = lookupMap.get(targetKey) || lookupMap.get(rawTarget.toLowerCase()) || lookupMap.get(targetName);
+
+            if (targetPath && targetPath !== sourcePath && nodesMap.has(targetPath)) {
+              connections.push({
+                source: sourcePath,
+                target: targetPath,
+                type: 'wikilink'
+              });
+            }
+          }
+        }
+      }
+
+      // 3. Build cluster connections within folders to form an authentic constellation graph
+      for (const [folderName, fNodes] of folderNodesMap.entries()) {
+        if (fNodes.length <= 1) continue;
+
+        // Pick a cluster hub note (e.g. index/overview or first note)
+        const hubIndex = fNodes.findIndex(n => 
+          n.name.toLowerCase().includes('index') || 
+          n.name.toLowerCase().includes('00') || 
+          n.name.toLowerCase().includes('map of content') ||
+          n.name.toLowerCase().includes('overview')
+        );
+        const hubNode = hubIndex >= 0 ? fNodes[hubIndex] : fNodes[0];
+
+        for (let i = 0; i < fNodes.length; i++) {
+          const current = fNodes[i];
+          if (current.id !== hubNode.id) {
             connections.push({
-              source: sourcePath,
-              target: targetPath,
-              type: 'wikilink'
+              source: hubNode.id,
+              target: current.id,
+              type: 'folder'
+            });
+          }
+
+          // Connect sequential notes in the same folder if small cluster
+          if (i > 0 && fNodes.length < 15 && fNodes[i - 1].id !== hubNode.id) {
+            connections.push({
+              source: fNodes[i - 1].id,
+              target: current.id,
+              type: 'cluster'
             });
           }
         }
       }
 
-      // Deduplicate connections
+      // 4. Connect major folder hubs to each other for cross-vault navigation
+      const folderList = Array.from(folderNodesMap.keys());
+      if (folderList.length > 1) {
+        for (let i = 1; i < folderList.length; i++) {
+          const prevHub = folderNodesMap.get(folderList[i - 1])[0];
+          const currHub = folderNodesMap.get(folderList[i])[0];
+          if (prevHub && currHub) {
+            connections.push({
+              source: prevHub.id,
+              target: currHub.id,
+              type: 'inter_hub'
+            });
+          }
+        }
+      }
+
+      // Deduplicate connections and calculate degree
       const uniqueConnections = [];
       const connSet = new Set();
       for (const c of connections) {
@@ -210,7 +298,6 @@ class GraphService {
           connSet.add(key);
           uniqueConnections.push(c);
 
-          // Increment degrees
           const sNode = nodesMap.get(c.source);
           const tNode = nodesMap.get(c.target);
           if (sNode) sNode.degree = (sNode.degree || 0) + 1;
@@ -218,25 +305,18 @@ class GraphService {
         }
       }
 
-      // 3. If very few links exist, connect by folder cluster
       const nodesList = Array.from(nodesMap.values());
-      if (uniqueConnections.length === 0 && nodesList.length > 1) {
-        for (let i = 1; i < nodesList.length; i++) {
-          uniqueConnections.push({
-            source: nodesList[0].id,
-            target: nodesList[i].id,
-            type: 'folder'
-          });
-        }
-      }
-
-      return {
+      const result = {
         repo: vaultSource,
         totalFiles: nodesList.length,
         categories: Array.from(categoriesMap.values()),
         nodes: nodesList,
         connections: uniqueConnections
       };
+
+      this.graphCache = result;
+      this.graphCacheTime = Date.now();
+      return result;
     } catch (err) {
       console.warn('[GraphService] Failed to load graph data, fallback to default:', err.message);
       return this.getDefaultGraph();
@@ -244,8 +324,10 @@ class GraphService {
   }
 
   getDefaultGraph() {
+    const owner = process.env.GITHUB_OWNER || env.github.owner || 'boomhuyxt';
+    const repo = process.env.GITHUB_REPO || env.github.repo || 'Obsidian-Karik-Ai';
     return {
-      repo: `${env.github.owner}/${env.github.repo}`,
+      repo: `${owner}/${repo}`,
       totalFiles: 6,
       categories: [
         { name: 'Daily', folder: 'Daily', color: '#34d399' },

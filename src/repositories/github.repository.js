@@ -7,7 +7,7 @@ class GithubRepository {
     this.memoryFiles = new Map();
     this.treeCache = null;
     this.treeCacheTime = 0;
-    this.TREE_CACHE_TTL = 30 * 1000; // 30 seconds cache to save rate limits
+    this.TREE_CACHE_TTL = 30 * 1000; // 30 seconds cache to optimize GitHub rate limits
   }
 
   getLocalVaultPath() {
@@ -23,7 +23,10 @@ class GithubRepository {
     for (const p of candidatePaths) {
       try {
         if (fs.existsSync(p) && fs.statSync(p).isDirectory()) {
-          return p;
+          const items = fs.readdirSync(p);
+          if (items.length > 5) {
+            return p;
+          }
         }
       } catch (e) {}
     }
@@ -49,13 +52,13 @@ class GithubRepository {
       return this.treeCache;
     }
 
-    // Try GitHub API first if token is available
+    // 1. Primary: Fetch from GitHub API
     if (env.github.token) {
       try {
         let branch = 'main';
         const repoRes = await fetch(`https://api.github.com/repos/${owner}/${repo}`, {
           headers: this.getHeaders(),
-          signal: AbortSignal.timeout(6000)
+          signal: AbortSignal.timeout(8000)
         });
         if (repoRes.ok) {
           const repoData = await repoRes.json();
@@ -68,7 +71,7 @@ class GithubRepository {
 
         const treeRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/trees/${branch}?recursive=1`, {
           headers: this.getHeaders(),
-          signal: AbortSignal.timeout(6000)
+          signal: AbortSignal.timeout(8000)
         });
 
         if (treeRes.ok) {
@@ -84,7 +87,7 @@ class GithubRepository {
       }
     }
 
-    // Local Obsidian Vault Scanner Fallback
+    // 2. Secondary Fallback: Local Obsidian Vault Scanner
     const localVault = this.getLocalVaultPath();
     if (localVault) {
       try {
@@ -119,7 +122,7 @@ class GithubRepository {
       }
     }
 
-    // Memory fallback if network & local fail
+    // 3. In-memory Fallback
     return Array.from(this.memoryFiles.values()).map(f => ({
       path: f.path,
       type: 'blob',
@@ -132,11 +135,36 @@ class GithubRepository {
     const owner = process.env.GITHUB_OWNER || env.github.owner || 'boomhuyxt';
     const repo = process.env.GITHUB_REPO || env.github.repo || 'Obsidian-Karik-Ai';
 
+    // 1. Check in-memory cache first
     if (this.memoryFiles.has(filePath)) {
       return this.memoryFiles.get(filePath);
     }
 
-    // 1. Try local vault first if it exists
+    // 2. Primary: Fetch from GitHub REST API
+    if (env.github.token) {
+      const safePath = filePath.split('/').map(p => encodeURIComponent(p)).join('/');
+      try {
+        const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${safePath}`, {
+          headers: this.getHeaders(),
+          signal: AbortSignal.timeout(8000)
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          const content = Buffer.from(data.content, 'base64').toString('utf-8');
+          const fileObj = { path: filePath, content, sha: data.sha };
+          this.memoryFiles.set(filePath, fileObj);
+          return fileObj;
+        } else if (res.status === 404) {
+          // File not found on GitHub yet
+          return { path: filePath, content: `# ${filePath}\n\nFile mới tạo hoặc chưa tồn tại trên repository.`, sha: null };
+        }
+      } catch (err) {
+        console.warn(`[GithubRepo] getFile error for ${filePath}:`, err.message);
+      }
+    }
+
+    // 3. Fallback: Check local vault if available
     const localVault = this.getLocalVaultPath();
     if (localVault) {
       try {
@@ -149,29 +177,6 @@ class GithubRepository {
         }
       } catch (err) {
         console.warn(`[GithubRepo] Local getFile notice:`, err.message);
-      }
-    }
-
-    // 2. Try GitHub REST API
-    if (env.github.token) {
-      const safePath = filePath.split('/').map(p => encodeURIComponent(p)).join('/');
-      try {
-        const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${safePath}`, {
-          headers: this.getHeaders(),
-          signal: AbortSignal.timeout(6000)
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          const content = Buffer.from(data.content, 'base64').toString('utf-8');
-          const fileObj = { path: filePath, content, sha: data.sha };
-          this.memoryFiles.set(filePath, fileObj);
-          return fileObj;
-        } else if (res.status === 404) {
-          return { path: filePath, content: `# ${filePath}\n\nFile mới tạo.`, sha: null };
-        }
-      } catch (err) {
-        console.warn(`[GithubRepo] getFile error for ${filePath}:`, err.message);
       }
     }
 
@@ -193,20 +198,7 @@ class GithubRepository {
 
     let newSha = targetSha || `sha_${Date.now()}`;
 
-    // 1. Write to local Obsidian vault if available
-    const localVault = this.getLocalVaultPath();
-    if (localVault) {
-      try {
-        const localFull = path.join(localVault, ...filePath.split('/'));
-        const dir = path.dirname(localFull);
-        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-        fs.writeFileSync(localFull, content, 'utf8');
-      } catch (err) {
-        console.warn('[GithubRepo] Local save notice:', err.message);
-      }
-    }
-
-    // 2. Sync to GitHub repository if token is present
+    // 1. Sync to GitHub repository if token is present
     if (env.github.token) {
       const safePath = filePath.split('/').map(p => encodeURIComponent(p)).join('/');
       try {
@@ -225,7 +217,7 @@ class GithubRepository {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify(body),
-          signal: AbortSignal.timeout(6000)
+          signal: AbortSignal.timeout(8000)
         });
 
         if (res.ok) {
@@ -240,9 +232,22 @@ class GithubRepository {
       }
     }
 
+    // 2. Write to local Obsidian vault if available
+    const localVault = this.getLocalVaultPath();
+    if (localVault) {
+      try {
+        const localFull = path.join(localVault, ...filePath.split('/'));
+        const dir = path.dirname(localFull);
+        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+        fs.writeFileSync(localFull, content, 'utf8');
+      } catch (err) {
+        console.warn('[GithubRepo] Local save notice:', err.message);
+      }
+    }
+
     const fileObj = { path: filePath, content, sha: newSha, updatedAt: new Date().toISOString() };
     this.memoryFiles.set(filePath, fileObj);
-    this.treeCache = null; // Invalidate cache
+    this.treeCache = null; // Invalidate tree cache to refresh
     return fileObj;
   }
 }
