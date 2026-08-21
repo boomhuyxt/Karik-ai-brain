@@ -290,7 +290,7 @@ class JarvisVoiceManager {
             const result = await response.json();
             const aiReply = result.reply || result.message || 'Dạ, em đã nhận được thông tin từ sếp.';
 
-            this.appendAiMessage(aiReply);
+            this.appendAiMessage(aiReply, result.agent, result.tokens);
             this.showWaveAnimation('🔊 AI Karik đang trả lời...');
             this.updateStatusBadge('🔊 AI Karik đang trả lời...');
 
@@ -581,23 +581,38 @@ class JarvisVoiceManager {
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
-    appendAiMessage(text) {
+    appendAiMessage(text, agentInfo, tokenInfo) {
         const chatMessages = document.getElementById('chatMessages');
         if (!chatMessages || !text) return;
 
+        const agent = agentInfo || { name: 'AI Karik', badge: 'AI Karik (Gemini 3.5 Flash Lite)', model: 'gemini-3.5-flash-lite' };
+        const tokens = tokenInfo || { inputTokens: 0, outputTokens: 0, totalTokens: 0 };
         const renderFn = typeof window.renderCustomMarkdown === 'function' ? window.renderCustomMarkdown : (t => t);
+
         const aiDiv = document.createElement('div');
-        aiDiv.className = 'bg-transparent p-1.5 text-slate-100 self-start mr-4 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] transition-all animate-fadeIn';
+        aiDiv.className = 'bg-slate-900/90 border border-cyan-500/40 p-3.5 text-slate-100 self-start mr-4 rounded-2xl rounded-tl-none shadow-lg transition-all animate-fadeIn max-w-[90%] sm:max-w-[85%]';
         aiDiv.innerHTML = `
             <strong class="text-cyan-300 font-bold text-xs flex items-center justify-between mb-1 text-glow">
                 <span class="flex items-center gap-1.5">
-                    <span class="material-symbols-outlined text-sm text-cyan-400">smart_toy</span>
-                    AI Karik Voice:
-                    <span class="text-[9px] bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 px-1 py-0.2 rounded font-mono">JS Engine</span>
+                    <span class="material-symbols-outlined text-sm text-cyan-400">psychology</span>
+                    ${agent.name || 'AI Karik'}:
+                    <span class="text-[9px] bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 px-1.5 py-0.5 rounded font-mono" title="Model: ${agent.model}">${agent.model}</span>
+                </span>
+                <span class="text-[9px] bg-purple-500/20 text-purple-300 border border-purple-400/40 px-1.5 py-0.5 rounded font-mono flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[10px]">graphic_eq</span> Voice
                 </span>
             </strong>
-            <div class="text-slate-100 font-medium text-xs leading-relaxed border-t border-purple-500/20 pt-1 mt-0.5">
+            <div class="text-slate-100 font-medium text-xs sm:text-sm leading-relaxed border-t border-purple-500/20 pt-1.5 mt-1 break-words">
                 ${renderFn(text)}
+            </div>
+            <div class="w-full flex items-center justify-between border-t border-slate-700/50 mt-2 pt-1 text-[10px] text-slate-400 font-mono">
+                <span class="flex items-center gap-1 text-emerald-400" title="Độ tiêu hao Token thực tế (In: ${tokens.inputTokens} | Out: ${tokens.outputTokens})">
+                    <span class="material-symbols-outlined text-[11px]">token</span>
+                    <strong>${tokens.totalTokens || 0}</strong> Tokens
+                </span>
+                <span class="text-slate-500 text-[9px] bg-slate-800/60 px-1 rounded">
+                    ${agent.role || 'Multi-Agent'}
+                </span>
             </div>
         `;
         chatMessages.appendChild(aiDiv);

@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "test": "node --test tests/unit/aiRouter.test.js tests/unit/auth.test.js tests/unit/geminiConfigAndRateLimit.test.js tests/unit/githubGraph.test.js tests/unit/knowledgePipeline.test.js tests/unit/promptService.test.js"
+    "test": "node --test tests/unit/aiRouter.test.js tests/unit/auth.test.js tests/unit/geminiConfigAndRateLimit.test.js tests/unit/githubGraph.test.js tests/unit/knowledgePipeline.test.js tests/unit/promptService.test.js tests/unit/dashboardMonitoring.test.js"
   },
   "keywords": [
     "nodejs",

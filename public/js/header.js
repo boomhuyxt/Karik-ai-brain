@@ -9,8 +9,8 @@ function initHeaderModule() {
             const email = (user.email || '').toLowerCase();
             const rawRole = String(user.role || '').toLowerCase();
 
-            // Check if user is Admin ('1', 'admin', or email contains admin/boomhuy)
-            const isAdminRole = rawRole === '1' || rawRole === 'admin' || email.includes('admin') || email.includes('boomhuy');
+            // Check if user is Admin ('1', 'admin', or root admin accounts)
+            const isAdminRole = rawRole === '1' || rawRole === 'admin' || email === 'adminai' || email === 'admin@ai-brain.local';
             userRole = isAdminRole ? 'admin' : 'user';
             const name = user.fullName || user.email || (isAdminRole ? 'AI Admin' : 'User');
 
@@ -139,6 +139,8 @@ function applyUserAssistantLayout(retryCount = 0) {
     const graphSvg = document.getElementById('graphSvg');
     const controlsGraphBox = document.getElementById('controlsGraphBox');
     const legendBox = document.getElementById('legendBox');
+    const obsidianGraphSettingsPanel = document.getElementById('obsidianGraphSettingsPanel');
+    const obsidianStatusBar = document.getElementById('obsidianStatusBar');
     const graphContainer = document.getElementById('graphContainer');
     const chatContainer = document.getElementById('chatContainer');
     const chatBoxContainer = document.getElementById('chatBoxContainer');
@@ -146,6 +148,8 @@ function applyUserAssistantLayout(retryCount = 0) {
     if (graphSvg) graphSvg.style.display = 'none';
     if (controlsGraphBox) controlsGraphBox.style.display = 'none';
     if (legendBox) legendBox.style.display = 'none';
+    if (obsidianGraphSettingsPanel) obsidianGraphSettingsPanel.style.display = 'none';
+    if (obsidianStatusBar) obsidianStatusBar.style.display = 'none';
 
     if (graphContainer) {
         graphContainer.className = "flex-1 h-full w-full relative overflow-hidden flex items-center justify-center p-2 md:p-6 bg-stars";

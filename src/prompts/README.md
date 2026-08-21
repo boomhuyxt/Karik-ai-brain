@@ -14,6 +14,9 @@ Thư mục này chứa **toàn bộ các chỉ thị mẫu (Prompts) định d�
 | Tên File | Vai Trò / Mục Đích | Biến Động (Variables) |
 | :--- | :--- | :--- |
 | [`system.prompt.md`](./system.prompt.md) | Định danh AI Karik, năng lực cốt lõi, phong cách giao tiếp và giới hạn an toàn | Tĩnh (Không biến) |
+| [`image.prompt.md`](./image.prompt.md) | Chỉ thị Agent Làm Ảnh: Tạo visual concept, English prompts (Midjourney/DALL-E) & Live Preview | `{{topic}}`, `{{aspect_ratio}}` |
+| [`video.prompt.md`](./video.prompt.md) | Chỉ thị Agent Làm Clip: Kịch bản video ngắn TikTok/Reels, Hook 3s, Storyboard & Video AI | `{{topic}}`, `{{platform}}` |
+| [`risk.prompt.md`](./risk.prompt.md) | Chỉ thị Agent Rủi Ro & Tiến Độ: Phân tích chỉ số Ads (CTR, CPC, ROAS) & Ma trận rủi ro | `{{campaign}}`, `{{metrics}}` |
 | [`coding.prompt.md`](./coding.prompt.md) | Chỉ thị Kỹ Sư Trưởng viết code sạch, refactor chuẩn Clean Architecture | `{{instruction}}`, `{{code}}` |
 | [`review.prompt.md`](./review.prompt.md) | Chỉ thị Tech Lead & Security Auditor đánh giá chất lượng và bảo mật mã nguồn | `{{code}}` |
 | [`wiki.prompt.md`](./wiki.prompt.md) | Chỉ thị Knowledge Architect tinh chế tri thức thành ghi chú Obsidian Wiki | `{{topic}}`, `{{context}}` |

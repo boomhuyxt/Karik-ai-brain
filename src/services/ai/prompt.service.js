@@ -87,6 +87,34 @@ class PromptService {
   }
 
   /**
+   * RAG Semantic Retrieval Prompt template renderer
+   */
+  getRagPrompt(context = '', query = '') {
+    return this.renderPrompt('rag.prompt.md', { context, query });
+  }
+
+  /**
+   * Image Generation & Visual Concept Prompt template renderer
+   */
+  getImagePrompt(topic = '', aspectRatio = '16:9') {
+    return this.renderPrompt('image.prompt.md', { topic, aspect_ratio: aspectRatio });
+  }
+
+  /**
+   * Short-form Video & Scripting Prompt template renderer
+   */
+  getVideoPrompt(topic = '', platform = 'TikTok / Reels') {
+    return this.renderPrompt('video.prompt.md', { topic, platform });
+  }
+
+  /**
+   * Ad Project Tracking & Risk Assessment Prompt template renderer
+   */
+  getRiskPrompt(campaign = '', metrics = '') {
+    return this.renderPrompt('risk.prompt.md', { campaign, metrics });
+  }
+
+  /**
    * List all available markdown prompt files
    */
   listPrompts() {

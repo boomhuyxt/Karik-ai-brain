@@ -203,30 +203,79 @@ class GraphService {
         folderNodesMap.get(folder).push(nodeObj);
 
         // Populate lookup maps for flexible WikiLink resolution
+        const cleanP = p.replace(/\.md$/i, '');
+        const cleanName = filename.replace(/\.md$/i, '');
+
         lookupMap.set(p.toLowerCase(), p);
-        lookupMap.set(p.replace(/\.md$/, '').toLowerCase(), p);
-        lookupMap.set(filename.toLowerCase(), p);
-        if (p.toLowerCase().startsWith('wiki/')) {
-          lookupMap.set(p.slice(5).toLowerCase(), p);
-          lookupMap.set(p.slice(5).replace(/\.md$/, '').toLowerCase(), p);
+        lookupMap.set(cleanP.toLowerCase(), p);
+        lookupMap.set(cleanName.toLowerCase(), p);
+        lookupMap.set(cleanP.normalize('NFC').toLowerCase(), p);
+        lookupMap.set(cleanName.normalize('NFC').toLowerCase(), p);
+
+        // Allow matching without numerical prefixes (e.g. '01. Title' -> 'Title')
+        const noNumberName = cleanName.replace(/^\d+\.\s*/, '').toLowerCase();
+        if (noNumberName !== cleanName.toLowerCase()) {
+          lookupMap.set(noNumberName, p);
+          lookupMap.set(noNumberName.normalize('NFC'), p);
+        }
+
+        // Allow matching without top folder prefix (e.g. 'wiki/Docker/01...' -> 'Docker/01...')
+        if (cleanP.includes('/')) {
+          const subPath = cleanP.split('/').slice(1).join('/').toLowerCase();
+          lookupMap.set(subPath, p);
+          lookupMap.set(subPath.normalize('NFC'), p);
         }
       }
 
-      // 2. Check for cached file content WikiLinks
+      // 2. Fetch and resolve content for structured notes (Wiki, Manager, Daily, MOCs)
+      const localVault = this.findLocalVaultPath();
+      const structuredFiles = mdFiles.filter(f => !f.path.startsWith('raw/') || f.size < 4000);
+
+      await Promise.all(structuredFiles.map(async (file) => {
+        const sourcePath = file.path.split(path.sep).join('/');
+        let fileContent = file.content || '';
+
+        if (!fileContent && localVault) {
+          try {
+            const fullLocalPath = path.join(localVault, ...sourcePath.split('/'));
+            if (fs.existsSync(fullLocalPath) && fs.statSync(fullLocalPath).isFile()) {
+              fileContent = fs.readFileSync(fullLocalPath, 'utf8');
+              file.content = fileContent;
+            }
+          } catch (e) {}
+        }
+
+        if (!fileContent) {
+          try {
+            const cachedFile = await githubRepository.getFile(sourcePath);
+            if (cachedFile && cachedFile.content) {
+              fileContent = cachedFile.content;
+              file.content = fileContent;
+            }
+          } catch (e) {}
+        }
+      }));
+
+      // 3. Strictly parse true [[WikiLink]] and [Markdown](file.md) links from note content
+      // (NO fake folder or cluster links - Raw knowledge and orphan notes remain unlinked)
       for (const file of mdFiles) {
         const sourcePath = file.path.split(path.sep).join('/');
-        const cachedFile = githubRepository.memoryFiles.get(sourcePath);
-        const fileContent = (cachedFile && cachedFile.content) || file.content || '';
+        const fileContent = file.content || '';
 
         if (fileContent) {
-          const wikiLinkRegex = /\[\[([^\]|]+)(?:\|[^\]]+)?\]\]/g;
+          // A. Match Obsidian [[WikiLink]] syntax: [[Target]], [[Target|Alias]], [[Folder/Target]], [[Target#Heading]]
+          const wikiLinkRegex = /\[\[([^\]|#]+)(?:#[^\]|]+)?(?:\|[^\]]+)?\]\]/g;
           let match;
           while ((match = wikiLinkRegex.exec(fileContent)) !== null) {
             const rawTarget = match[1].trim();
             const targetKey = rawTarget.toLowerCase().replace(/\.md$/, '');
             const targetName = rawTarget.split('/').pop().replace(/\.md$/, '').toLowerCase();
 
-            const targetPath = lookupMap.get(targetKey) || lookupMap.get(rawTarget.toLowerCase()) || lookupMap.get(targetName);
+            const targetPath = lookupMap.get(targetKey) || 
+              lookupMap.get(rawTarget.toLowerCase()) || 
+              lookupMap.get(targetName) ||
+              lookupMap.get(targetKey.normalize('NFC')) ||
+              lookupMap.get(targetName.normalize('NFC'));
 
             if (targetPath && targetPath !== sourcePath && nodesMap.has(targetPath)) {
               connections.push({
@@ -236,55 +285,26 @@ class GraphService {
               });
             }
           }
-        }
-      }
 
-      // 3. Build cluster connections within folders to form an authentic constellation graph
-      for (const [folderName, fNodes] of folderNodesMap.entries()) {
-        if (fNodes.length <= 1) continue;
+          // B. Match Markdown link syntax: [Text](path/to/note.md)
+          const mdLinkRegex = /\[([^\]]+)\]\(([^)]+\.md)(?:#[^)]+)?\)/g;
+          let mdMatch;
+          while ((mdMatch = mdLinkRegex.exec(fileContent)) !== null) {
+            const rawPath = mdMatch[2].trim().replace(/^\.\//, '');
+            const targetKey = rawPath.toLowerCase().replace(/\.md$/, '');
+            const targetName = rawPath.split('/').pop().replace(/\.md$/, '').toLowerCase();
 
-        // Pick a cluster hub note (e.g. index/overview or first note)
-        const hubIndex = fNodes.findIndex(n => 
-          n.name.toLowerCase().includes('index') || 
-          n.name.toLowerCase().includes('00') || 
-          n.name.toLowerCase().includes('map of content') ||
-          n.name.toLowerCase().includes('overview')
-        );
-        const hubNode = hubIndex >= 0 ? fNodes[hubIndex] : fNodes[0];
+            const targetPath = lookupMap.get(targetKey) || 
+              lookupMap.get(rawPath.toLowerCase()) || 
+              lookupMap.get(targetName);
 
-        for (let i = 0; i < fNodes.length; i++) {
-          const current = fNodes[i];
-          if (current.id !== hubNode.id) {
-            connections.push({
-              source: hubNode.id,
-              target: current.id,
-              type: 'folder'
-            });
-          }
-
-          // Connect sequential notes in the same folder if small cluster
-          if (i > 0 && fNodes.length < 15 && fNodes[i - 1].id !== hubNode.id) {
-            connections.push({
-              source: fNodes[i - 1].id,
-              target: current.id,
-              type: 'cluster'
-            });
-          }
-        }
-      }
-
-      // 4. Connect major folder hubs to each other for cross-vault navigation
-      const folderList = Array.from(folderNodesMap.keys());
-      if (folderList.length > 1) {
-        for (let i = 1; i < folderList.length; i++) {
-          const prevHub = folderNodesMap.get(folderList[i - 1])[0];
-          const currHub = folderNodesMap.get(folderList[i])[0];
-          if (prevHub && currHub) {
-            connections.push({
-              source: prevHub.id,
-              target: currHub.id,
-              type: 'inter_hub'
-            });
+            if (targetPath && targetPath !== sourcePath && nodesMap.has(targetPath)) {
+              connections.push({
+                source: sourcePath,
+                target: targetPath,
+                type: 'wikilink'
+              });
+            }
           }
         }
       }

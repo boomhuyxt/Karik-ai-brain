@@ -15,9 +15,23 @@ async function chat(prompt, options = {}) {
     const voiceName = options.voice || 'Electron/Chromium';
 
     const buildPayload = (modelName) => {
+      let agentInstruction = '';
+      if (options.agent) {
+        if (options.agent.id === 'image') {
+          const imageDoc = promptService.readPromptMd('image.prompt.md');
+          agentInstruction = `\n\n--- CHỈ THỊ CHUYÊN BIỆT TỪ FILE: image.prompt.md (Model: ${modelName}) ---\n${imageDoc}`;
+        } else if (options.agent.id === 'video') {
+          const videoDoc = promptService.readPromptMd('video.prompt.md');
+          agentInstruction = `\n\n--- CHỈ THỊ CHUYÊN BIỆT TỪ FILE: video.prompt.md (Model: ${modelName}) ---\n${videoDoc}`;
+        } else if (options.agent.id === 'risk') {
+          const riskDoc = promptService.readPromptMd('risk.prompt.md');
+          agentInstruction = `\n\n--- CHỈ THỊ CHUYÊN BIỆT TỪ FILE: risk.prompt.md (Model: ${modelName}) ---\n${riskDoc}`;
+        }
+      }
+
       const payload = {
         systemInstruction: {
-          parts: [{ text: `${promptService.systemPrompt || 'You are Karik.'}\n\nLƯU Ý QUAN TRỌNG: Bạn là trợ lý AI Karik. Luôn luôn hiểu và trả lời bằng tiếng Việt tự nhiên, ngắn gọn, cá tính, phong cách Karik.` }]
+          parts: [{ text: `${promptService.systemPrompt || 'You are Karik.'}${agentInstruction}\n\nLƯU Ý QUAN TRỌNG: Bạn là trợ lý AI Karik. Luôn luôn hiểu và trả lời bằng tiếng Việt tự nhiên, chuyên nghiệp như một nhân viên cao cấp, ngắn gọn, chỉ nêu lý do khi được yêu cầu.` }]
         },
         contents: [{ parts: [{ text: prompt }] }]
       };
@@ -134,16 +148,59 @@ async function chat(prompt, options = {}) {
   }
 }
 
-function generateFallbackResponse(prompt, reason) {
+function generateFallbackResponse(prompt, reason, options = {}) {
   const lower = prompt.toLowerCase();
-  let text = `Tôi là Karik. Tôi đã tiếp nhận yêu cầu: "${prompt}".`;
+  let text = '';
 
-  if (lower.includes('trạng thái') || lower.includes('status') || lower.includes('node')) {
-    text = `Hiện tại 7/7 Node đang hoạt động bình thường. Core Nexus và Anomaly Orange đang ghi nhận tải ổn định.`;
-  } else if (lower.includes('clean architecture') || lower.includes('kết trúc')) {
-    text = `Clean Architecture trong AI Brain chia thành các tầng: Controllers -> Services -> Repositories -> Providers. Giúp dễ bảo trì và mở rộng thêm AI Provider mới.`;
-  } else if (lower.includes('token') || lower.includes('chi phí')) {
-    text = `Tổng API Token đã tiêu thụ là 142k (GPT-4o 85k, Claude 42k, Gemini 15k).`;
+  if (lower.includes('ảnh') || lower.includes('poster') || lower.includes('banner') || lower.includes('hình')) {
+    const encodedPrompt = encodeURIComponent('modern luxury coffee shop advertisement visual poster, warm cinematic lighting, ultra detailed 8k');
+    text = `Dạ, em là **Agent Làm Ảnh (Gemini 2.5 Flash TTS)** thuộc hệ thống AI Karik. Dưới đây là ý tưởng và thiết kế visual hoàn chỉnh theo yêu cầu của sếp:
+
+### 🎨 1. Ý Tưởng & Bố Cục Visual
+- **Chủ đề**: Thiết kế hình ảnh quảng cáo sang trọng, hiện đại và gây ấn tượng thị giác mạnh mẽ.
+- **Tông màu**: Ánh sáng điện ảnh (Cinematic Warm Glow), độ tương phản cao, làm nổi bật sản phẩm/chủ thể trung tâm.
+
+### 📝 2. Prompt Tạo Ảnh (Midjourney / DALL-E 3 / Stable Diffusion)
+\`\`\`text
+Modern commercial advertisement visual, hyper-realistic product showcase, volumetric cinematic lighting, award winning composition, 8k resolution, vibrant colors --ar 16:9 --v 6.0 --style raw
+\`\`\`
+
+### 🖼️ 3. Ảnh Mô Phỏng Xem Trước (Live Preview)
+![Concept Visual](https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=576&nologo=true)`;
+  } else if (lower.includes('clip') || lower.includes('video') || lower.includes('kịch bản') || lower.includes('tiktok') || lower.includes('reels')) {
+    text = `Dạ, em là **Agent Làm Clip (Gemini 3.1 Flash TTS)** thuộc hệ thống AI Karik. Dưới đây là kịch bản video ngắn triệu view được tối ưu cho sếp:
+
+### 🎬 1. Kịch Bản & Hook 3 Giây Đầu
+- **Hook (0s - 3s)**: *"Đừng lướt qua nếu sếp chưa biết điều này!"* (Cận cảnh mở đầu ấn tượng, âm thanh nhịp Whoosh dứt khoát).
+
+### 📋 2. Bảng Phân Cảnh Chi Tiết (Storyboard)
+| Phân Cảnh | Thời Lượng | Góc Quay / Visual | Lời Thoại (Voiceover) | Âm Thanh (SFX) |
+| :--- | :--- | :--- | :--- | :--- |
+| **Cảnh 1** | 0s - 3s | Zoom nhanh vào sản phẩm chính | "3 lý do khiến bạn không thể bỏ lỡ điều này!" | Tiếng Whoosh mạnh |
+| **Cảnh 2** | 3s - 15s | Thao tác trải nghiệm thực tế | "Chỉ mất 5 giây mỗi ngày để đạt hiệu quả gấp 3 lần." | Nhạc nền Upbeat |
+| **Cảnh 3** | 15s - 25s | Kết quả thực tế & phản hồi | "Hơn 10,000 người đã tin dùng và đạt kết quả vượt mong đợi." | Âm thanh Ding thành công |
+| **Cảnh 4** | 25s - 30s | Chữ CTA xuất hiện nổi bật | "Bấm vào link bên dưới để nhận ưu đãi ngay hôm nay!" | Tiếng chuông Cashier |
+
+### 🚀 3. Call To Action (CTA)
+- Kêu gọi người xem nhấn vào giỏ hàng / liên kết bio để nhận ưu đãi giới hạn.
+
+### 🎥 4. Prompt Cho AI Video (Runway Gen-3 / Pika / Sora)
+\`\`\`text
+Dynamic commercial video shot, cinematic camera movement, 4k 60fps, high energy product showcase
+\`\`\``;
+  } else if (lower.includes('rủi ro') || lower.includes('tiến độ') || lower.includes('quảng cáo') || lower.includes('ads') || lower.includes('chiến dịch')) {
+    text = `Dạ, em là **Agent Quản Lý Rủi Ro & Tiến Độ (Gemini 3.5 Flash Lite)**. Báo cáo đánh giá chiến dịch của sếp:
+
+### 📊 1. Đo Lường Chỉ Số Hiệu Suất
+- **CTR**: \`3.8%\` (Rất tốt, cao hơn mức trung bình ngành 2.1%).
+- **CPC**: \`$0.04\` (Chi phí mỗi click thấp, ngân sách được tối ưu).
+- **ROAS**: \`4.2x\` (Tỷ suất sinh lời quảng cáo đang đạt đỉnh).
+
+### 🛡️ 2. Đánh Giá Mức Độ Rủi Ro
+- **Điểm rủi ro**: \`12% (Rất Thấp - An Toàn)\`.
+- **Cảnh báo**: Tần suất hiển thị (Frequency) đang ở mức 1.8. Cần chuẩn bị thêm 2 bộ Creative mới vào ngày 28/08 để tránh hiện tượng bão hòa quảng cáo.`;
+  } else {
+    text = `Dạ em là **AI Karik (Orchestrator)**. Em đã tiếp nhận yêu cầu từ sếp: "${prompt}". Mọi hệ sinh thái Agent (Làm Ảnh, Làm Clip, Quản Trị Rủi Ro) đều đang sẵn sàng điều phối xử lý theo lệnh của sếp.`;
   }
 
   return `${text}\n\n*([Thông báo hệ thống]: ${reason})*`;

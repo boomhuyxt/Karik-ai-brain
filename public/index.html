@@ -89,63 +89,53 @@
         }
 
         .bg-stars {
-            background-image:
-                radial-gradient(1px 1px at 20px 30px, #ffffff, rgba(0, 0, 0, 0)),
-                radial-gradient(1px 1px at 40px 70px, #ffffff, rgba(0, 0, 0, 0)),
-                radial-gradient(2px 2px at 90px 40px, rgba(255, 255, 255, 0.8), rgba(0, 0, 0, 0)),
-                radial-gradient(1px 1px at 160px 120px, #ffffff, rgba(0, 0, 0, 0));
-            background-repeat: repeat;
-            background-size: 200px 200px;
-            animation: moveStars 120s linear infinite;
+            background-color: #181818 !important;
+            background-image: none !important;
         }
 
-        @keyframes moveStars {
-            from {
-                background-position: 0 0;
-            }
-
-            to {
-                background-position: -1000px 1000px;
-            }
-        }
-
-        /* D3 Node Styling */
+        /* Authentic Obsidian Node Styling */
         .node-circle {
             cursor: pointer;
-            transition: r 0.2s ease, stroke-width 0.2s ease;
-        }
-
-        .node-circle:hover {
-            r: 12px;
-            stroke: #ffffff;
-            stroke-width: 3px;
+            transition: r 0.15s ease, fill 0.15s ease, stroke 0.15s ease;
         }
 
         .node-text {
-            font-family: 'JetBrains Mono', 'Inter', -apple-system, sans-serif;
-            font-size: 11.5px;
-            font-weight: 600;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'JetBrains Mono', sans-serif;
+            font-size: 11px;
+            font-weight: 500;
             pointer-events: none;
-            fill: #ffffff;
-            stroke: #07090e;
-            stroke-width: 3.5px;
+            fill: #e4e4e7;
+            stroke: #181818;
+            stroke-width: 2.5px;
             stroke-linejoin: round;
             stroke-linecap: round;
             paint-order: stroke fill;
-            text-shadow: 0 0 10px rgba(0, 0, 0, 0.95);
-            transition: opacity 0.2s ease, fill 0.2s ease, font-size 0.2s ease;
+            transition: opacity 0.2s ease, fill 0.2s ease;
         }
 
         .graph-link {
-            stroke-opacity: 0.4;
-            stroke-dasharray: 4;
-            animation: dash 30s linear infinite;
+            transition: stroke-opacity 0.2s ease, stroke-width 0.2s ease, stroke 0.2s ease;
+        }/* Custom Obsidian Scrollbar */
+        .custom-obsidian-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-obsidian-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-obsidian-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 4px;
+        }
+        .custom-obsidian-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(211, 187, 255, 0.4);
         }
 
-        @keyframes dash {
-            to {
-                stroke-dashoffset: -1000;
-            }
+        .animate-spin-slow {
+            animation: spinSlow 12s linear infinite;
+        }
+        @keyframes spinSlow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
 
         /* Enhanced Markdown Reader Typography & Highlighting */
@@ -475,6 +465,7 @@
 
     <!-- Component Containers -->
     <div id="userManagementModalContainer"></div>
+    <div id="systemMonitoringModalContainer"></div>
 
     <!-- Application Script Modules -->
     <script src="/js/header.js"></script>
@@ -486,6 +477,7 @@
     <script src="/js/voice.js"></script>
     <script src="/js/chat.js"></script>
     <script src="/js/userManagement.js"></script>
+    <script src="/js/systemMonitoring.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             // Helper function to load external component HTML files
@@ -507,7 +499,8 @@
                 loadComponent('graphComponentContainer', '/components/graph.html'),
                 loadComponent('chatContainer', '/components/chat.html'),
                 loadComponent('newNoteModalContainer', '/components/newNoteModal.html'),
-                loadComponent('userManagementModalContainer', '/components/userManagementModal.html')
+                loadComponent('userManagementModalContainer', '/components/userManagementModal.html'),
+                loadComponent('systemMonitoringModalContainer', '/components/systemMonitoringModal.html')
             ]);
 
             // Initialize all feature modules

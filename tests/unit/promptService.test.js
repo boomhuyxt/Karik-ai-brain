@@ -10,6 +10,32 @@ test('PromptService - should load system.prompt.md correctly', () => {
   assert.ok(systemPrompt.length > 50);
 });
 
+test('PromptService - should render image prompt with variables', () => {
+  const rendered = promptService.getImagePrompt('Quán Cafe Vintage', '16:9');
+  assert.strictEqual(typeof rendered, 'string');
+  assert.ok(rendered.includes('Agent Làm Ảnh'));
+  assert.ok(rendered.includes('16:9'));
+  assert.ok(rendered.includes('pollinations.ai'));
+  assert.ok(!rendered.includes('{{aspect_ratio}}'));
+});
+
+test('PromptService - should render video prompt with variables', () => {
+  const rendered = promptService.getVideoPrompt('Kem chống nắng', 'TikTok');
+  assert.strictEqual(typeof rendered, 'string');
+  assert.ok(rendered.includes('Agent Làm Clip'));
+  assert.ok(rendered.includes('Hook 3 Giây'));
+  assert.ok(rendered.includes('Storyboard'));
+  assert.ok(rendered.includes('Runway'));
+});
+
+test('PromptService - should render risk prompt with variables', () => {
+  const rendered = promptService.getRiskPrompt('Chiến dịch Mùa Hè', 'CTR 3.8%');
+  assert.strictEqual(typeof rendered, 'string');
+  assert.ok(rendered.includes('Agent Quản Lý Rủi Ro'));
+  assert.ok(rendered.includes('CTR'));
+  assert.ok(rendered.includes('ROAS'));
+});
+
 test('PromptService - should render coding prompt with variables', () => {
   const rendered = promptService.getCodingPrompt('Viết hàm add', 'function add(a, b) { return a + b; }');
   assert.strictEqual(typeof rendered, 'string');
@@ -43,13 +69,26 @@ test('PromptService - should render summary prompt with text', () => {
   assert.ok(!rendered.includes('{{text}}'));
 });
 
+test('PromptService - should render rag prompt with context and query', () => {
+  const rendered = promptService.getRagPrompt('Ngữ cảnh chiến dịch quảng cáo', 'Chiến dịch có rủi ro gì không?');
+  assert.strictEqual(typeof rendered, 'string');
+  assert.ok(rendered.includes('Ngữ cảnh chiến dịch quảng cáo'));
+  assert.ok(rendered.includes('Chiến dịch có rủi ro gì không?'));
+  assert.ok(rendered.includes('AI Karik'));
+  assert.ok(!rendered.includes('{{context}}'));
+  assert.ok(!rendered.includes('{{query}}'));
+});
+
 test('PromptService - should list only markdown prompt files and no JS files', () => {
   const files = promptService.listPrompts();
   assert.ok(Array.isArray(files));
-  assert.ok(files.length >= 6, 'Should have at least 6 prompt markdown files');
+  assert.ok(files.length >= 9, 'Should have at least 9 prompt markdown files');
   assert.ok(files.every(file => file.endsWith('.md')), 'All prompt files must end with .md');
   assert.ok(files.every(file => !file.endsWith('.js')), 'No JS files should be in prompts directory');
   assert.ok(files.includes('system.prompt.md'));
+  assert.ok(files.includes('image.prompt.md'));
+  assert.ok(files.includes('video.prompt.md'));
+  assert.ok(files.includes('risk.prompt.md'));
   assert.ok(files.includes('coding.prompt.md'));
   assert.ok(files.includes('review.prompt.md'));
   assert.ok(files.includes('wiki.prompt.md'));

@@ -191,6 +191,8 @@ function initAIChat() {
 
             const totalDuration = ((performance.now() - startTime) / 1000).toFixed(2);
             const replyText = result.reply || result.message || 'Không có phản hồi';
+            const agentInfo = result.agent || { name: 'AI Karik', badge: 'AI Karik (Gemini 3.5 Flash Lite)', model: 'gemini-3.5-flash-lite' };
+            const tokenInfo = result.tokens || { inputTokens: 0, outputTokens: 0, totalTokens: 0 };
 
             // Hiển thị phản hồi từ AI (Bên Trái - AI Bubble tự động vừa chiều dài chữ)
             const aiDiv = document.createElement('div');
@@ -199,15 +201,15 @@ function initAIChat() {
 
             const badgeHtml = isVoice
                 ? `<span class="text-[9px] bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 px-1 py-0.2 rounded font-mono flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">graphic_eq</span> Voice</span>`
-                : `<span class="text-[9px] bg-blue-500/20 text-blue-300 border border-blue-400/40 px-1 py-0.2 rounded font-mono flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">bolt</span> Gemini Flash</span>`;
+                : `<span class="text-[9px] bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 px-1.5 py-0.5 rounded font-mono flex items-center gap-1" title="Model: ${agentInfo.model}"><span class="material-symbols-outlined text-[10px]">smart_toy</span> ${agentInfo.name || 'AI Karik'}</span>`;
 
             const msgId = 'aimsg_' + Date.now();
 
             aiDiv.innerHTML = `
                 <strong class="text-cyan-300 font-bold text-xs flex items-center justify-between w-full mb-1 text-glow">
                     <span class="flex items-center gap-1.5">
-                        <span class="material-symbols-outlined text-sm text-cyan-400">smart_toy</span>
-                        AI Karik:
+                        <span class="material-symbols-outlined text-sm text-cyan-400">psychology</span>
+                        ${agentInfo.name || 'AI Karik'}:
                         ${badgeHtml}
                     </span>
                     <span class="flex items-center gap-1.5">
@@ -221,6 +223,15 @@ function initAIChat() {
                 </strong>
                 <div id="${msgId}" class="text-slate-100 font-medium text-xs sm:text-sm leading-relaxed border-t border-purple-500/20 pt-1.5 mt-1 w-full break-words">
                     ${renderFn(replyText)}
+                </div>
+                <div class="w-full flex items-center justify-between border-t border-slate-700/50 mt-2 pt-1 text-[10px] text-slate-400 font-mono">
+                    <span class="flex items-center gap-1 text-emerald-400" title="Độ tiêu hao Token thực tế (In: ${tokenInfo.inputTokens} | Out: ${tokenInfo.outputTokens})">
+                        <span class="material-symbols-outlined text-[11px]">token</span>
+                        <strong>${tokenInfo.totalTokens || 0}</strong> Tokens (In: ${tokenInfo.inputTokens || 0} | Out: ${tokenInfo.outputTokens || 0})
+                    </span>
+                    <span class="text-slate-500 text-[9px] bg-slate-800/60 px-1 rounded">
+                        Model: ${agentInfo.model || 'gemini-3.5-flash-lite'}
+                    </span>
                 </div>
             `;
             chatMessages.appendChild(aiDiv);
