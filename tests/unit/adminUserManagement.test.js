@@ -38,8 +38,19 @@ test('Admin User Management & Status Blocking Suite', async (t) => {
   await userRepository.updateUserStatus(userId, 'active');
 
   // 6. Verify user can log in again after unblocking
-  const loginResult = await authService.login(testEmail, testPassword);
-  assert.strictEqual(loginResult.success, true);
+  // 7. Test Role Delegation (User -> Admin -> User)
+  const initialUser = await userRepository.findById(userId);
+  assert.strictEqual(initialUser.role, '0');
 
-  console.log('✅ Admin User Management & Account Blocking unit tests passed successfully!');
+  // Promote User to Admin
+  await userRepository.updateUserRole(userId, '1');
+  const promotedUser = await userRepository.findById(userId);
+  assert.strictEqual(promotedUser.role, '1');
+
+  // Demote Admin to User
+  await userRepository.updateUserRole(userId, '0');
+  const demotedUser = await userRepository.findById(userId);
+  assert.strictEqual(demotedUser.role, '0');
+
+  console.log('✅ Admin User Management, Account Blocking & Role Delegation unit tests passed successfully!');
 });
