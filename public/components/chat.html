@@ -4,21 +4,21 @@
     #chatBoxContainer.user-fullscreen-chat {
         position: fixed !important;
         inset: 0 !important;
-        top: 0 !important;
+        top: 64px !important;
         left: 0 !important;
         right: 0 !important;
         bottom: 0 !important;
         width: 100vw !important;
-        height: 100dvh !important;
+        height: calc(100dvh - 64px) !important;
         max-width: 100vw !important;
-        max-height: 100dvh !important;
+        max-height: calc(100dvh - 64px) !important;
         border-radius: 0 !important;
         border: none !important;
         margin: 0 !important;
-        padding: 0.75rem 1rem !important;
+        padding: 1rem 1.5rem !important;
         background: #090c13 !important;
         box-shadow: none !important;
-        z-index: 40 !important;
+        z-index: 25 !important;
     }
 
     #chatBoxContainer.user-fullscreen-chat .chat-header-inner,
@@ -83,14 +83,23 @@
             <div class="min-w-0">
                 <div class="flex items-center gap-1">
                     <span class="font-headline-md text-xs sm:text-sm font-bold text-white text-glow block tracking-wide truncate">AI Karik</span>
-                    <span class="text-[8px] sm:text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 px-1 py-0.2 rounded font-mono hidden xs:inline-block">Voice</span>
+                    <span class="text-[8px] sm:text-[9px] bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 px-1.5 py-0.2 rounded font-mono hidden xs:inline-flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[10px]">graphic_eq</span> Voice Engine
+                    </span>
                 </div>
                 <span id="voiceStatusText" class="text-[9px] sm:text-[10px] text-cyan-400 font-mono block truncate">Lắng nghe "Hey Karik"...</span>
             </div>
         </div>
         
         <div class="flex items-center gap-1 flex-shrink-0">
-            <!-- Speech Recognition Language Switcher Button -->
+            <!-- Live Call Button (Gọi AI Trực Tiếp) -->
+            <button id="btnWebRTCCall" type="button" title="Gọi trực tiếp AI Karik (Đàm thoại 2 chiều + Ngắt lời tự nhiên)"
+                class="flex items-center gap-1 bg-emerald-950/80 hover:bg-emerald-800/90 border border-emerald-400/50 px-2 py-0.5 rounded-full text-emerald-200 text-[10px] font-semibold transition-all active:scale-95 shadow-[0_0_10px_rgba(16,185,129,0.3)]">
+                <span id="callBtnIcon" class="material-symbols-outlined text-[12px] text-emerald-400">call</span>
+                <span id="callBtnLabel" class="font-mono">Gọi AI</span>
+            </button>
+
+            <!-- Language Switcher -->
             <button id="btnLangToggle" type="button" title="Đổi ngôn ngữ nhận diện giọng nói (🇻🇳 Tiếng Việt / 🇺🇸 English)"
                 class="flex items-center gap-0.5 sm:gap-1 bg-cyan-950/60 hover:bg-cyan-900/80 border border-cyan-400/40 px-1.5 sm:px-2 py-0.5 rounded-full text-cyan-200 text-[10px] font-semibold transition-all active:scale-95">
                 <span id="langIcon" class="text-[11px] sm:text-[12px]">🇻🇳</span>
@@ -100,8 +109,8 @@
             <!-- Wake Word Listening Toggle Button -->
             <button id="btnWakeWordToggle" type="button" title="Bật/Tắt chế độ lắng nghe từ khóa 'Hey Karik'"
                 class="flex items-center gap-1 bg-purple-900/40 hover:bg-purple-800/60 border border-purple-400/40 px-1.5 sm:px-2 py-0.5 rounded-full text-purple-200 text-[10px] font-semibold transition-all active:scale-95">
-                <span id="wakeWordIcon" class="material-symbols-outlined text-[13px] text-emerald-400">mic</span>
-                <span id="wakeWordBtnLabel" class="font-mono hidden sm:inline">Hey Karik: ON</span>
+                <span id="wakeWordIcon" class="material-symbols-outlined text-[12px] text-emerald-400">mic</span>
+                <span id="wakeWordBtnLabel" class="font-mono text-[9px]">ON</span>
             </button>
 
             <!-- Live Response Timer Badge -->
@@ -111,9 +120,24 @@
             </div>
 
             <!-- Minimize Chat Window Button -->
-            <button id="btnMinimizeChat" type="button" title="Thu nhỏ / Ẩn cửa sổ Jarvis"
+            <button id="btnMinimizeChat" type="button" title="Thu nhỏ / Ẩn cửa sổ AI Karik"
                 class="text-slate-400 hover:text-white p-1 rounded-md transition-all active:scale-95 flex items-center justify-center">
                 <span class="material-symbols-outlined text-base">expand_more</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Live Call Status Banner (Hiển thị khi đang trong cuộc gọi) -->
+    <div id="liveCallBanner" class="hidden items-center justify-between bg-emerald-950/60 border border-emerald-500/40 rounded-lg px-3 py-1.5 animate-fadeIn w-full">
+        <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+            <span class="text-[11px] text-emerald-200 font-bold font-mono">ĐANG TRONG CUỘC GỌI TRỰC TIẾP</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <span id="callDuration" class="text-[11px] text-cyan-300 font-mono">00:00</span>
+            <button id="btnEndCall" type="button" title="Tắt cuộc gọi"
+                class="bg-red-500/80 hover:bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded flex items-center gap-1 active:scale-95">
+                <span class="material-symbols-outlined text-[12px]">call_end</span> Tắt
             </button>
         </div>
     </div>
@@ -122,7 +146,7 @@
     <div id="voiceWaveContainer" class="hidden items-center justify-between bg-purple-950/40 border border-cyan-500/30 rounded-lg px-2.5 py-1 animate-fadeIn w-full">
         <div class="flex items-center gap-1.5 min-w-0">
             <span id="voiceWaveIcon" class="material-symbols-outlined text-cyan-400 text-xs sm:text-sm animate-pulse flex-shrink-0">graphic_eq</span>
-            <span id="voiceWaveLabel" class="text-[10px] sm:text-[11px] text-cyan-200 font-medium font-mono truncate">Karik đang nói...</span>
+            <span id="voiceWaveLabel" class="text-[10px] sm:text-[11px] text-cyan-200 font-medium font-mono truncate">Karik đang lắng nghe giọng nói...</span>
         </div>
         <div class="flex items-center gap-1 flex-shrink-0">
             <span class="w-1 h-2.5 bg-cyan-400 rounded-full animate-bounce [animation-delay:0ms]"></span>
@@ -150,12 +174,12 @@
             <strong class="text-cyan-300 font-bold text-xs sm:text-sm flex items-center justify-between w-full mb-1.5 text-glow">
                 <span class="flex items-center gap-2">
                     <span class="material-symbols-outlined text-base text-cyan-400">smart_toy</span>
-                    AI Brain Assistant:
+                    AI Karik Assistant:
                 </span>
-                <span class="text-xs text-cyan-400/80 font-mono">Sẵn sàng</span>
+                <span class="text-xs text-cyan-400/80 font-mono">⚡ Flash Engine</span>
             </strong>
             <p class="text-slate-100 text-xs sm:text-sm leading-relaxed font-medium">
-                Chào bạn! Nhắn tin hoặc nói <strong class="text-emerald-300">"Hey Karik"</strong> để trò chuyện cùng AI Assistant.
+                Chào bạn! Nhắn tin hoặc bấm <strong class="text-emerald-300 font-semibold">"Gọi AI"</strong> hoặc nói <strong class="text-emerald-300">"Hey Karik"</strong> để trò chuyện trực tiếp cùng AI Assistant.
             </p>
         </div>
     </div>
@@ -188,12 +212,12 @@
             </button>
 
             <!-- Voice Speech Mic Button -->
-            <button type="button" id="btnMicToggle" title="Nói trực tiếp với AI Karik"
+            <button type="button" id="btnMicToggle" title="Nói trực tiếp với AI Karik (hoặc bật Gọi AI)"
                 class="bg-cyan-500/20 hover:bg-cyan-500/40 border border-cyan-400/40 text-cyan-300 p-1.5 rounded-lg transition-all active:scale-95 flex items-center justify-center flex-shrink-0">
                 <span id="micBtnIcon" class="material-symbols-outlined text-base">mic</span>
             </button>
 
-            <input id="chatInput" type="text" placeholder="Hỏi bất kỳ điều gì hoặc nói 'Hey Karik'..."
+            <input id="chatInput" type="text" placeholder="Nhập tin nhắn hoặc nói 'Hey Karik'..."
                 class="bg-transparent border-b border-purple-500/40 px-1.5 sm:px-2 py-1 text-xs sm:text-sm text-white placeholder:text-slate-400 flex-1 min-w-0 outline-none focus:border-cyan-400 transition-all font-medium drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
             <button type="submit" id="sendBtn"
                 class="bg-purple-600/40 hover:bg-purple-500/60 text-white px-2.5 py-1.5 rounded-lg transition-all border border-purple-400/40 shadow-sm active:scale-95 flex items-center justify-center font-bold flex-shrink-0">
@@ -204,7 +228,7 @@
 </div>
 
 <!-- Floating Minimized Karik Pill -->
-<button id="jarvisMinPill" type="button" title="Mở khung AI Karik (Nói 'Hey Karik' để mở tự động)"
+<button id="jarvisMinPill" type="button" title="Mở khung AI Karik (Nói 'Hey Karik' để gọi trực tiếp)"
     class="hidden fixed bottom-4 left-4 sm:bottom-6 sm:left-6 z-40 items-center gap-2 bg-slate-950/90 hover:bg-slate-900 border border-purple-500/50 rounded-full px-3.5 py-1.5 sm:px-4 sm:py-2 shadow-[0_0_25px_rgba(109,40,217,0.4)] transition-all pointer-events-auto active:scale-95 group">
     <span class="material-symbols-outlined text-purple-400 text-base sm:text-lg text-glow animate-pulse group-hover:scale-110 transition-transform">psychology</span>
     <span class="font-headline-md text-xs font-bold text-white tracking-wide">AI Karik</span>

@@ -1,11 +1,23 @@
 const githubRepository = require('../repositories/github.repository');
 const dailyService = require('../services/obsidian/daily.service');
+const graphService = require('../services/obsidian/graph.service');
 
 class GithubController {
   async getTree(req, res, next) {
     try {
-      const tree = await githubRepository.getTree();
+      const forceRefresh = req.query.refresh === 'true';
+      const tree = await githubRepository.getTree(forceRefresh);
       res.json({ success: true, tree });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async getGraph(req, res, next) {
+    try {
+      const forceRefresh = req.query.refresh === 'true';
+      const graph = await graphService.getGraphData(forceRefresh);
+      res.json({ success: true, ...graph });
     } catch (err) {
       next(err);
     }

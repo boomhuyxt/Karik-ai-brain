@@ -1,5 +1,5 @@
 const openaiConfig = require('../../config/openai');
-const systemPrompt = require('../../prompts/system.prompt');
+const promptService = require('../../services/ai/prompt.service');
 
 async function chat(prompt, options = {}) {
   if (!openaiConfig.apiKey) {
@@ -15,7 +15,7 @@ async function chat(prompt, options = {}) {
       body: JSON.stringify({
         model: options.model || openaiConfig.defaultModel,
         messages: [
-          { role: 'system', content: systemPrompt.systemPrompt },
+          { role: 'system', content: promptService.systemPrompt },
           { role: 'user', content: prompt }
         ]
       })

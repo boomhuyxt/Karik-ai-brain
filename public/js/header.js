@@ -1,7 +1,7 @@
 function initHeaderModule() {
     let userRole = 'user';
 
-    // 1. Display logged in user info & role tag
+    // 1. Parse logged in user info & role
     try {
         const userInfoRaw = localStorage.getItem('user_info');
         if (userInfoRaw) {
@@ -9,8 +9,8 @@ function initHeaderModule() {
             const email = (user.email || '').toLowerCase();
             const rawRole = String(user.role || '').toLowerCase();
 
-            // Check if user is Admin ('1', 'admin', or email contains admin)
-            const isAdminRole = rawRole === '1' || rawRole === 'admin' || email.includes('admin');
+            // Check if user is Admin ('1', 'admin', or root admin accounts)
+            const isAdminRole = rawRole === '1' || rawRole === 'admin' || email === 'adminai' || email === 'admin@ai-brain.local';
             userRole = isAdminRole ? 'admin' : 'user';
             const name = user.fullName || user.email || (isAdminRole ? 'AI Admin' : 'User');
 
@@ -39,19 +39,24 @@ function initHeaderModule() {
         console.warn('[Header Module] Failed to parse user info:', e);
     }
 
-    // 2. Apply Role-Based Access Control (RBAC) UI Hiding
+    // 2. Apply Role-Based Access Control (RBAC) UI Separation
     const isAdmin = (userRole === 'admin');
+    const isGraphviewPage = window.location.pathname.includes('graphview');
+
     const adminHeaderActions = document.getElementById('adminHeaderActions');
     const adminMobileActions = document.getElementById('adminMobileActions');
     const btnRefreshGraphMobile = document.getElementById('btnRefreshGraphMobile');
 
     if (!isAdmin) {
+        // Hide Admin-only controls
         if (adminHeaderActions) adminHeaderActions.style.display = 'none';
         if (adminMobileActions) adminMobileActions.style.display = 'none';
         if (btnRefreshGraphMobile) btnRefreshGraphMobile.style.display = 'none';
 
-        // Apply Gemini Web UI layout for normal users
-        applyGeminiUserLayout();
+        // If on the main dashboard (/ or /index.html), apply dedicated User AI Assistant UI
+        if (!isGraphviewPage) {
+            applyUserAssistantLayout();
+        }
     }
 
     // 3. Mobile Menu Toggle Handler
@@ -129,11 +134,13 @@ function initHeaderModule() {
     }
 }
 
-// Function to transform user layout to standalone Gemini Web AI interface
-function applyGeminiUserLayout(retryCount = 0) {
+// Function to transform User Workspace into a Dedicated AI Assistant Workspace (Gemini/ChatGPT style)
+function applyUserAssistantLayout(retryCount = 0) {
     const graphSvg = document.getElementById('graphSvg');
     const controlsGraphBox = document.getElementById('controlsGraphBox');
     const legendBox = document.getElementById('legendBox');
+    const obsidianGraphSettingsPanel = document.getElementById('obsidianGraphSettingsPanel');
+    const obsidianStatusBar = document.getElementById('obsidianStatusBar');
     const graphContainer = document.getElementById('graphContainer');
     const chatContainer = document.getElementById('chatContainer');
     const chatBoxContainer = document.getElementById('chatBoxContainer');
@@ -141,6 +148,8 @@ function applyGeminiUserLayout(retryCount = 0) {
     if (graphSvg) graphSvg.style.display = 'none';
     if (controlsGraphBox) controlsGraphBox.style.display = 'none';
     if (legendBox) legendBox.style.display = 'none';
+    if (obsidianGraphSettingsPanel) obsidianGraphSettingsPanel.style.display = 'none';
+    if (obsidianStatusBar) obsidianStatusBar.style.display = 'none';
 
     if (graphContainer) {
         graphContainer.className = "flex-1 h-full w-full relative overflow-hidden flex items-center justify-center p-2 md:p-6 bg-stars";
@@ -151,10 +160,10 @@ function applyGeminiUserLayout(retryCount = 0) {
     }
 
     if (chatBoxContainer) {
-        // Expand Chatbox UI to fill entire viewport area for normal users
+        // Expand Chatbox UI to fill entire viewport area for regular users
         chatBoxContainer.classList.add('user-fullscreen-chat');
         
-        // Hide minimize chat button for standalone user mode
+        // Hide minimize chat button in user standalone mode
         const btnMinimizeChat = document.getElementById('btnMinimizeChat');
         if (btnMinimizeChat) btnMinimizeChat.style.display = 'none';
 
@@ -163,15 +172,15 @@ function applyGeminiUserLayout(retryCount = 0) {
         if (chatMessages) {
             chatMessages.className = "flex-1 w-full overflow-y-auto pr-2 my-3 space-y-4 text-sm md:text-base font-sans min-h-0 leading-relaxed";
         }
-    } else if (retryCount < 10) {
+    } else if (retryCount < 15) {
         // Retry if async component loading hasn't finished yet
-        setTimeout(() => applyGeminiUserLayout(retryCount + 1), 100);
+        setTimeout(() => applyUserAssistantLayout(retryCount + 1), 100);
     }
 }
 
 // Export for global invocation
 window.initHeaderModule = initHeaderModule;
-window.applyGeminiUserLayout = applyGeminiUserLayout;
+window.applyUserAssistantLayout = applyUserAssistantLayout;
 
 // Auto-run if DOM already loaded or wait for DOMContentLoaded
 if (document.readyState === 'loading') {

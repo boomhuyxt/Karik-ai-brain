@@ -122,32 +122,38 @@ class UserRepository {
     };
 
     if (supabase) {
-      try {
-        let insertObj = {
-          id: newUser.id,
-          email: newUser.email,
-          full_name: newUser.fullName,
-          password_hash: newUser.passwordHash,
-          role: newUser.role,
-          status: newUser.status,
-          created_at: newUser.createdAt
-        };
+      let insertObj = {
+        id: newUser.id,
+        email: newUser.email,
+        full_name: newUser.fullName,
+        password_hash: newUser.passwordHash,
+        role: newUser.role,
+        role_id: newUser.role,
+        created_at: newUser.createdAt
+      };
 
-        let res = await supabase.from('users').insert([ { ...insertObj, role_id: newUser.role } ]).select().single();
-        
-        if (res.error && (res.error.message.includes('role_id') || res.error.message.includes('status'))) {
-          delete insertObj.status;
-          res = await supabase.from('users').insert([ insertObj ]).select().single();
-        }
+      let res = await supabase.from('users').insert([ insertObj ]).select().single();
 
-        if (!res.error && res.data) {
-          newUser.id = res.data.id;
-        } else if (res.error) {
-          console.warn('[UserRepository] Supabase insert notice:', res.error.message);
-        }
-      } catch (err) {
-        console.warn('[UserRepository] Supabase insert fallback to memory:', err.message);
+      if (res.error && res.error.message.includes('role_id')) {
+        delete insertObj.role_id;
+        res = await supabase.from('users').insert([ insertObj ]).select().single();
       }
+
+      if (res.error && res.error.message.includes('status')) {
+        delete insertObj.status;
+        res = await supabase.from('users').insert([ insertObj ]).select().single();
+      }
+
+      if (res.error) {
+        console.error('[UserRepository] Supabase insert failed:', res.error.message);
+        throw new Error(`Lỗi lưu vào Supabase Database: ${res.error.message}`);
+      }
+
+      if (res.data) {
+        newUser.id = res.data.id;
+      }
+    } else {
+      throw new Error('Chưa kết nối được tới cơ sở dữ liệu Supabase.');
     }
 
     this.memoryUsers.set(newUser.email, newUser);
@@ -194,11 +200,12 @@ class UserRepository {
       }
     }
 
-    // Apply memory status overrides if present
+    // Apply memory status & role overrides if present
     for (const user of usersList) {
       const memUser = this.memoryUsers.get((user.email || '').toLowerCase());
-      if (memUser && memUser.status) {
-        user.status = memUser.status;
+      if (memUser) {
+        if (memUser.status) user.status = memUser.status;
+        if (memUser.role !== undefined) user.role = String(memUser.role);
       }
     }
 
@@ -231,6 +238,42 @@ class UserRepository {
         blockedUsers
       }
     };
+  }
+
+  async updateUserRole(userId, role) {
+    const validRole = String(role === '1' || role === 'admin' ? '1' : '0');
+
+    if (supabase) {
+      try {
+        let res = await supabase.from('users').update({ role: validRole, role_id: validRole }).eq('id', userId).select();
+        if (res.error) {
+          await supabase.from('users').update({ role: validRole }).eq('id', userId);
+        }
+      } catch (err) {
+        console.warn('[UserRepository] Supabase updateUserRole notice:', err.message);
+      }
+    }
+
+    // Update in memory users map
+    let foundInMem = false;
+    for (const [key, memUser] of this.memoryUsers.entries()) {
+      if (memUser.id === userId) {
+        memUser.role = validRole;
+        this.memoryUsers.set(key, memUser);
+        foundInMem = true;
+      }
+    }
+
+    // If user is from Supabase and not in memoryUsers Map yet, fetch & store role override
+    if (!foundInMem) {
+      const user = await this.findById(userId);
+      if (user) {
+        user.role = validRole;
+        this.memoryUsers.set((user.email || '').toLowerCase(), user);
+      }
+    }
+
+    return true;
   }
 
   async updateUserStatus(userId, status) {

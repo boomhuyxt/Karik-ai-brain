@@ -1,5 +1,5 @@
 /**
- * Floating AI Chat Module - Fully Transparent Text-Only Style with Live Timer, Gemini Voice & File Upload (Max 50MB)
+ * Floating AI Chat Module - Ultra-Fast Text & Voice Assistant with Live Timer & File Attachment Support
  */
 function initAIChat() {
     const chatForm = document.getElementById('chatForm');
@@ -170,16 +170,7 @@ function initAIChat() {
             timerInterval = setInterval(() => {
                 const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
                 aiTimerValue.textContent = `${elapsed}s`;
-            }, 100);
-        }
-
-        // Phát âm thanh phản hồi tức thì
-        if (!isVoice && window.jarvisVoice && typeof window.jarvisVoice.speakText === 'function') {
-            const isEnglish = window.jarvisVoice.currentLang && window.jarvisVoice.currentLang.startsWith('en');
-            const ackText = isEnglish
-                ? "Yes! Processing your request right now, boss!"
-                : "Dạ! Đã nhận yêu cầu của sếp, em đang xử lý đây ạ!";
-            window.jarvisVoice.speakText(ackText).catch(() => {});
+            }, 50);
         }
 
         // Tạo nội dung gửi tới API bao gồm liên kết file nếu có
@@ -199,33 +190,66 @@ function initAIChat() {
             const result = await res.json();
 
             const totalDuration = ((performance.now() - startTime) / 1000).toFixed(2);
+            const replyText = result.reply || result.message || 'Không có phản hồi';
+            const agentInfo = result.agent || { name: 'AI Karik', badge: 'AI Karik (Gemini 3.5 Flash Lite)', model: 'gemini-3.5-flash-lite' };
+            const tokenInfo = result.tokens || { inputTokens: 0, outputTokens: 0, totalTokens: 0 };
 
             // Hiển thị phản hồi từ AI (Bên Trái - AI Bubble tự động vừa chiều dài chữ)
             const aiDiv = document.createElement('div');
             aiDiv.className = 'flex flex-col items-start self-start mr-auto w-fit min-w-[200px] max-w-[90%] sm:max-w-[85%] p-3.5 rounded-2xl bg-slate-900/90 border border-cyan-500/40 text-slate-100 rounded-tl-none shadow-lg transition-all animate-fadeIn';
             const renderFn = typeof window.renderCustomMarkdown === 'function' ? window.renderCustomMarkdown : (t => t);
 
-            const voiceBadgeHtml = `<span class="text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 px-1 py-0.2 rounded font-mono flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">volume_up</span> Chromium Voice</span>`;
+            const badgeHtml = isVoice
+                ? `<span class="text-[9px] bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 px-1 py-0.2 rounded font-mono flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">graphic_eq</span> Voice</span>`
+                : `<span class="text-[9px] bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 px-1.5 py-0.5 rounded font-mono flex items-center gap-1" title="Model: ${agentInfo.model}"><span class="material-symbols-outlined text-[10px]">smart_toy</span> ${agentInfo.name || 'AI Karik'}</span>`;
+
+            const msgId = 'aimsg_' + Date.now();
 
             aiDiv.innerHTML = `
                 <strong class="text-cyan-300 font-bold text-xs flex items-center justify-between w-full mb-1 text-glow">
                     <span class="flex items-center gap-1.5">
-                        <span class="material-symbols-outlined text-sm text-cyan-400">smart_toy</span>
-                        AI JarVis Assistant:
-                        ${voiceBadgeHtml}
+                        <span class="material-symbols-outlined text-sm text-cyan-400">psychology</span>
+                        ${agentInfo.name || 'AI Karik'}:
+                        ${badgeHtml}
                     </span>
-                    <span class="text-[10px] text-cyan-300 font-mono flex items-center gap-1 bg-cyan-500/20 border border-cyan-400/40 px-1.5 py-0.5 rounded-full" title="Thời gian AI xử lý và phản hồi">
-                        <span class="material-symbols-outlined text-[11px]">timer</span> ${totalDuration}s
+                    <span class="flex items-center gap-1.5">
+                        <button type="button" class="btn-speak-msg text-slate-400 hover:text-cyan-300 transition-colors p-0.5 rounded" title="Nghe đọc nội dung này" data-msg-id="${msgId}">
+                            <span class="material-symbols-outlined text-[12px]">volume_up</span>
+                        </button>
+                        <span class="text-[10px] text-cyan-300 font-mono flex items-center gap-1 bg-cyan-500/20 border border-cyan-400/40 px-1.5 py-0.5 rounded-full" title="Thời gian AI xử lý và phản hồi">
+                            <span class="material-symbols-outlined text-[11px]">timer</span> ${totalDuration}s
+                        </span>
                     </span>
                 </strong>
-                <div class="text-slate-100 font-medium text-xs sm:text-sm leading-relaxed border-t border-cyan-500/20 pt-1.5 mt-1 w-full break-words">
-                    ${renderFn(result.reply || result.message || 'Không có phản hồi')}
+                <div id="${msgId}" class="text-slate-100 font-medium text-xs sm:text-sm leading-relaxed border-t border-purple-500/20 pt-1.5 mt-1 w-full break-words">
+                    ${renderFn(replyText)}
+                </div>
+                <div class="w-full flex items-center justify-between border-t border-slate-700/50 mt-2 pt-1 text-[10px] text-slate-400 font-mono">
+                    <span class="flex items-center gap-1 text-emerald-400" title="Độ tiêu hao Token thực tế (In: ${tokenInfo.inputTokens} | Out: ${tokenInfo.outputTokens})">
+                        <span class="material-symbols-outlined text-[11px]">token</span>
+                        <strong>${tokenInfo.totalTokens || 0}</strong> Tokens (In: ${tokenInfo.inputTokens || 0} | Out: ${tokenInfo.outputTokens || 0})
+                    </span>
+                    <span class="text-slate-500 text-[9px] bg-slate-800/60 px-1 rounded">
+                        Model: ${agentInfo.model || 'gemini-3.5-flash-lite'}
+                    </span>
                 </div>
             `;
             chatMessages.appendChild(aiDiv);
 
-            if (window.jarvisVoice && typeof window.jarvisVoice.playVoiceResponse === 'function') {
-                window.jarvisVoice.playVoiceResponse(null, null, result.reply || result.message || '');
+            // Bind manual speak button for on-demand playback
+            const speakBtn = aiDiv.querySelector('.btn-speak-msg');
+            if (speakBtn) {
+                speakBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (window.jarvisVoice && typeof window.jarvisVoice.speakText === 'function') {
+                        window.jarvisVoice.speakText(replyText).catch(() => {});
+                    }
+                });
+            }
+
+            // Auto-speak voice if user initiated via live voice call
+            if (isVoice && window.jarvisVoice && typeof window.jarvisVoice.speakText === 'function') {
+                window.jarvisVoice.speakText(replyText).catch(() => {});
             }
 
             if (typeof window.fetchAndRenderGraph === 'function') {

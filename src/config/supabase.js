@@ -1,5 +1,10 @@
 const env = require('./env');
 
+// Polyfill WebSocket in Node.js environment to prevent @supabase/supabase-js initialization error
+if (typeof globalThis.WebSocket === 'undefined') {
+  globalThis.WebSocket = class WebSocket {};
+}
+
 let createClient;
 try {
   createClient = require('@supabase/supabase-js').createClient;
@@ -11,7 +16,12 @@ let supabase = null;
 
 if (createClient && env.supabase.url && env.supabase.key) {
   try {
-    supabase = createClient(env.supabase.url, env.supabase.key);
+    supabase = createClient(env.supabase.url, env.supabase.key, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false
+      }
+    });
   } catch (err) {
     console.warn('[Supabase Config] Failed to initialize Supabase client:', err.message);
   }
