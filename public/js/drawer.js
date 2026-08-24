@@ -134,12 +134,64 @@ function initNoteDrawer() {
 
     window.renderCustomMarkdown = function (content) {
         if (!content) return '';
-        const processed = content.replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (match, target, alias) => {
+
+        // 1. Convert markdown link [text](image_url) to ![text](image_url) if url points to an image
+        let processed = content.replace(/(?<!!)\[([^\]]+)\]\((https?:\/\/[^\s\)]+|(?:\/uploads\/[^\s\)]+))\)/gi, (match, text, url) => {
+            const lowerUrl = url.toLowerCase();
+            if (lowerUrl.includes('.png') || lowerUrl.includes('.jpg') || lowerUrl.includes('.jpeg') || lowerUrl.includes('.webp') || lowerUrl.includes('.gif') || lowerUrl.includes('/uploads/') || lowerUrl.includes('pollinations.ai') || lowerUrl.includes('7860') || lowerUrl.includes('txt2img')) {
+                return `![${text}](${url})`;
+            }
+            return match;
+        });
+
+        // 2. Convert standalone image URLs into markdown image syntax
+        processed = processed.replace(/(?:^|\n)(https?:\/\/[^\s\)]+\.(?:png|jpg|jpeg|webp|gif)(?:\?[^\s\)]*)?)(?:\n|$)/gi, '\n\n![AI Image]($1)\n\n');
+
+        // 3. Handle Obsidian wikilinks [[NoteName|Alias]]
+        processed = processed.replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (match, target, alias) => {
             const displayText = alias || target;
             const cleanTarget = target.trim().replace(/'/g, "\\'");
             return `<span class="inline-flex items-center gap-1 bg-primary/20 text-primary border border-primary/40 px-2 py-0.5 rounded-md font-semibold text-xs cursor-pointer hover:bg-primary/30 transition-all shadow-[0_0_8px_rgba(211,187,255,0.2)]" onclick="window.openNoteDrawer('${cleanTarget}')"><span class="material-symbols-outlined text-xs">link</span> ${displayText.trim()}</span>`;
         });
-        return marked.parse(processed);
+
+        if (window.marked) {
+            const renderer = new marked.Renderer();
+            renderer.image = function (tokenOrHref, maybeTitle, maybeText) {
+                let cleanHref = '';
+                let altText = 'AI Generated Visual';
+
+                if (typeof tokenOrHref === 'object' && tokenOrHref !== null) {
+                    cleanHref = tokenOrHref.href || '';
+                    altText = tokenOrHref.text || tokenOrHref.title || 'AI Generated Visual';
+                } else {
+                    cleanHref = tokenOrHref || '';
+                    altText = maybeText || maybeTitle || 'AI Generated Visual';
+                }
+
+                if (typeof cleanHref !== 'string') {
+                    cleanHref = String(cleanHref || '');
+                }
+
+                return `
+                    <div class="my-3 rounded-2xl overflow-hidden bg-slate-950/90 border border-purple-500/40 shadow-2xl transition-all duration-300 hover:border-cyan-400/60 max-w-full">
+                        <div class="flex items-center justify-between px-3 py-1.5 bg-purple-950/60 border-b border-purple-500/30 text-[11px] text-purple-200">
+                            <span class="flex items-center gap-1.5 font-medium truncate max-w-[70%]">
+                                <span class="material-symbols-outlined text-sm text-cyan-400">photo_library</span>
+                                <span>${altText}</span>
+                            </span>
+                            <a href="${cleanHref}" target="_blank" download class="inline-flex items-center gap-1 text-cyan-300 hover:text-white font-mono transition-colors text-[10px] bg-cyan-500/20 hover:bg-cyan-500/30 px-2 py-0.5 rounded-md border border-cyan-400/30">
+                                <span class="material-symbols-outlined text-xs">download</span> Mở / Tải ảnh
+                            </a>
+                        </div>
+                        <div class="p-2 flex justify-center items-center bg-black/40">
+                            <img src="${cleanHref}" alt="${altText}" class="max-h-96 w-auto max-w-full object-contain rounded-xl shadow-lg transition-transform duration-300 hover:scale-[1.01] cursor-pointer" loading="lazy" onclick="window.open('${cleanHref}', '_blank')" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'p-3 text-center text-xs text-amber-300 bg-amber-950/40 rounded-xl border border-amber-500/30 flex items-center justify-center gap-2\\'><span class=\\'material-symbols-outlined text-sm\\'>broken_image</span> Không thể tải ảnh: <span class=\\'font-mono text-[10px] truncate max-w-xs\\'>${cleanHref}</span></div>';" />
+                        </div>
+                    </div>
+                `;
+            };
+            return marked.parse(processed, { renderer });
+        }
+        return processed;
     };
 
     function closeDrawer() {

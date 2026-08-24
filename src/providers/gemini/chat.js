@@ -153,20 +153,19 @@ function generateFallbackResponse(prompt, reason, options = {}) {
   let text = '';
 
   if (lower.includes('ảnh') || lower.includes('poster') || lower.includes('banner') || lower.includes('hình')) {
-    const encodedPrompt = encodeURIComponent('modern luxury coffee shop advertisement visual poster, warm cinematic lighting, ultra detailed 8k');
-    text = `Dạ, em là **Agent Làm Ảnh (Gemini 2.5 Flash TTS)** thuộc hệ thống AI Karik. Dưới đây là ý tưởng và thiết kế visual hoàn chỉnh theo yêu cầu của sếp:
+    text = `Dạ, em là **Agent Làm Ảnh (Pollinations.ai Flux)** thuộc hệ thống AI Karik. Dưới đây là ý tưởng và thiết kế visual hoàn chỉnh theo yêu cầu của sếp:
 
 ### 🎨 1. Ý Tưởng & Bố Cục Visual
 - **Chủ đề**: Thiết kế hình ảnh quảng cáo sang trọng, hiện đại và gây ấn tượng thị giác mạnh mẽ.
 - **Tông màu**: Ánh sáng điện ảnh (Cinematic Warm Glow), độ tương phản cao, làm nổi bật sản phẩm/chủ thể trung tâm.
 
-### 📝 2. Prompt Tạo Ảnh (Midjourney / DALL-E 3 / Stable Diffusion)
+### 📝 2. Prompt Tạo Ảnh Chuẩn Pollinations Flux / SDXL
 \`\`\`text
-Modern commercial advertisement visual, hyper-realistic product showcase, volumetric cinematic lighting, award winning composition, 8k resolution, vibrant colors --ar 16:9 --v 6.0 --style raw
+Modern commercial advertisement visual, hyper-realistic product showcase, volumetric cinematic lighting, award winning composition, 8k uhd, dslr, soft lighting, 8k resolution
 \`\`\`
 
-### 🖼️ 3. Ảnh Mô Phỏng Xem Trước (Live Preview)
-![Concept Visual](https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=576&nologo=true)`;
+### 🖼️ 3. Ảnh Mô Phỏng Xem Trước (Pollinations.ai Flux)
+![Concept Visual](https://image.pollinations.ai/prompt/modern%20luxury%20coffee%20shop%20advertisement%20visual%20poster?width=1024&height=576&nologo=true)`;
   } else if (lower.includes('clip') || lower.includes('video') || lower.includes('kịch bản') || lower.includes('tiktok') || lower.includes('reels')) {
     text = `Dạ, em là **Agent Làm Clip (Gemini 3.1 Flash TTS)** thuộc hệ thống AI Karik. Dưới đây là kịch bản video ngắn triệu view được tối ưu cho sếp:
 

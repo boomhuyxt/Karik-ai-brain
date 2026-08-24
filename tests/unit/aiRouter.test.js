@@ -7,11 +7,11 @@ try {
   // Test 1: Image Agent Dispatch & Orchestrated Prompt
   const imageAgent = routerService.dispatchAgent('Tạo ảnh poster quảng cáo đồ uống');
   assert.strictEqual(imageAgent.id, 'image');
-  assert.strictEqual(imageAgent.model, 'gemini-3.1-flash-tts');
+  assert.strictEqual(imageAgent.model, 'gemini-3.6-flash');
   const imageEnriched = routerService.buildOrchestratedPrompt('Tạo ảnh poster quảng cáo đồ uống', imageAgent);
-  assert.ok(imageEnriched.includes('CHỈ THỊ ĐIỀU PHỐI TỪ AI KARIK ORCHESTRATOR -> AGENT LÀM ẢNH'));
+  assert.ok(imageEnriched.includes('CHỈ THỊ ĐIỀU PHỐI TỪ AI KARIK ORCHESTRATOR -> AGENT STUDIO ẢNH'));
   assert.ok(imageEnriched.includes('image.prompt.md'));
-  console.log('✅ Image Agent Dispatch & Prompt Engineering Passed: Model set to Gemini 3.1 Flash TTS');
+  console.log('✅ Image Studio Agent Dispatch & Prompt Engineering Passed: Model set to Gemini 3.6 Flash');
 
   // Test 2: Video/Clip Agent Dispatch & Orchestrated Prompt
   const videoAgent = routerService.dispatchAgent('Viết kịch bản clip ngắn TikTok viral');

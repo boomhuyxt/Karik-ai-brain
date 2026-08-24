@@ -1,0 +1,760 @@
+<!-- AI Karik Poster & Image Studio Component (3-Column Layout) -->
+<style>
+    #imageEditorModal {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    /* Custom Studio Scrollbar */
+    .studio-scrollbar::-webkit-scrollbar {
+        width: 5px;
+        height: 5px;
+    }
+    .studio-scrollbar::-webkit-scrollbar-track {
+        background: rgba(15, 23, 42, 0.4);
+    }
+    .studio-scrollbar::-webkit-scrollbar-thumb {
+        background: rgba(168, 85, 247, 0.4);
+        border-radius: 9999px;
+    }
+    .studio-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: rgba(211, 187, 255, 0.7);
+    }
+
+    /* Transparent Canvas Checkerboard */
+    .canvas-checkerboard {
+        background-color: #1e293b;
+        background-image: 
+            linear-gradient(45deg, #0f172a 25%, transparent 25%), 
+            linear-gradient(-45deg, #0f172a 25%, transparent 25%), 
+            linear-gradient(45deg, transparent 75%, #0f172a 75%), 
+            linear-gradient(-45deg, transparent 75%, #0f172a 75%);
+        background-size: 16px 16px;
+        background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+    }
+
+    /* Custom range slider styling */
+    .studio-slider {
+        -webkit-appearance: none;
+        appearance: none;
+        height: 5px;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 9999px;
+        outline: none;
+    }
+    .studio-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: #d3bbff;
+        cursor: pointer;
+        box-shadow: 0 0 8px rgba(211, 187, 255, 0.8);
+        transition: transform 0.1s;
+    }
+    .studio-slider::-webkit-slider-thumb:hover {
+        transform: scale(1.25);
+    }
+
+    /* Active Tool Tab */
+    .studio-tab-btn.active {
+        background: rgba(168, 85, 247, 0.25);
+        color: #d3bbff;
+        border-color: rgba(211, 187, 255, 0.5);
+        box-shadow: 0 0 12px rgba(168, 85, 247, 0.3);
+    }
+
+    /* Active Layer Item */
+    .layer-item.active {
+        border-color: #d3bbff;
+        background: rgba(168, 85, 247, 0.2);
+        box-shadow: 0 0 10px rgba(168, 85, 247, 0.25);
+    }
+
+    /* Interactive Crop Overlay */
+    #cropOverlay {
+        pointer-events: auto;
+    }
+</style>
+
+<div id="imageEditorModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-xl flex flex-col overflow-hidden select-none animate-fadeIn">
+    <!-- Top Global Studio Header -->
+    <header class="h-14 bg-slate-950/90 border-b border-purple-500/30 px-4 flex items-center justify-between gap-3 flex-shrink-0 z-20">
+        <div class="flex items-center gap-3 min-w-0">
+            <div class="flex items-center gap-2">
+                <span class="w-8 h-8 rounded-lg bg-gradient-to-tr from-purple-600 to-cyan-400 flex items-center justify-center shadow-[0_0_15px_rgba(168,85,247,0.5)]">
+                    <span class="material-symbols-outlined text-white text-lg">palette</span>
+                </span>
+                <div>
+                    <h1 class="font-headline-lg text-sm sm:text-base font-bold text-white tracking-wide flex items-center gap-2">
+                        AI Karik Studio
+                        <span class="text-[9px] bg-gradient-to-r from-purple-500/30 to-cyan-500/30 text-cyan-300 border border-cyan-400/40 px-2 py-0.5 rounded font-mono">
+                            PRO POSTER & IMAGE EDITOR
+                        </span>
+                    </h1>
+                    <p class="text-[10px] text-slate-400 font-mono hidden sm:block">Chỉnh sửa ảnh đa lớp, bộ lọc màu, xóa nền & thiết kế poster chuyên nghiệp</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Canvas Presets & Dimensions Selector -->
+        <div class="hidden md:flex items-center gap-2 bg-slate-900/90 border border-purple-500/30 rounded-xl px-2.5 py-1">
+            <span class="material-symbols-outlined text-purple-400 text-sm">aspect_ratio</span>
+            <span class="text-xs text-slate-300 font-medium">Khổ ảnh:</span>
+            <select id="canvasPresetSelect" class="bg-slate-950 text-xs text-cyan-300 border border-purple-500/40 rounded-lg px-2 py-1 outline-none focus:border-cyan-400 cursor-pointer">
+                <option value="1080x1350">Poster Dọc (4:5) - 1080 x 1350 px</option>
+                <option value="1080x1080">Vuông Instagram (1:1) - 1080 x 1080 px</option>
+                <option value="1080x1920">Story / TikTok (9:16) - 1080 x 1920 px</option>
+                <option value="1920x1080">Ngang HD (16:9) - 1920 x 1080 px</option>
+                <option value="1200x630">Facebook Cover (1200 x 630 px)</option>
+                <option value="custom">Tùy chỉnh kích thước...</option>
+            </select>
+            
+            <div id="customDimensionsInputs" class="hidden items-center gap-1">
+                <input id="customCanvasWidth" type="number" value="1080" min="100" max="4000" class="w-14 bg-slate-950 text-[11px] text-white border border-purple-500/30 rounded px-1.5 py-0.5 text-center">
+                <span class="text-slate-400 text-xs">x</span>
+                <input id="customCanvasHeight" type="number" value="1350" min="100" max="4000" class="w-14 bg-slate-950 text-[11px] text-white border border-purple-500/30 rounded px-1.5 py-0.5 text-center">
+                <button id="btnApplyCustomDimensions" class="bg-purple-600/60 hover:bg-purple-500 text-white text-[10px] px-2 py-0.5 rounded">Áp dụng</button>
+            </div>
+        </div>
+
+        <!-- Canvas Quick Actions (Undo, Redo, Zoom, Close) -->
+        <div class="flex items-center gap-1.5 sm:gap-2">
+            <!-- Undo -->
+            <button id="btnUndo" title="Hoàn tác (Ctrl+Z)" class="p-1.5 rounded-lg bg-slate-900/80 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-white transition-all disabled:opacity-40 disabled:pointer-events-none">
+                <span class="material-symbols-outlined text-base">undo</span>
+            </button>
+            <!-- Redo -->
+            <button id="btnRedo" title="Làm lại (Ctrl+Y)" class="p-1.5 rounded-lg bg-slate-900/80 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-white transition-all disabled:opacity-40 disabled:pointer-events-none">
+                <span class="material-symbols-outlined text-base">redo</span>
+            </button>
+            
+            <div class="h-5 w-px bg-slate-700 mx-0.5"></div>
+
+            <!-- Zoom Controls -->
+            <div class="flex items-center gap-1 bg-slate-900/80 border border-slate-700 rounded-lg px-1.5 py-0.5">
+                <button id="btnZoomOut" title="Thu nhỏ (-)" class="text-slate-400 hover:text-white p-0.5">
+                    <span class="material-symbols-outlined text-xs">remove</span>
+                </button>
+                <span id="zoomPercentText" class="text-[11px] text-cyan-300 font-mono w-10 text-center">100%</span>
+                <button id="btnZoomIn" title="Phóng to (+)" class="text-slate-400 hover:text-white p-0.5">
+                    <span class="material-symbols-outlined text-xs">add</span>
+                </button>
+                <button id="btnZoomFit" title="Vừa màn hình" class="text-slate-400 hover:text-purple-300 p-0.5 ml-0.5">
+                    <span class="material-symbols-outlined text-xs">fit_screen</span>
+                </button>
+            </div>
+
+            <!-- Clear Canvas Button -->
+            <button id="btnClearCanvas" title="Xóa toàn bộ Canvas" class="p-1.5 rounded-lg bg-red-950/40 hover:bg-red-900/60 border border-red-500/40 text-red-300 transition-all flex items-center gap-1 text-xs">
+                <span class="material-symbols-outlined text-sm">delete_sweep</span>
+                <span class="hidden sm:inline">Làm mới</span>
+            </button>
+
+            <!-- Close Studio Button -->
+            <button id="btnCloseStudio" title="Đóng Studio" class="p-1.5 rounded-lg bg-slate-900 hover:bg-red-600/80 text-slate-400 hover:text-white border border-slate-700 hover:border-red-500 transition-all">
+                <span class="material-symbols-outlined text-lg">close</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main 3-Column Studio Workspace Area -->
+    <div class="flex-1 flex overflow-hidden relative">
+        
+        <!-- ========================================================================= -->
+        <!-- COLUMN 1: LEFT TOOLBAR & SIDEBAR PANELS (Width ~ 300px)                   -->
+        <!-- ========================================================================= -->
+        <aside class="w-80 bg-slate-950/95 border-r border-purple-500/30 flex flex-col flex-shrink-0 z-10">
+            <!-- Sidebar Navigation Tabs -->
+            <div class="grid grid-cols-6 border-b border-purple-500/20 bg-slate-900/70 p-1 gap-1 flex-shrink-0">
+                <button data-tab="tab-upload" title="Ảnh & Upload" class="studio-tab-btn active flex flex-col items-center justify-center p-1.5 rounded-lg border border-transparent text-slate-400 hover:text-purple-200 transition-all">
+                    <span class="material-symbols-outlined text-base">image</span>
+                    <span class="text-[9px] font-medium mt-0.5">Ảnh</span>
+                </button>
+                <button data-tab="tab-text" title="Chữ & Typography" class="studio-tab-btn flex flex-col items-center justify-center p-1.5 rounded-lg border border-transparent text-slate-400 hover:text-purple-200 transition-all">
+                    <span class="material-symbols-outlined text-base">title</span>
+                    <span class="text-[9px] font-medium mt-0.5">Chữ</span>
+                </button>
+                <button data-tab="tab-shapes" title="Hình khối & Stickers" class="studio-tab-btn flex flex-col items-center justify-center p-1.5 rounded-lg border border-transparent text-slate-400 hover:text-purple-200 transition-all">
+                    <span class="material-symbols-outlined text-base">shapes</span>
+                    <span class="text-[9px] font-medium mt-0.5">Khối</span>
+                </button>
+                <button data-tab="tab-adjust" title="Bộ lọc & Màu sắc" class="studio-tab-btn flex flex-col items-center justify-center p-1.5 rounded-lg border border-transparent text-slate-400 hover:text-purple-200 transition-all">
+                    <span class="material-symbols-outlined text-base">tune</span>
+                    <span class="text-[9px] font-medium mt-0.5">Màu</span>
+                </button>
+                <button data-tab="tab-transform" title="Cắt & Xoay ảnh" class="studio-tab-btn flex flex-col items-center justify-center p-1.5 rounded-lg border border-transparent text-slate-400 hover:text-purple-200 transition-all">
+                    <span class="material-symbols-outlined text-base">crop_rotate</span>
+                    <span class="text-[9px] font-medium mt-0.5">Cắt</span>
+                </button>
+                <button data-tab="tab-background" title="Xóa nền & Nền Canvas" class="studio-tab-btn flex flex-col items-center justify-center p-1.5 rounded-lg border border-transparent text-slate-400 hover:text-purple-200 transition-all">
+                    <span class="material-symbols-outlined text-base">auto_fix_high</span>
+                    <span class="text-[9px] font-medium mt-0.5">Nền</span>
+                </button>
+            </div>
+
+            <!-- Tab Contents Container (Scrollable) -->
+            <div class="flex-1 overflow-y-auto studio-scrollbar p-3.5 space-y-4">
+                
+                <!-- TAB 1: ẢNH & UPLOAD & AI TẠO ẢNH -->
+                <div id="tab-upload" class="studio-tab-pane space-y-4">
+                    <!-- Upload Box -->
+                    <div class="space-y-2">
+                        <label class="text-xs font-semibold text-slate-200 flex items-center justify-between">
+                            <span>Tải ảnh lên (JPG/PNG/WebP)</span>
+                            <span class="text-[10px] text-cyan-400 font-mono">Tối đa 50MB</span>
+                        </label>
+                        <div id="studioDropZone" class="border-2 border-dashed border-purple-500/40 hover:border-cyan-400 rounded-xl p-4 text-center cursor-pointer bg-slate-900/60 hover:bg-slate-900/90 transition-all group">
+                            <input type="file" id="studioFileInput" accept="image/png,image/jpeg,image/webp,image/svg+xml" class="hidden">
+                            <span class="material-symbols-outlined text-3xl text-purple-400 group-hover:text-cyan-400 group-hover:scale-110 transition-transform">cloud_upload</span>
+                            <p class="text-xs text-white font-medium mt-1">Kéo thả ảnh hoặc click để chọn</p>
+                            <p class="text-[10px] text-slate-400 mt-0.5">Hỗ trợ PNG trong suốt, JPG, WebP</p>
+                        </div>
+                    </div>
+
+                    <!-- URL Image Importer -->
+                    <div class="p-3 bg-purple-950/30 border border-purple-500/30 rounded-xl space-y-2">
+                        <label class="text-xs font-semibold text-purple-300 flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-sm text-cyan-400">link</span>
+                            Chèn ảnh từ đường link (URL)
+                        </label>
+                        <div class="flex items-center gap-1.5">
+                            <input type="url" id="studioUrlInput" placeholder="https://example.com/image.png" class="flex-1 bg-slate-900 border border-purple-500/40 rounded-lg px-2 py-1.5 text-xs text-white placeholder:text-slate-500 outline-none focus:border-cyan-400 font-medium">
+                            <button id="btnInsertFromUrl" class="bg-purple-600/70 hover:bg-purple-500 text-white font-semibold text-xs px-2.5 py-1.5 rounded-lg transition-all active:scale-95 flex items-center gap-1">
+                                <span class="material-symbols-outlined text-xs">add</span>
+                                <span>Chèn</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Sample Stock Assets -->
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-semibold text-slate-300">Ảnh mẫu & Đồ họa nhanh</label>
+                        <div class="grid grid-cols-3 gap-2" id="stockAssetsList">
+                            <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=300&q=80" alt="Abstract gradient" class="w-full h-16 object-cover rounded-lg border border-white/10 hover:border-cyan-400 cursor-pointer hover:scale-105 transition-all stock-sample-img">
+                            <img src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=300&q=80" alt="Retro Tech" class="w-full h-16 object-cover rounded-lg border border-white/10 hover:border-cyan-400 cursor-pointer hover:scale-105 transition-all stock-sample-img">
+                            <img src="https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=300&q=80" alt="Oil Art" class="w-full h-16 object-cover rounded-lg border border-white/10 hover:border-cyan-400 cursor-pointer hover:scale-105 transition-all stock-sample-img">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 2: CHỮ & TYPOGRAPHY -->
+                <div id="tab-text" class="studio-tab-pane hidden space-y-4">
+                    <!-- Quick Add Text Buttons -->
+                    <div class="space-y-2">
+                        <label class="text-xs font-semibold text-slate-200">Thêm hộp văn bản</label>
+                        <div class="grid grid-cols-1 gap-1.5">
+                            <button id="btnAddHeading" class="w-full bg-purple-900/30 hover:bg-purple-800/50 border border-purple-500/40 rounded-xl p-2 text-left flex items-center justify-between group transition-all">
+                                <span class="font-headline-lg text-sm font-bold text-white group-hover:text-purple-300">Thêm Tiêu Đề Lớn (H1)</span>
+                                <span class="material-symbols-outlined text-purple-400 text-sm">add_circle</span>
+                            </button>
+                            <button id="btnAddSubheading" class="w-full bg-slate-900/70 hover:bg-slate-800 border border-purple-500/30 rounded-xl p-2 text-left flex items-center justify-between group transition-all">
+                                <span class="font-body-lg text-xs font-semibold text-slate-200 group-hover:text-cyan-300">Thêm Phụ Đề (H2)</span>
+                                <span class="material-symbols-outlined text-cyan-400 text-sm">add_circle</span>
+                            </button>
+                            <button id="btnAddBodyText" class="w-full bg-slate-900/70 hover:bg-slate-800 border border-purple-500/30 rounded-xl p-2 text-left flex items-center justify-between group transition-all">
+                                <span class="text-xs text-slate-400 group-hover:text-white">Thêm Đoạn Văn Bản (Body)</span>
+                                <span class="material-symbols-outlined text-slate-400 text-sm">add_circle</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Typography Styling Inspector -->
+                    <div id="textInspectorPanel" class="p-3 bg-slate-900/80 border border-purple-500/30 rounded-xl space-y-3">
+                        <span class="text-[11px] font-bold text-purple-300 flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-sm">format_paint</span>
+                            Tùy chỉnh chữ đang chọn
+                        </span>
+
+                        <!-- Font Family -->
+                        <div class="space-y-1">
+                            <label class="text-[10px] text-slate-400">Phông chữ (Font Family):</label>
+                            <select id="textFontFamily" class="w-full bg-slate-950 text-xs text-white border border-purple-500/40 rounded-lg px-2 py-1.5 outline-none focus:border-cyan-400">
+                                <option value="Inter" style="font-family: 'Inter';">Inter (Hiện đại)</option>
+                                <option value="Sora" style="font-family: 'Sora';">Sora (Headline)</option>
+                                <option value="JetBrains Mono" style="font-family: 'JetBrains Mono';">JetBrains Mono (Tech/Code)</option>
+                                <option value="Playfair Display" style="font-family: 'Playfair Display';">Playfair Display (Sang trọng)</option>
+                                <option value="Montserrat" style="font-family: 'Montserrat';">Montserrat (Mạnh mẽ)</option>
+                                <option value="Oswald" style="font-family: 'Oswald';">Oswald (Poster Bold)</option>
+                                <option value="Lobster" style="font-family: 'Lobster';">Lobster (Nghệ thuật Retro)</option>
+                                <option value="Pacifico" style="font-family: 'Pacifico';">Pacifico (Viết tay Hand)</option>
+                                <option value="Caveat" style="font-family: 'Caveat';">Caveat (Chữ ký Cursive)</option>
+                                <option value="Orbitron" style="font-family: 'Orbitron';">Orbitron (Sci-Fi Cyber)</option>
+                            </select>
+                        </div>
+
+                        <!-- Font Size & Color Row -->
+                        <div class="grid grid-cols-2 gap-2">
+                            <div class="space-y-1">
+                                <label class="text-[10px] text-slate-400">Cỡ chữ (px):</label>
+                                <input type="number" id="textFontSize" min="8" max="200" value="36" class="w-full bg-slate-950 text-xs text-white border border-purple-500/40 rounded-lg px-2 py-1 outline-none">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[10px] text-slate-400">Màu chữ:</label>
+                                <div class="flex items-center gap-1">
+                                    <input type="color" id="textColorPicker" value="#ffffff" class="w-8 h-7 rounded border border-slate-700 bg-transparent cursor-pointer p-0">
+                                    <input type="text" id="textColorHex" value="#ffffff" class="w-full bg-slate-950 text-[11px] text-white border border-purple-500/40 rounded px-1.5 py-1 uppercase font-mono">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Format Buttons (Bold, Italic, Underline, Align) -->
+                        <div class="flex items-center justify-between gap-1 border-t border-purple-500/20 pt-2">
+                            <div class="flex items-center gap-1">
+                                <button id="btnTextBold" title="In đậm" class="p-1.5 bg-slate-950 hover:bg-purple-900/50 rounded border border-slate-700 text-slate-200 font-bold text-xs">B</button>
+                                <button id="btnTextItalic" title="In nghiêng" class="p-1.5 bg-slate-950 hover:bg-purple-900/50 rounded border border-slate-700 text-slate-200 italic text-xs">I</button>
+                                <button id="btnTextUnderline" title="Gạch chân" class="p-1.5 bg-slate-950 hover:bg-purple-900/50 rounded border border-slate-700 text-slate-200 underline text-xs">U</button>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <button id="btnAlignLeft" title="Căn trái" class="p-1.5 bg-slate-950 hover:bg-purple-900/50 rounded border border-slate-700 text-slate-200"><span class="material-symbols-outlined text-xs">format_align_left</span></button>
+                                <button id="btnAlignCenter" title="Căn giữa" class="p-1.5 bg-slate-950 hover:bg-purple-900/50 rounded border border-slate-700 text-slate-200"><span class="material-symbols-outlined text-xs">format_align_center</span></button>
+                                <button id="btnAlignRight" title="Căn phải" class="p-1.5 bg-slate-950 hover:bg-purple-900/50 rounded border border-slate-700 text-slate-200"><span class="material-symbols-outlined text-xs">format_align_right</span></button>
+                            </div>
+                        </div>
+
+                        <!-- Text Stroke & Background Highlight -->
+                        <div class="grid grid-cols-2 gap-2 border-t border-purple-500/20 pt-2">
+                            <div class="space-y-1">
+                                <label class="text-[10px] text-slate-400">Viền chữ (Stroke):</label>
+                                <div class="flex items-center gap-1">
+                                    <input type="color" id="textStrokeColor" value="#000000" class="w-6 h-6 rounded border border-slate-700 bg-transparent cursor-pointer p-0">
+                                    <input type="number" id="textStrokeWidth" min="0" max="20" value="0" class="w-12 bg-slate-950 text-xs text-white border border-purple-500/40 rounded px-1 text-center">
+                                </div>
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[10px] text-slate-400">Nền chữ (Highlight):</label>
+                                <div class="flex items-center gap-1">
+                                    <input type="color" id="textBgColor" value="#000000" class="w-6 h-6 rounded border border-slate-700 bg-transparent cursor-pointer p-0">
+                                    <button id="btnClearTextBg" title="Bỏ nền chữ" class="text-[10px] text-slate-400 hover:text-red-400 px-1 border border-slate-700 rounded">Xóa</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Text Shadow & Glow -->
+                        <div class="space-y-1 border-t border-purple-500/20 pt-2">
+                            <div class="flex items-center justify-between">
+                                <label class="text-[10px] text-slate-400">Đổ bóng & Phát sáng (Shadow/Glow):</label>
+                                <input type="color" id="textShadowColor" value="#d3bbff" class="w-5 h-5 rounded border border-slate-700 bg-transparent cursor-pointer p-0">
+                            </div>
+                            <input type="range" id="textShadowBlur" min="0" max="30" value="0" class="studio-slider w-full">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 3: HÌNH KHỐI & STICKERS -->
+                <div id="tab-shapes" class="studio-tab-pane hidden space-y-4">
+                    <label class="text-xs font-semibold text-slate-200">Chọn hình khối thêm vào canvas</label>
+                    <div class="grid grid-cols-4 gap-2">
+                        <button data-shape="rect" title="Hình chữ nhật" class="p-2.5 bg-slate-900 hover:bg-purple-900/40 border border-purple-500/30 hover:border-cyan-400 rounded-xl flex flex-col items-center gap-1 text-slate-200 hover:text-cyan-300 transition-all shape-btn">
+                            <span class="material-symbols-outlined text-xl">rectangle</span>
+                            <span class="text-[9px]">Chữ nhật</span>
+                        </button>
+                        <button data-shape="roundedRect" title="Hình bo góc" class="p-2.5 bg-slate-900 hover:bg-purple-900/40 border border-purple-500/30 hover:border-cyan-400 rounded-xl flex flex-col items-center gap-1 text-slate-200 hover:text-cyan-300 transition-all shape-btn">
+                            <span class="material-symbols-outlined text-xl">crop_square</span>
+                            <span class="text-[9px]">Bo góc</span>
+                        </button>
+                        <button data-shape="circle" title="Hình tròn" class="p-2.5 bg-slate-900 hover:bg-purple-900/40 border border-purple-500/30 hover:border-cyan-400 rounded-xl flex flex-col items-center gap-1 text-slate-200 hover:text-cyan-300 transition-all shape-btn">
+                            <span class="material-symbols-outlined text-xl">circle</span>
+                            <span class="text-[9px]">Tròn</span>
+                        </button>
+                        <button data-shape="triangle" title="Hình tam giác" class="p-2.5 bg-slate-900 hover:bg-purple-900/40 border border-purple-500/30 hover:border-cyan-400 rounded-xl flex flex-col items-center gap-1 text-slate-200 hover:text-cyan-300 transition-all shape-btn">
+                            <span class="material-symbols-outlined text-xl">change_history</span>
+                            <span class="text-[9px]">Tam giác</span>
+                        </button>
+                        <button data-shape="star" title="Ngôi sao" class="p-2.5 bg-slate-900 hover:bg-purple-900/40 border border-purple-500/30 hover:border-cyan-400 rounded-xl flex flex-col items-center gap-1 text-slate-200 hover:text-cyan-300 transition-all shape-btn">
+                            <span class="material-symbols-outlined text-xl">star</span>
+                            <span class="text-[9px]">Ngôi sao</span>
+                        </button>
+                        <button data-shape="line" title="Đường kẻ thẳng" class="p-2.5 bg-slate-900 hover:bg-purple-900/40 border border-purple-500/30 hover:border-cyan-400 rounded-xl flex flex-col items-center gap-1 text-slate-200 hover:text-cyan-300 transition-all shape-btn">
+                            <span class="material-symbols-outlined text-xl">horizontal_rule</span>
+                            <span class="text-[9px]">Đường kẻ</span>
+                        </button>
+                        <button data-shape="arrow" title="Mũi tên" class="p-2.5 bg-slate-900 hover:bg-purple-900/40 border border-purple-500/30 hover:border-cyan-400 rounded-xl flex flex-col items-center gap-1 text-slate-200 hover:text-cyan-300 transition-all shape-btn">
+                            <span class="material-symbols-outlined text-xl">trending_flat</span>
+                            <span class="text-[9px]">Mũi tên</span>
+                        </button>
+                        <button data-shape="badge" title="Huy hiệu Sale/VIP" class="p-2.5 bg-slate-900 hover:bg-purple-900/40 border border-purple-500/30 hover:border-cyan-400 rounded-xl flex flex-col items-center gap-1 text-slate-200 hover:text-cyan-300 transition-all shape-btn">
+                            <span class="material-symbols-outlined text-xl">verified</span>
+                            <span class="text-[9px]">Huy hiệu</span>
+                        </button>
+                    </div>
+
+                    <!-- Shape Styling Controls -->
+                    <div id="shapeInspectorPanel" class="p-3 bg-slate-900/80 border border-purple-500/30 rounded-xl space-y-2.5">
+                        <span class="text-[11px] font-bold text-purple-300 flex items-center gap-1">
+                            <span class="material-symbols-outlined text-sm">palette</span>
+                            Thuộc tính hình khối
+                        </span>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div class="space-y-1">
+                                <label class="text-[10px] text-slate-400">Màu nền (Fill):</label>
+                                <input type="color" id="shapeFillColor" value="#a855f7" class="w-full h-7 rounded border border-slate-700 bg-transparent cursor-pointer p-0">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[10px] text-slate-400">Màu viền (Stroke):</label>
+                                <input type="color" id="shapeStrokeColor" value="#ffffff" class="w-full h-7 rounded border border-slate-700 bg-transparent cursor-pointer p-0">
+                            </div>
+                        </div>
+                        <div class="space-y-1">
+                            <div class="flex justify-between text-[10px] text-slate-400">
+                                <span>Độ dày viền (Stroke Width):</span>
+                                <span id="shapeStrokeWidthVal">0 px</span>
+                            </div>
+                            <input type="range" id="shapeStrokeWidth" min="0" max="20" value="0" class="studio-slider w-full">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 4: BỘ LỌC & ĐIỀU CHỈNH MÀU SẮC -->
+                <div id="tab-adjust" class="studio-tab-pane hidden space-y-4">
+                    <!-- Preset One-Click Filters -->
+                    <div class="space-y-2">
+                        <label class="text-xs font-semibold text-slate-200">Bộ lọc ảnh nghệ thuật (1-Click Filters)</label>
+                        <div class="grid grid-cols-3 gap-1.5">
+                            <button data-filter="normal" class="filter-preset-btn p-1.5 bg-slate-900 border border-slate-700 rounded-lg text-[10px] text-white hover:border-purple-400 transition-all font-medium">Gốc (Reset)</button>
+                            <button data-filter="cyberpunk" class="filter-preset-btn p-1.5 bg-purple-950/60 border border-cyan-400/40 rounded-lg text-[10px] text-cyan-300 hover:border-cyan-300 transition-all font-medium">Cyberpunk</button>
+                            <button data-filter="cinematic" class="filter-preset-btn p-1.5 bg-slate-900 border border-amber-500/40 rounded-lg text-[10px] text-amber-300 hover:border-amber-300 transition-all font-medium">Cinematic</button>
+                            <button data-filter="vintage" class="filter-preset-btn p-1.5 bg-slate-900 border border-yellow-600/40 rounded-lg text-[10px] text-yellow-200 hover:border-yellow-300 transition-all font-medium">Vintage Retro</button>
+                            <button data-filter="bw" class="filter-preset-btn p-1.5 bg-slate-900 border border-slate-500 rounded-lg text-[10px] text-slate-200 hover:border-white transition-all font-medium">Trắng đen B&W</button>
+                            <button data-filter="sunset" class="filter-preset-btn p-1.5 bg-slate-900 border border-orange-500/40 rounded-lg text-[10px] text-orange-300 hover:border-orange-300 transition-all font-medium">Sunset Glow</button>
+                            <button data-filter="hdr" class="filter-preset-btn p-1.5 bg-slate-900 border border-emerald-500/40 rounded-lg text-[10px] text-emerald-300 hover:border-emerald-300 transition-all font-medium">HDR Pop</button>
+                            <button data-filter="pastel" class="filter-preset-btn p-1.5 bg-slate-900 border border-pink-500/40 rounded-lg text-[10px] text-pink-300 hover:border-pink-300 transition-all font-medium">Pastel Soft</button>
+                            <button data-filter="cold" class="filter-preset-btn p-1.5 bg-slate-900 border border-blue-500/40 rounded-lg text-[10px] text-blue-300 hover:border-blue-300 transition-all font-medium">Cold Blue</button>
+                        </div>
+                    </div>
+
+                    <!-- Detailed Sliders (Brightness, Contrast, Saturation, Blur, Sharpen) -->
+                    <div class="p-3 bg-slate-900/80 border border-purple-500/30 rounded-xl space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[11px] font-bold text-purple-300 flex items-center gap-1">
+                                <span class="material-symbols-outlined text-sm">tune</span>
+                                Tinh chỉnh chi tiết (Sliders)
+                            </span>
+                            <button id="btnResetAdjustments" class="text-[10px] text-slate-400 hover:text-cyan-300">Đặt lại</button>
+                        </div>
+
+                        <!-- Brightness -->
+                        <div class="space-y-1">
+                            <div class="flex justify-between text-[10px] text-slate-300">
+                                <span>Độ sáng (Brightness):</span>
+                                <span id="valBrightness" class="font-mono text-cyan-300">0%</span>
+                            </div>
+                            <input type="range" id="sliderBrightness" min="-100" max="100" value="0" class="studio-slider w-full">
+                        </div>
+
+                        <!-- Contrast -->
+                        <div class="space-y-1">
+                            <div class="flex justify-between text-[10px] text-slate-300">
+                                <span>Độ tương phản (Contrast):</span>
+                                <span id="valContrast" class="font-mono text-cyan-300">0%</span>
+                            </div>
+                            <input type="range" id="sliderContrast" min="-100" max="100" value="0" class="studio-slider w-full">
+                        </div>
+
+                        <!-- Saturation -->
+                        <div class="space-y-1">
+                            <div class="flex justify-between text-[10px] text-slate-300">
+                                <span>Độ bão hòa (Saturation):</span>
+                                <span id="valSaturation" class="font-mono text-cyan-300">0%</span>
+                            </div>
+                            <input type="range" id="sliderSaturation" min="-100" max="100" value="0" class="studio-slider w-full">
+                        </div>
+
+                        <!-- Blur -->
+                        <div class="space-y-1">
+                            <div class="flex justify-between text-[10px] text-slate-300">
+                                <span>Làm mờ (Blur):</span>
+                                <span id="valBlur" class="font-mono text-cyan-300">0 px</span>
+                            </div>
+                            <input type="range" id="sliderBlur" min="0" max="25" value="0" step="0.5" class="studio-slider w-full">
+                        </div>
+
+                        <!-- Sharpen -->
+                        <div class="space-y-1">
+                            <div class="flex justify-between text-[10px] text-slate-300">
+                                <span>Làm nét (Sharpen):</span>
+                                <span id="valSharpen" class="font-mono text-cyan-300">0%</span>
+                            </div>
+                            <input type="range" id="sliderSharpen" min="0" max="100" value="0" class="studio-slider w-full">
+                        </div>
+
+                        <!-- Hue Rotate -->
+                        <div class="space-y-1">
+                            <div class="flex justify-between text-[10px] text-slate-300">
+                                <span>Đổi sắc độ màu (Hue Rotate):</span>
+                                <span id="valHue" class="font-mono text-cyan-300">0°</span>
+                            </div>
+                            <input type="range" id="sliderHue" min="0" max="360" value="0" class="studio-slider w-full">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 5: CẮT, XOAY & BIẾN ĐỔI (CROP / ROTATE) -->
+                <div id="tab-transform" class="studio-tab-pane hidden space-y-4">
+                    <!-- Crop Tool Section -->
+                    <div class="space-y-2">
+                        <label class="text-xs font-semibold text-slate-200 flex items-center justify-between">
+                            <span>Cắt ảnh (Crop Tool)</span>
+                            <span class="text-[10px] text-purple-400">Interactive</span>
+                        </label>
+                        <div class="grid grid-cols-2 gap-1.5">
+                            <button id="btnStartCrop" class="w-full bg-purple-600/70 hover:bg-purple-500 text-white font-medium text-xs py-2 rounded-xl flex items-center justify-center gap-1.5 transition-all">
+                                <span class="material-symbols-outlined text-sm">crop</span>
+                                <span>Bật Khung Cắt</span>
+                            </button>
+                            <button id="btnApplyCrop" disabled class="w-full bg-emerald-600/70 hover:bg-emerald-500 disabled:opacity-40 disabled:pointer-events-none text-white font-medium text-xs py-2 rounded-xl flex items-center justify-center gap-1.5 transition-all">
+                                <span class="material-symbols-outlined text-sm">check</span>
+                                <span>Áp Dụng Cắt</span>
+                            </button>
+                        </div>
+                        <!-- Crop Ratios -->
+                        <div class="grid grid-cols-4 gap-1 pt-1">
+                            <button data-crop-ratio="free" class="crop-ratio-btn active p-1 bg-slate-900 border border-purple-500/40 rounded text-[10px] text-slate-200">Tự do</button>
+                            <button data-crop-ratio="1:1" class="crop-ratio-btn p-1 bg-slate-900 border border-slate-700 rounded text-[10px] text-slate-200">1:1</button>
+                            <button data-crop-ratio="4:5" class="crop-ratio-btn p-1 bg-slate-900 border border-slate-700 rounded text-[10px] text-slate-200">4:5</button>
+                            <button data-crop-ratio="16:9" class="crop-ratio-btn p-1 bg-slate-900 border border-slate-700 rounded text-[10px] text-slate-200">16:9</button>
+                        </div>
+                    </div>
+
+                    <!-- Rotate & Flip Section -->
+                    <div class="p-3 bg-slate-900/80 border border-purple-500/30 rounded-xl space-y-3">
+                        <label class="text-[11px] font-bold text-purple-300">Xoay & Lật ảnh</label>
+                        <div class="grid grid-cols-4 gap-1.5">
+                            <button id="btnRotateLeft" title="Xoay trái 90°" class="p-2 bg-slate-950 hover:bg-purple-900/50 border border-slate-700 rounded-lg flex flex-col items-center text-slate-200">
+                                <span class="material-symbols-outlined text-base">rotate_left</span>
+                                <span class="text-[8px] mt-0.5">-90°</span>
+                            </button>
+                            <button id="btnRotateRight" title="Xoay phải 90°" class="p-2 bg-slate-950 hover:bg-purple-900/50 border border-slate-700 rounded-lg flex flex-col items-center text-slate-200">
+                                <span class="material-symbols-outlined text-base">rotate_right</span>
+                                <span class="text-[8px] mt-0.5">+90°</span>
+                            </button>
+                            <button id="btnFlipX" title="Lật ngang" class="p-2 bg-slate-950 hover:bg-purple-900/50 border border-slate-700 rounded-lg flex flex-col items-center text-slate-200">
+                                <span class="material-symbols-outlined text-base">flip</span>
+                                <span class="text-[8px] mt-0.5">Lật Ngang</span>
+                            </button>
+                            <button id="btnFlipY" title="Lật dọc" class="p-2 bg-slate-950 hover:bg-purple-900/50 border border-slate-700 rounded-lg flex flex-col items-center text-slate-200">
+                                <span class="material-symbols-outlined text-base rotate-90">flip</span>
+                                <span class="text-[8px] mt-0.5">Lật Dọc</span>
+                            </button>
+                        </div>
+
+                        <!-- Free Rotation Slider -->
+                        <div class="space-y-1 pt-1">
+                            <div class="flex justify-between text-[10px] text-slate-300">
+                                <span>Góc xoay tự do:</span>
+                                <span id="valRotateAngle" class="font-mono text-cyan-300">0°</span>
+                            </div>
+                            <input type="range" id="sliderRotate" min="0" max="360" value="0" class="studio-slider w-full">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 6: XÓA NỀN & NỀN CANVAS -->
+                <div id="tab-background" class="studio-tab-pane hidden space-y-4">
+                    <!-- Auto Remove Background (AI & Magic Alpha) -->
+                    <div class="p-3 bg-purple-950/40 border border-purple-500/40 rounded-xl space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-purple-300 flex items-center gap-1.5">
+                                <span class="material-symbols-outlined text-sm text-cyan-400">auto_fix_high</span>
+                                Tự động xóa nền ảnh (Magic Cut)
+                            </span>
+                            <span class="text-[9px] bg-cyan-500/20 text-cyan-300 px-1.5 py-0.2 rounded font-mono">AI Alpha</span>
+                        </div>
+                        <p class="text-[10px] text-slate-300 leading-relaxed">Chọn một layer ảnh, sau đó bấm nút để tự động tách chủ thể và làm trong suốt hậu cảnh.</p>
+                        
+                        <div class="space-y-1">
+                            <div class="flex justify-between text-[10px] text-slate-400">
+                                <span>Độ nhạy tách viền (Tolerance):</span>
+                                <span id="valBgTolerance" class="text-cyan-300 font-mono">30</span>
+                            </div>
+                            <input type="range" id="sliderBgTolerance" min="5" max="100" value="30" class="studio-slider w-full">
+                        </div>
+
+                        <button id="btnRemoveBackground" class="w-full bg-gradient-to-r from-purple-600 via-indigo-600 to-cyan-600 hover:opacity-90 text-white font-semibold text-xs py-2 rounded-lg shadow-lg flex items-center justify-center gap-2 transition-all active:scale-98">
+                            <span class="material-symbols-outlined text-sm">content_cut</span>
+                            <span id="btnRemoveBackgroundText">Xóa Nền Layer Đang Chọn</span>
+                        </button>
+                    </div>
+
+                    <!-- Canvas Background Customization -->
+                    <div class="p-3 bg-slate-900/80 border border-purple-500/30 rounded-xl space-y-3">
+                        <span class="text-[11px] font-bold text-purple-300">Đổi Nền Toàn Canvas</span>
+                        
+                        <!-- Solid Color Picker & Presets -->
+                        <div class="space-y-1.5">
+                            <label class="text-[10px] text-slate-400">Màu đơn sắc (Solid Color):</label>
+                            <div class="flex items-center gap-2">
+                                <input type="color" id="canvasBgColorPicker" value="#10131a" class="w-8 h-8 rounded border border-slate-700 bg-transparent cursor-pointer p-0">
+                                <button id="btnTransparentBg" class="flex-1 bg-slate-950 hover:bg-slate-800 border border-slate-700 rounded-lg py-1 px-2 text-[10px] text-slate-200 flex items-center justify-center gap-1">
+                                    <span class="material-symbols-outlined text-xs">grid_view</span>
+                                    <span>Nền trong suốt (PNG)</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Gradient Presets -->
+                        <div class="space-y-1.5 pt-1 border-t border-purple-500/20">
+                            <label class="text-[10px] text-slate-400">Dải chuyển màu (Gradients):</label>
+                            <div class="grid grid-cols-4 gap-1.5">
+                                <button data-bg-grad="linear-gradient(135deg, #090c13 0%, #1e1b4b 100%)" class="h-8 rounded-lg border border-white/20 hover:border-cyan-400 bg-gradient-to-br from-[#090c13] to-[#1e1b4b] bg-grad-btn" title="Midnight Purple"></button>
+                                <button data-bg-grad="linear-gradient(135deg, #18002e 0%, #4c0519 100%)" class="h-8 rounded-lg border border-white/20 hover:border-cyan-400 bg-gradient-to-br from-[#18002e] to-[#4c0519] bg-grad-btn" title="Cyber Crimson"></button>
+                                <button data-bg-grad="linear-gradient(135deg, #022c22 0%, #082f49 100%)" class="h-8 rounded-lg border border-white/20 hover:border-cyan-400 bg-gradient-to-br from-[#022c22] to-[#082f49] bg-grad-btn" title="Deep Emerald"></button>
+                                <button data-bg-grad="linear-gradient(135deg, #1c1917 0%, #451a03 100%)" class="h-8 rounded-lg border border-white/20 hover:border-cyan-400 bg-gradient-to-br from-[#1c1917] to-[#451a03] bg-grad-btn" title="Warm Amber"></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </aside>
+
+        <!-- ========================================================================= -->
+        <!-- COLUMN 2: CENTER CANVAS STAGE (Auto-scaling interactive board)             -->
+        <!-- ========================================================================= -->
+        <main id="canvasStageContainer" class="flex-1 bg-[#090c13] flex flex-col items-center justify-center p-4 sm:p-8 overflow-auto studio-scrollbar relative">
+            
+            <!-- Canvas Dimension & Guide Floating Badge -->
+            <div class="absolute top-4 left-4 z-10 flex items-center gap-2 bg-slate-950/80 backdrop-blur border border-purple-500/30 px-3 py-1 rounded-full text-xs font-mono text-cyan-300 pointer-events-none shadow-md">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span id="canvasDimensionDisplay">1080 x 1350 px</span>
+            </div>
+
+            <!-- Canvas Center Wrapper (Main Stage with Drop & Drag support) -->
+            <div id="canvasViewportWrapper" class="relative shadow-[0_0_50px_rgba(0,0,0,0.9)] border border-purple-500/30 rounded-lg overflow-hidden transition-transform duration-75 ease-out">
+                <!-- Checkerboard / Background Box -->
+                <div id="canvasBackgroundSurface" class="w-full h-full canvas-checkerboard relative">
+                    <!-- Primary Fabric.js Canvas Element -->
+                    <canvas id="fabricCanvas"></canvas>
+                </div>
+            </div>
+
+            <!-- Drag & Drop Hint Overlay -->
+            <div id="canvasDragOverlay" class="hidden absolute inset-4 border-2 border-dashed border-cyan-400 bg-cyan-950/60 backdrop-blur rounded-2xl flex-col items-center justify-center z-30 pointer-events-none animate-fadeIn">
+                <span class="material-symbols-outlined text-5xl text-cyan-300 animate-bounce">add_photo_alternate</span>
+                <p class="text-base font-bold text-white mt-2">Thả ảnh vào đây để chèn vào Poster!</p>
+            </div>
+
+            <!-- Studio Floating Toast Notification -->
+            <div id="studioToast" class="hidden absolute bottom-6 z-40 bg-purple-950/90 border border-purple-400/60 shadow-[0_0_25px_rgba(168,85,247,0.5)] px-4 py-2.5 rounded-2xl flex items-center gap-2.5 backdrop-blur-md animate-fadeIn transition-all pointer-events-none">
+                <span class="material-symbols-outlined text-cyan-300 text-lg">auto_awesome</span>
+                <span id="studioToastText" class="text-xs font-semibold text-white font-sans"></span>
+            </div>
+        </main>
+
+        <!-- ========================================================================= -->
+        <!-- COLUMN 3: RIGHT LAYER MANAGEMENT & EXPORT INSPECTOR (Width ~ 300px)        -->
+        <!-- ========================================================================= -->
+        <aside class="w-80 bg-slate-950/95 border-l border-purple-500/30 flex flex-col flex-shrink-0 z-10">
+            
+            <!-- Layers Panel Header -->
+            <div class="p-3 border-b border-purple-500/20 bg-slate-900/70 flex items-center justify-between flex-shrink-0">
+                <div class="flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-purple-400 text-base">layers</span>
+                    <span class="font-bold text-xs text-white">Danh Sách Layers</span>
+                    <span id="layerCountBadge" class="text-[10px] bg-purple-500/20 text-purple-300 border border-purple-400/40 px-1.5 py-0.2 rounded font-mono">0</span>
+                </div>
+                <div class="flex items-center gap-1">
+                    <button id="btnDuplicateLayer" title="Nhân bản layer đang chọn (Ctrl+D)" class="p-1 text-slate-400 hover:text-cyan-300 rounded hover:bg-slate-800">
+                        <span class="material-symbols-outlined text-sm">content_copy</span>
+                    </button>
+                    <button id="btnDeleteLayer" title="Xóa layer đang chọn (Delete)" class="p-1 text-slate-400 hover:text-red-400 rounded hover:bg-slate-800">
+                        <span class="material-symbols-outlined text-sm">delete</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dynamic Layers List (Scrollable) -->
+            <div class="flex-1 overflow-y-auto studio-scrollbar p-2.5 space-y-1.5" id="studioLayersList">
+                <!-- Empty State -->
+                <div id="emptyLayersPlaceholder" class="p-6 text-center text-slate-500 space-y-2">
+                    <span class="material-symbols-outlined text-3xl opacity-50">layers</span>
+                    <p class="text-xs">Chưa có Layer nào trên Canvas.<br>Tải ảnh hoặc thêm Text để bắt đầu!</p>
+                </div>
+            </div>
+
+            <!-- Active Layer Properties (Opacity, Stacking) -->
+            <div id="layerPropsContainer" class="p-3 border-t border-purple-500/20 bg-slate-900/60 space-y-2.5 flex-shrink-0">
+                <span class="text-[11px] font-bold text-purple-300 flex items-center gap-1">
+                    <span class="material-symbols-outlined text-sm">tune</span>
+                    Thuộc tính Layer đang chọn
+                </span>
+
+                <!-- Opacity Slider -->
+                <div class="space-y-1">
+                    <div class="flex justify-between text-[10px] text-slate-300">
+                        <span>Độ mờ đục (Opacity):</span>
+                        <span id="valLayerOpacity" class="font-mono text-cyan-300">100%</span>
+                    </div>
+                    <input type="range" id="sliderLayerOpacity" min="0" max="100" value="100" class="studio-slider w-full">
+                </div>
+
+                <!-- Layer Stacking Order Actions (Move Up / Down) -->
+                <div class="grid grid-cols-4 gap-1 pt-1">
+                    <button id="btnLayerToFront" title="Đưa lên trên cùng" class="p-1 bg-slate-950 hover:bg-purple-900/40 border border-slate-700 rounded text-[10px] text-slate-300 flex flex-col items-center">
+                        <span class="material-symbols-outlined text-xs">vertical_align_top</span>
+                        <span>Đỉnh</span>
+                    </button>
+                    <button id="btnLayerUp" title="Di chuyển lên 1 lớp" class="p-1 bg-slate-950 hover:bg-purple-900/40 border border-slate-700 rounded text-[10px] text-slate-300 flex flex-col items-center">
+                        <span class="material-symbols-outlined text-xs">arrow_upward</span>
+                        <span>Lên</span>
+                    </button>
+                    <button id="btnLayerDown" title="Di chuyển xuống 1 lớp" class="p-1 bg-slate-950 hover:bg-purple-900/40 border border-slate-700 rounded text-[10px] text-slate-300 flex flex-col items-center">
+                        <span class="material-symbols-outlined text-xs">arrow_downward</span>
+                        <span>Xuống</span>
+                    </button>
+                    <button id="btnLayerToBack" title="Đưa xuống dưới cùng" class="p-1 bg-slate-950 hover:bg-purple-900/40 border border-slate-700 rounded text-[10px] text-slate-300 flex flex-col items-center">
+                        <span class="material-symbols-outlined text-xs">vertical_align_bottom</span>
+                        <span>Đáy</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Export & Output Control Panel -->
+            <div class="p-3 border-t border-purple-500/30 bg-slate-950 space-y-2.5 flex-shrink-0">
+                <span class="text-xs font-bold text-white flex items-center justify-between">
+                    <span class="flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-purple-400 text-sm">download</span>
+                        Xuất File Ảnh & Poster
+                    </span>
+                </span>
+
+                <!-- Format & Multiplier row -->
+                <div class="grid grid-cols-2 gap-2">
+                    <div class="space-y-1">
+                        <label class="text-[10px] text-slate-400">Định dạng:</label>
+                        <select id="exportFormatSelect" class="w-full bg-slate-900 text-xs text-cyan-300 border border-purple-500/40 rounded-lg px-2 py-1 outline-none">
+                            <option value="png">PNG (Trong suốt)</option>
+                            <option value="jpeg">JPG (Tiêu chuẩn)</option>
+                            <option value="webp">WebP (Siêu nhẹ)</option>
+                        </select>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] text-slate-400">Độ sắc nét:</label>
+                        <select id="exportScaleSelect" class="w-full bg-slate-900 text-xs text-cyan-300 border border-purple-500/40 rounded-lg px-2 py-1 outline-none">
+                            <option value="1">1x (Tiêu chuẩn)</option>
+                            <option value="2">2x (Retina HD)</option>
+                            <option value="3">3x (Ultra 4K)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Export Action Buttons -->
+                <div class="space-y-1.5 pt-1">
+                    <!-- Download to Computer -->
+                    <button id="btnDownloadImage" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs py-2 rounded-xl shadow-[0_0_15px_rgba(168,85,247,0.35)] flex items-center justify-center gap-1.5 transition-all active:scale-98">
+                        <span class="material-symbols-outlined text-sm">save_alt</span>
+                        <span>Tải Ảnh Về Máy</span>
+                    </button>
+
+                    <!-- Send directly to AI Karik Chat -->
+                    <button id="btnSendToChat" class="w-full bg-gradient-to-r from-cyan-600 to-emerald-600 hover:from-cyan-500 hover:to-emerald-500 text-white font-bold text-xs py-2 rounded-xl shadow-[0_0_15px_rgba(6,182,212,0.35)] flex items-center justify-center gap-1.5 transition-all active:scale-98">
+                        <span class="material-symbols-outlined text-sm">send</span>
+                        <span>💬 Gửi vào Chat AI Karik</span>
+                    </button>
+                </div>
+            </div>
+
+        </aside>
+
+    </div>
+</div>

@@ -92,6 +92,13 @@
         </div>
         
         <div class="flex items-center gap-1 flex-shrink-0">
+            <!-- Image & Poster Studio Button (Studio Ảnh) -->
+            <button id="btnOpenImageEditorHeader" onclick="if(typeof window.openImageEditor==='function'){window.openImageEditor();}else{console.warn('ImageEditor not ready');}" type="button" title="Mở Studio thiết kế ảnh & poster chuyên nghiệp"
+                class="flex items-center gap-1 bg-purple-900 hover:bg-purple-800 active:scale-95 border border-purple-400/60 px-2 py-0.5 rounded-full text-purple-200 hover:text-white text-[10px] font-semibold transition-all shadow-[0_0_10px_rgba(168,85,247,0.4)] cursor-pointer z-10">
+                <span class="material-symbols-outlined text-[12px] text-purple-300">palette</span>
+                <span class="font-mono">Studio Ảnh</span>
+            </button>
+
             <!-- Live Call Button (Gọi AI Trực Tiếp) -->
             <button id="btnWebRTCCall" type="button" title="Gọi trực tiếp AI Karik (Đàm thoại 2 chiều + Ngắt lời tự nhiên)"
                 class="flex items-center gap-1 bg-emerald-950/80 hover:bg-emerald-800/90 border border-emerald-400/50 px-2 py-0.5 rounded-full text-emerald-200 text-[10px] font-semibold transition-all active:scale-95 shadow-[0_0_10px_rgba(16,185,129,0.3)]">
@@ -205,6 +212,12 @@
     <div class="chat-footer-inner flex flex-col gap-2 w-full pt-1">
         <!-- Input Form (ChatGPT Pill Style) -->
         <form id="chatForm" class="flex items-center gap-1 sm:gap-1.5 pt-1 border-t border-purple-500/30 w-full">
+            <!-- Open Image Studio Button -->
+            <button type="button" id="btnOpenImageEditorFooter" onclick="if(typeof window.openImageEditor==='function'){window.openImageEditor();}else{console.warn('ImageEditor not ready');}" title="Mở Studio thiết kế & chỉnh sửa ảnh (Poster, Filter, Xóa nền)"
+                class="bg-purple-600/30 hover:bg-purple-500/50 border border-purple-400/50 text-purple-200 hover:text-white p-1.5 rounded-lg transition-all active:scale-95 flex items-center justify-center flex-shrink-0 cursor-pointer shadow-sm">
+                <span class="material-symbols-outlined text-base">palette</span>
+            </button>
+
             <!-- Attach File Button -->
             <button type="button" id="btnAttachFile" title="Đính kèm file (Ảnh, Video, Word, PDF dưới 50MB)"
                 class="bg-purple-500/20 hover:bg-purple-500/40 border border-purple-400/40 text-purple-300 p-1.5 rounded-lg transition-all active:scale-95 flex items-center justify-center flex-shrink-0">

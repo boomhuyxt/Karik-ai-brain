@@ -2,15 +2,15 @@ const geminiConfig = require('../../config/gemini');
 
 class RouterService {
   isProviderAvailable(provider) {
-    return provider === 'gemini' ? Boolean(geminiConfig.apiKey) : false;
+    if (provider === 'gemini') return Boolean(geminiConfig.apiKey);
+    return false;
   }
 
   getDefaultAvailableProvider() {
     return 'gemini';
   }
 
-  selectProvider() {
-    // Exclusively use Google Gemini as the core underlying provider
+  selectProvider(prompt = '', category = '') {
     return 'gemini';
   }
 
@@ -24,11 +24,13 @@ class RouterService {
   dispatchAgent(prompt = '', category = '') {
     const text = `${prompt} ${category}`.toLowerCase();
 
-    // 1. Image Generation & Visual Concept Agent (Gemini 3.5 Flash Lite)
+    // 1. Image & Poster Studio Design Agent (Gemini 3.6 Flash)
     const imageKeywords = [
       'tạo ảnh', 'vẽ ảnh', 'hình ảnh', 'tạo hình', 'poster', 'banner',
-      'concept art', 'midjourney', 'dall-e', 'stable diffusion', 'visual',
-      'ảnh quảng cáo', 'thiết kế ảnh', 'prompts ảnh', 'prompt ảnh', 'vẽ cho'
+      'concept art', 'visual', 'ảnh quảng cáo', 'thiết kế ảnh', 'prompts ảnh',
+      'prompt ảnh', 'vẽ cho', 'edit ảnh', 'chỉnh sửa ảnh', 'chỉnh ảnh', 'studio ảnh',
+      'xóa nền', 'tách nền', 'thay nền', 'ghép ảnh', 'layer ảnh', 'cắt ảnh', 'crop ảnh',
+      'xoay ảnh', 'làm mờ', 'làm nét', 'filter ảnh', 'đổi màu ảnh'
     ];
     if (imageKeywords.some(kw => text.includes(kw))) {
       return geminiConfig.agents.image;
@@ -73,14 +75,15 @@ class RouterService {
     }
 
     if (agent.id === 'image') {
-      return `[CHỈ THỊ ĐIỀU PHỐI TỪ AI KARIK ORCHESTRATOR -> AGENT LÀM ẢNH (Model: ${agent.model})]:
-- Mục tiêu: Phân tích yêu cầu và thiết kế bộ Concept Visual + Prompt tiếng Anh chuyên sâu cho công cụ AI tạo ảnh.
+      return `[CHỈ THỊ ĐIỀU PHỐI TỪ AI KARIK ORCHESTRATOR -> AGENT STUDIO ẢNH & POSTER DESIGNER (Model: ${agent.model})]:
+- Mục tiêu: Phân tích yêu cầu và thiết kế bộ Concept Visual, bảng màu, typography và cấu trúc Layers chi tiết cho AI Karik Studio.
 - Yêu cầu ban đầu của người dùng: "${prompt}"
 - Hướng dẫn thực thi:
-  1. Phân tích chi tiết Concept & Bố cục Visual (Phong cách, ánh sáng, góc máy, bảng màu).
-  2. Viết Prompt tiếng Anh chuẩn Midjourney v6/DALL-E 3/SDXL (kèm tham số kỹ thuật --ar, --v 6.0, 8k, photorealistic).
-  3. Tự động chèn ảnh xem trước trực quan qua Pollinations AI: ![Concept Visual](https://image.pollinations.ai/prompt/<encode_tiếng_anh_prompt>?width=1024&height=576&nologo=true).
-  4. Tuân thủ nghiêm ngặt quy chuẩn tại image.prompt.md.`;
+  1. Phân tích Concept & Bố cục Visual (Mục tiêu, phong cách, tỷ lệ Canvas khuyến nghị: Poster 4:5, Instagram 1:1, Story 9:16, Banner 16:9).
+  2. Xây dựng Bảng màu (Color Palette với mã HEX) và Phông chữ đề xuất (Sora, Inter, Playfair Display, Montserrat, Oswald, Lobster...).
+  3. Lập Bảng phân lớp thiết kế (Layer Specifications: Nền, Hình ảnh, Typography H1/H2/Body, Shapes/Huy hiệu, Hiệu ứng Filters, Tách nền Magic Cut).
+  4. Hướng dẫn người dùng thao tác trực tiếp trên AI Karik Studio (bấm nút Studio Ảnh trên khung chat).
+  5. Tuân thủ nghiêm ngặt quy chuẩn tại image.prompt.md.`;
     }
 
     if (agent.id === 'video') {

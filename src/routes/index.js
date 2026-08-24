@@ -11,6 +11,7 @@ const knowledgeRoute = require('./knowledge.route');
 const workflowRoute = require('./workflow.route');
 const githubRoute = require('./github.route');
 const uploadRoute = require('./upload.route');
+const imageRoute = require('./image.route');
 const adminRoute = require('./admin.route');
 
 // Service dependencies for legacy / standalone graph dashboard endpoints
@@ -23,6 +24,7 @@ const ttsService = require('../services/tts.service');
 // Module Routes
 router.use('/auth', authRoute);
 router.use('/chat', chatRoute);
+router.use('/image', imageRoute);
 router.use('/wiki', wikiRoute);
 router.use('/memory', memoryRoute);
 router.use('/project', projectRoute);

@@ -56,7 +56,7 @@ class AIManagerService {
     const mimeType = typeof chatResult === 'object' && chatResult !== null ? chatResult.mimeType : null;
     const voice = typeof chatResult === 'object' && chatResult !== null ? chatResult.voice : null;
 
-    // 4. Automatic Knowledge Pipeline (Asynchronous Background Execution)
+    // 5. Automatic Knowledge Pipeline (Asynchronous Background Execution)
     (async () => {
       try {
         const topic = knowledgePipelineService.extractTopic(prompt);
@@ -70,7 +70,7 @@ class AIManagerService {
       }
     })();
 
-    // 5. Accurate Token-Based Tracking & Reporting (No RPD limits)
+    // 6. Accurate Token-Based Tracking & Reporting (No RPD limits)
     const tokenStats = await tokenService.trackTokens(targetProvider, prompt, reply, rawUsage);
     const estimatedCost = costService.calculateCost(
       targetProvider,
@@ -78,13 +78,18 @@ class AIManagerService {
       tokenStats.outputTokens
     );
 
-    // 6. Save assistant reply
+    // 7. Save assistant reply
     conversationService.addMessage('assistant', reply, targetProvider);
 
     return {
       reply,
       agent: delegatedAgent,
       model: targetModel,
+      image: generatedImageResult && generatedImageResult.success ? {
+        url: generatedImageResult.url,
+        model: generatedImageResult.model,
+        mimeType: generatedImageResult.mimeType
+      } : null,
       audioData,
       mimeType,
       voice,

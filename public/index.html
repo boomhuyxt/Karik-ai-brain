@@ -7,13 +7,14 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>AI Brain Karik - GitHub Graph View & Daily Journal</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <!-- D3.js & Marked.js for Force Graph & Markdown rendering -->
+    <!-- D3.js, Fabric.js & Marked.js -->
     <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fabric@5.3.0/dist/fabric.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         rel="stylesheet">
     <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&family=Sora:wght@600;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&family=Sora:wght@600;700&family=Caveat:wght@600&family=Lobster&family=Montserrat:wght@600;800&family=Orbitron:wght@700&family=Oswald:wght@600;700&family=Pacifico&family=Playfair+Display:ital,wght@0,600;1,600&display=swap"
         rel="stylesheet">
 
     <script id="tailwind-config">
@@ -466,6 +467,7 @@
     <!-- Component Containers -->
     <div id="userManagementModalContainer"></div>
     <div id="systemMonitoringModalContainer"></div>
+    <div id="imageEditorModalContainer"></div>
 
     <!-- Application Script Modules -->
     <script src="/js/header.js"></script>
@@ -476,6 +478,7 @@
     <script src="/js/newNote.js"></script>
     <script src="/js/voice.js"></script>
     <script src="/js/chat.js"></script>
+    <script src="/js/imageEditor.js"></script>
     <script src="/js/userManagement.js"></script>
     <script src="/js/systemMonitoring.js"></script>
     <script>
@@ -500,7 +503,8 @@
                 loadComponent('chatContainer', '/components/chat.html'),
                 loadComponent('newNoteModalContainer', '/components/newNoteModal.html'),
                 loadComponent('userManagementModalContainer', '/components/userManagementModal.html'),
-                loadComponent('systemMonitoringModalContainer', '/components/systemMonitoringModal.html')
+                loadComponent('systemMonitoringModalContainer', '/components/systemMonitoringModal.html'),
+                loadComponent('imageEditorModalContainer', '/components/imageEditorModal.html')
             ]);
 
             // Initialize all feature modules
@@ -511,6 +515,7 @@
             initDailyNote();
             initNewNoteModal();
             initAIChat();
+            if (typeof initImageEditorModule === 'function') initImageEditorModule();
 
             // Bind Refresh Graph action
             const btnRefreshGraph = document.getElementById('btnRefreshGraph');

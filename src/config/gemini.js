@@ -18,10 +18,10 @@ module.exports = {
     },
     image: {
       id: 'image',
-      name: 'Agent Làm Ảnh',
-      model: 'gemini-3.1-flash-tts',
-      role: 'Thiết kế concept hình ảnh quảng cáo, poster, banner, visual prompts',
-      badge: 'Agent Làm Ảnh (gemini-3.1-flash-tts)'
+      name: 'Agent Studio Ảnh (Gemini 3.6 Flash)',
+      model: 'gemini-3.6-flash',
+      role: 'Chuyên gia thiết kế & biên tập hình ảnh, poster, banner qua AI Karik Studio (Bố cục, Typography, Layer, Filter, Xóa nền)',
+      badge: 'Agent Studio Ảnh (Gemini 3.6 Flash)'
     },
     video: {
       id: 'video',
