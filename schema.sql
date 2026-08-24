@@ -120,6 +120,57 @@ BEGIN
   ORDER BY public.embeddings.embedding <=> query_embedding
   LIMIT match_count;
 END;
-$$;
+-- 7. Bảng Social Accounts (Quản lý tài khoản mạng xã hội liên kết OAuth: Facebook & TikTok)
+CREATE TABLE IF NOT EXISTS public.social_accounts (
+  id VARCHAR(100) PRIMARY KEY,
+  user_id VARCHAR(100) REFERENCES public.users(id) ON DELETE CASCADE,
+  platform VARCHAR(20) NOT NULL CHECK (platform IN ('facebook', 'tiktok')),
+  account_type VARCHAR(20) DEFAULT 'personal' CHECK (account_type IN ('personal', 'admin_system')),
+  platform_account_id VARCHAR(255) NOT NULL,
+  account_name VARCHAR(255),
+  access_token TEXT NOT NULL,
+  refresh_token TEXT,
+  token_expires_at TIMESTAMPTZ,
+  metadata JSONB DEFAULT '{}'::jsonb,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  CONSTRAINT unique_user_platform_account UNIQUE (user_id, platform, platform_account_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_social_accounts_user ON public.social_accounts(user_id);
+CREATE INDEX IF NOT EXISTS idx_social_accounts_platform ON public.social_accounts(platform);
+CREATE INDEX IF NOT EXISTS idx_social_accounts_type ON public.social_accounts(account_type);
+
+-- 8. Bảng Social Posts (Quản lý bài đăng, hàng đợi, lịch đăng bài và phê duyệt)
+CREATE TABLE IF NOT EXISTS public.social_posts (
+  id VARCHAR(100) PRIMARY KEY,
+  author_id VARCHAR(100) REFERENCES public.users(id) ON DELETE CASCADE,
+  account_id VARCHAR(100) REFERENCES public.social_accounts(id) ON DELETE CASCADE,
+  platform VARCHAR(20) NOT NULL CHECK (platform IN ('facebook', 'tiktok')),
+  media_type VARCHAR(20) NOT NULL CHECK (media_type IN ('image', 'video', 'carousel', 'poster')),
+  media_urls JSONB NOT NULL DEFAULT '[]'::jsonb,
+  caption TEXT,
+  hashtags JSONB DEFAULT '[]'::jsonb,
+  status VARCHAR(30) DEFAULT 'SCHEDULED' CHECK (status IN (
+    'PENDING_APPROVAL', 'APPROVED', 'REJECTED', 'SCHEDULED', 'PROCESSING', 'PUBLISHED', 'FAILED'
+  )),
+  scheduled_at TIMESTAMPTZ DEFAULT NOW(),
+  published_at TIMESTAMPTZ,
+  post_external_id VARCHAR(255),
+  post_external_url TEXT,
+  retry_count INTEGER DEFAULT 0,
+  max_retries INTEGER DEFAULT 3,
+  error_message TEXT,
+  reviewed_by VARCHAR(100) REFERENCES public.users(id) ON DELETE SET NULL,
+  review_note TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_social_posts_author ON public.social_posts(author_id);
+CREATE INDEX IF NOT EXISTS idx_social_posts_account ON public.social_posts(account_id);
+CREATE INDEX IF NOT EXISTS idx_social_posts_status ON public.social_posts(status);
+CREATE INDEX IF NOT EXISTS idx_social_posts_scheduled_at ON public.social_posts(scheduled_at);
+
 
 

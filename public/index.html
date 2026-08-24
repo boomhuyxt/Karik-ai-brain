@@ -468,6 +468,7 @@
     <div id="userManagementModalContainer"></div>
     <div id="systemMonitoringModalContainer"></div>
     <div id="imageEditorModalContainer"></div>
+    <div id="socialPublishModalContainer"></div>
 
     <!-- Application Script Modules -->
     <script src="/js/header.js"></script>
@@ -481,6 +482,7 @@
     <script src="/js/imageEditor.js"></script>
     <script src="/js/userManagement.js"></script>
     <script src="/js/systemMonitoring.js"></script>
+    <script src="/js/socialPublish.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             // Helper function to load external component HTML files
@@ -504,12 +506,14 @@
                 loadComponent('newNoteModalContainer', '/components/newNoteModal.html'),
                 loadComponent('userManagementModalContainer', '/components/userManagementModal.html'),
                 loadComponent('systemMonitoringModalContainer', '/components/systemMonitoringModal.html'),
-                loadComponent('imageEditorModalContainer', '/components/imageEditorModal.html')
+                loadComponent('imageEditorModalContainer', '/components/imageEditorModal.html'),
+                loadComponent('socialPublishModalContainer', '/components/socialPublishModal.html')
             ]);
 
             // Initialize all feature modules
             if (typeof initHeaderModule === 'function') initHeaderModule();
             if (typeof initUserManagementModule === 'function') initUserManagementModule();
+            if (window.socialPublish && typeof window.socialPublish.init === 'function') window.socialPublish.init();
             initNoteDrawer();
             initSearchAndFilter();
             initDailyNote();

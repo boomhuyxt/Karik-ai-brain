@@ -1,5 +1,5 @@
 /**
- * Floating AI Chat Module - Ultra-Fast Text & Voice Assistant with Live Timer & File Attachment Support
+ * Floating AI Chat Module - Fully Transparent Text-Only Style with Live Timer, Gemini Voice & File Upload (Max 50MB)
  */
 function initAIChat() {
     const chatForm = document.getElementById('chatForm');
@@ -288,7 +288,16 @@ function initAIChat() {
             timerInterval = setInterval(() => {
                 const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
                 aiTimerValue.textContent = `${elapsed}s`;
-            }, 50);
+            }, 100);
+        }
+
+        // Phát âm thanh phản hồi tức thì
+        if (!isVoice && window.jarvisVoice && typeof window.jarvisVoice.speakText === 'function') {
+            const isEnglish = window.jarvisVoice.currentLang && window.jarvisVoice.currentLang.startsWith('en');
+            const ackText = isEnglish
+                ? "Yes! Processing your request right now, boss!"
+                : "Dạ! Đã nhận yêu cầu của sếp, em đang xử lý đây ạ!";
+            window.jarvisVoice.speakText(ackText).catch(() => {});
         }
 
         // Tạo nội dung gửi tới API bao gồm liên kết file nếu có
@@ -308,19 +317,17 @@ function initAIChat() {
             const result = await res.json();
 
             const totalDuration = ((performance.now() - startTime) / 1000).toFixed(2);
-            const replyText = result.reply || result.message || 'Không có phản hồi';
-            const agentInfo = result.agent || { name: 'AI Karik', badge: 'AI Karik (Gemini 3.5 Flash Lite)', model: 'gemini-3.5-flash-lite' };
-            const tokenInfo = result.tokens || { inputTokens: 0, outputTokens: 0, totalTokens: 0 };
 
             // Hiển thị phản hồi từ AI (Bên Trái - AI Bubble tự động vừa chiều dài chữ)
             const aiDiv = document.createElement('div');
             aiDiv.className = 'flex flex-col items-start self-start mr-auto w-fit min-w-[200px] max-w-[90%] sm:max-w-[85%] p-3.5 rounded-2xl bg-slate-900/90 border border-cyan-500/40 text-slate-100 rounded-tl-none shadow-lg transition-all animate-fadeIn';
             const renderFn = typeof window.renderCustomMarkdown === 'function' ? window.renderCustomMarkdown : (t => t);
 
-            const badgeHtml = isVoice
-                ? `<span class="text-[9px] bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 px-1 py-0.2 rounded font-mono flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">graphic_eq</span> Voice</span>`
-                : `<span class="text-[9px] bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 px-1.5 py-0.5 rounded font-mono flex items-center gap-1" title="Model: ${agentInfo.model}"><span class="material-symbols-outlined text-[10px]">smart_toy</span> ${agentInfo.name || 'AI Karik'}</span>`;
+            const voiceBadgeHtml = `<span class="text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 px-1 py-0.2 rounded font-mono flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">volume_up</span> Chromium Voice</span>`;
 
+            const replyText = result.reply || result.message || 'Không có phản hồi';
+            const agentInfo = result.agent || { id: 'orchestrator', model: result.model || 'gemini-3.6-flash' };
+            const tokenInfo = result.tokens || { totalTokens: 0, inputTokens: 0, outputTokens: 0 };
             const msgId = 'aimsg_' + Date.now();
             
             // Extract AI Poster JSON configuration if provided
@@ -386,24 +393,42 @@ function initAIChat() {
                 }
             }
 
+            let imageHtml = '';
+            if (result.imageData) {
+                const imgFormat = result.mimeType?.includes('svg') ? 'svg' : 'jpg';
+                imageHtml = `
+                    <div class="mt-2.5 rounded-xl overflow-hidden border border-purple-500/40 bg-slate-950/80 p-2 shadow-2xl flex flex-col items-center gap-2 max-w-md w-full">
+                        <img src="${result.imageData}" alt="Gemini Imagen 3 Image" class="w-full h-auto max-h-80 rounded-lg object-contain border border-purple-500/20 shadow-md hover:scale-102 transition-transform cursor-pointer" onclick="window.open('${result.imageData}', '_blank')" />
+                        <div class="flex items-center justify-between w-full text-slate-300 text-[10px] font-mono px-1">
+                            <span class="flex items-center gap-1 text-purple-300"><span class="material-symbols-outlined text-xs">auto_awesome</span> Gemini Imagen 3</span>
+                            <a href="${result.imageData}" download="gemini-imagen3-${Date.now()}.${imgFormat}" class="bg-purple-600/30 hover:bg-purple-600/50 border border-purple-400/40 px-2 py-0.5 rounded text-white flex items-center gap-1 transition-all">
+                                <span class="material-symbols-outlined text-xs">download</span> Tải ảnh
+                            </a>
+                        </div>
+                    </div>
+                `;
+            }
+
             aiDiv.innerHTML = `
                 <strong class="text-cyan-300 font-bold text-xs flex items-center justify-between w-full mb-1 text-glow">
                     <span class="flex items-center gap-1.5">
-                        <span class="material-symbols-outlined text-sm text-cyan-400">psychology</span>
-                        ${agentInfo.name || 'AI Karik'}:
-                        ${badgeHtml}
+                        <span class="material-symbols-outlined text-sm text-cyan-400">smart_toy</span>
+                        AI JarVis Assistant:
+                        ${voiceBadgeHtml}
                     </span>
-                    <span class="flex items-center gap-1.5">
-                        <button type="button" class="btn-speak-msg text-slate-400 hover:text-cyan-300 transition-colors p-0.5 rounded" title="Nghe đọc nội dung này" data-msg-id="${msgId}">
-                            <span class="material-symbols-outlined text-[12px]">volume_up</span>
+                    <div class="flex items-center gap-1.5">
+                        <button type="button" class="btn-publish-social bg-gradient-to-r from-blue-600/30 via-purple-600/30 to-pink-600/30 hover:from-blue-600/50 hover:to-pink-600/50 text-white border border-purple-400/40 px-2 py-0.5 rounded text-[10px] font-mono flex items-center gap-1 transition-all shadow-sm" title="Liên kết & Đăng bài lên Facebook / TikTok">
+                            <span class="material-symbols-outlined text-[12px] text-pink-400">share</span>
+                            <span>Đăng Bài</span>
                         </button>
                         <span class="text-[10px] text-cyan-300 font-mono flex items-center gap-1 bg-cyan-500/20 border border-cyan-400/40 px-1.5 py-0.5 rounded-full" title="Thời gian AI xử lý và phản hồi">
                             <span class="material-symbols-outlined text-[11px]">timer</span> ${totalDuration}s
                         </span>
-                    </span>
+                    </div>
                 </strong>
                 <div id="${msgId}" class="text-slate-100 font-medium text-xs sm:text-sm leading-relaxed border-t border-purple-500/20 pt-1.5 mt-1 w-full break-words">
                     ${renderFn(replyText)}
+                    ${imageHtml}
                     ${studioActionCardHtml}
                 </div>
                 <div class="w-full flex items-center justify-between border-t border-slate-700/50 mt-2 pt-1 text-[10px] text-slate-400 font-mono">
@@ -418,20 +443,38 @@ function initAIChat() {
             `;
             chatMessages.appendChild(aiDiv);
 
-            // Bind manual speak button for on-demand playback
-            const speakBtn = aiDiv.querySelector('.btn-speak-msg');
-            if (speakBtn) {
-                speakBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    if (window.jarvisVoice && typeof window.jarvisVoice.speakText === 'function') {
-                        window.jarvisVoice.speakText(replyText).catch(() => {});
+            // Bind Social Publish Modal button
+            const publishBtn = aiDiv.querySelector('.btn-publish-social');
+            if (publishBtn) {
+                publishBtn.addEventListener('click', () => {
+                    if (window.socialPublish && typeof window.socialPublish.openModal === 'function') {
+                        let mediaUrl = result.imageData || '';
+                        let mediaType = result.imageData ? 'image' : 'poster';
+                        
+                        if (!mediaUrl && result.reply) {
+                            const imgMatch = result.reply.match(/!\[.*?\]\((https?:\/\/[^\s\)]+)\)/);
+                            if (imgMatch) {
+                                mediaUrl = imgMatch[1];
+                            }
+                        }
+
+                        let cleanCaption = (result.reply || result.message || '')
+                            .replace(/!\[.*?\]\(.*?\)/g, '')
+                            .replace(/\[CHỈ THỊ.*?\]/g, '')
+                            .trim();
+
+                        window.socialPublish.openModal({
+                            url: mediaUrl,
+                            mediaType,
+                            caption: cleanCaption.slice(0, 500),
+                            hashtags: ['#aikarik', '#jarvis', '#facebook', '#tiktok']
+                        });
                     }
                 });
             }
 
-            // Auto-speak voice if user initiated via live voice call
-            if (isVoice && window.jarvisVoice && typeof window.jarvisVoice.speakText === 'function') {
-                window.jarvisVoice.speakText(replyText).catch(() => {});
+            if (window.jarvisVoice && typeof window.jarvisVoice.playVoiceResponse === 'function') {
+                window.jarvisVoice.playVoiceResponse(null, null, result.reply || result.message || '');
             }
 
             if (typeof window.fetchAndRenderGraph === 'function') {

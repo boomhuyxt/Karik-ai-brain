@@ -312,6 +312,45 @@ class UserRepository {
     return true;
   }
 
+  async updateUserRole(userId, role) {
+    const validRole = String(role) === '1' || String(role) === 'admin' ? '1' : '0';
+
+    if (supabase) {
+      try {
+        let res = await supabase.from('users').update({ role_id: validRole, role: validRole }).eq('id', userId).select();
+        if (res.error && res.error.message.includes('role_id')) {
+          res = await supabase.from('users').update({ role: validRole }).eq('id', userId).select();
+        }
+        if (res.error) {
+          console.warn('[UserRepository] Supabase updateUserRole notice:', res.error.message);
+        }
+      } catch (err) {
+        console.warn('[UserRepository] Supabase updateUserRole notice:', err.message);
+      }
+    }
+
+    // Update in memory users map
+    let foundInMem = false;
+    for (const [key, memUser] of this.memoryUsers.entries()) {
+      if (memUser.id === userId) {
+        memUser.role = validRole;
+        this.memoryUsers.set(key, memUser);
+        foundInMem = true;
+      }
+    }
+
+    // If user is from Supabase and not in memoryUsers Map yet, fetch & store role override
+    if (!foundInMem) {
+      const user = await this.findById(userId);
+      if (user) {
+        user.role = validRole;
+        this.memoryUsers.set((user.email || '').toLowerCase(), user);
+      }
+    }
+
+    return true;
+  }
+
   async deleteUser(userId) {
     if (supabase) {
       try {
