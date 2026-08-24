@@ -26,10 +26,13 @@ module.exports = {
   },
   ai: {
     geminiApiKey: process.env.GEMINI_API_KEY || '',
+    geminiImageApiKey: process.env.GEMINI_IMAGE_API_KEY || process.env.GEMINI_API_KEY || '',
     openaiApiKey: process.env.OPENAI_API_KEY || '',
     groqApiKey: process.env.GROQ_API_KEY || '',
     claudeApiKey: process.env.CLAUDE_API_KEY || '',
-    openrouterApiKey: process.env.OPENROUTER_API_KEY || ''
+    openrouterApiKey: process.env.OPENROUTER_API_KEY || '',
+    tokenrouterApiKey: process.env.TOKENROUTER_API_KEY || '',
+    tokenrouterBaseUrl: process.env.TOKENROUTER_BASE_URL || 'https://api.tokenrouter.com/v1'
   },
   smtp: {
     host: process.env.SMTP_HOST || 'smtp.gmail.com',

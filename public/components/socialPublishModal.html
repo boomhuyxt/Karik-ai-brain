@@ -1,0 +1,215 @@
+<!-- Social Publishing & Multi-Platform OAuth Bridge Modal (Facebook & TikTok) -->
+<div id="socialPublishModal" class="fixed inset-0 z-50 hidden items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md transition-all duration-300">
+    <div class="relative w-full max-w-2xl max-h-[90vh] flex flex-col rounded-2xl glass-panel bg-slate-900/95 border border-purple-500/40 shadow-[0_0_50px_rgba(168,85,247,0.25)] overflow-hidden animate-fadeIn">
+        
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between px-5 py-4 border-b border-white/10 bg-slate-950/60 flex-shrink-0">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-600 via-purple-600 to-pink-500 flex items-center justify-center shadow-md">
+                    <span class="material-symbols-outlined text-white text-lg">share</span>
+                </div>
+                <div>
+                    <h2 class="text-sm sm:text-base font-bold text-white flex items-center gap-2">
+                        <span>Xuất Bản Mạng Xã Hội</span>
+                        <span class="text-[10px] bg-purple-500/20 text-purple-300 border border-purple-400/30 px-1.5 py-0.5 rounded font-mono">Bridge v2.0</span>
+                    </h2>
+                    <p class="text-[11px] text-slate-400">Kết nối & đăng tải Poster, Video, Hình ảnh lên Facebook & TikTok</p>
+                </div>
+            </div>
+            <button id="btnCloseSocialModal" class="text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-white/10 transition-colors">
+                <span class="material-symbols-outlined text-xl">close</span>
+            </button>
+        </div>
+
+        <!-- Modal Body (Scrollable) -->
+        <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5 custom-scrollbar text-xs sm:text-sm text-slate-200">
+            
+            <!-- 1. Platform Selector Tabs -->
+            <div class="space-y-1.5">
+                <label class="font-semibold text-xs text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-sm text-cyan-400">hub</span> Chọn nền tảng đăng bài:
+                </label>
+                <div class="grid grid-cols-2 gap-3">
+                    <!-- Facebook Tab Button -->
+                    <button type="button" id="tabBtnFacebook" onclick="window.socialPublish.switchPlatform('facebook')"
+                        class="flex items-center justify-center gap-2.5 p-3 rounded-xl border border-blue-500/50 bg-blue-600/20 text-white font-bold transition-all shadow-md hover:bg-blue-600/30">
+                        <svg class="w-5 h-5 fill-[#1877F2]" viewBox="0 0 24 24">
+                            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                        </svg>
+                        <span>Facebook</span>
+                    </button>
+
+                    <!-- TikTok Tab Button -->
+                    <button type="button" id="tabBtnTiktok" onclick="window.socialPublish.switchPlatform('tiktok')"
+                        class="flex items-center justify-center gap-2.5 p-3 rounded-xl border border-white/10 bg-slate-800/40 text-slate-400 font-bold transition-all hover:bg-slate-800/80 hover:text-white">
+                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                            <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/>
+                        </svg>
+                        <span>TikTok</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 2. Account Authentication / Connection Card -->
+            <div id="accountCardContainer" class="p-3.5 rounded-xl bg-slate-950/70 border border-white/10 space-y-3">
+                <!-- Connected State (Hidden by default until connected) -->
+                <div id="connectedAccountBox" class="hidden items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div id="connectedPlatformIcon" class="w-9 h-9 rounded-full bg-blue-600/30 text-blue-400 border border-blue-400/40 flex items-center justify-center font-bold text-base">
+                            f
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span id="connectedAccountName" class="font-bold text-white">Tài khoản</span>
+                                <span class="text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-1.5 py-0.2 rounded-full font-mono flex items-center gap-0.5">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Đã kết nối
+                                </span>
+                            </div>
+                            <span id="connectedAccountId" class="text-[11px] text-slate-400 font-mono">ID: --</span>
+                        </div>
+                    </div>
+                    <button type="button" id="btnDisconnectAccount" onclick="window.socialPublish.disconnectCurrentAccount()"
+                        class="bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/40 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm">
+                        <span class="material-symbols-outlined text-sm">logout</span>
+                        <span>Đăng xuất / Đổi tài khoản</span>
+                    </button>
+                </div>
+
+                <!-- Login / Connect Form (Shown when NOT connected) -->
+                <div id="loginAccountBox" class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold text-purple-300 flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-sm">lock</span>
+                            Đăng nhập & Liên kết tài khoản <span id="loginPlatformLabel">Facebook</span>
+                        </span>
+                        <span class="text-[10px] text-cyan-300 font-mono bg-cyan-950/60 border border-cyan-500/30 px-2 py-0.5 rounded flex items-center gap-1">
+                            <span class="material-symbols-outlined text-xs">enhanced_encryption</span> SHA-256 Protected
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        <div>
+                            <label class="block text-[11px] text-slate-400 mb-1">Tài khoản / Email / Page ID:</label>
+                            <input type="text" id="socialUsernameInput" placeholder="Tên tài khoản hoặc Page ID..."
+                                class="w-full bg-slate-900 border border-white/15 rounded-lg px-3 py-2 text-xs text-white placeholder:text-slate-500 outline-none focus:border-purple-400 transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] text-slate-400 mb-1">Mật khẩu hoặc Page Access Token:</label>
+                            <input type="password" id="socialPasswordInput" placeholder="Mật khẩu hoặc Token (EAA... / act_...)"
+                                class="w-full bg-slate-900 border border-white/15 rounded-lg px-3 py-2 text-xs text-white placeholder:text-slate-500 outline-none focus:border-purple-400 transition-all">
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pt-1">
+                        <p class="text-[10px] text-slate-400 leading-tight">
+                            <span class="text-cyan-300 font-medium">💡 Đăng lên trang thật:</span> Dùng <strong class="text-amber-300">Access Token</strong> (bắt đầu bằng <code class="text-purple-300">EAA...</code> trên Facebook). Nếu nhập mật khẩu thường, hệ thống sẽ chạy ở <span class="text-emerald-300">Chế Độ Mô Phỏng Sandbox</span>.
+                        </p>
+                        <button type="button" id="btnSubmitLogin" onclick="window.socialPublish.handleLoginAndConnect()"
+                            class="bg-purple-600 hover:bg-purple-500 text-white font-bold px-4 py-1.5 rounded-lg text-xs flex items-center gap-1.5 transition-all shadow-md shrink-0">
+                            <span class="material-symbols-outlined text-sm">login</span>
+                            <span>Đăng nhập & Kết nối</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Media Preview & Content Editor -->
+            <div class="space-y-3">
+                <label class="font-semibold text-xs text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-sm text-cyan-400">perm_media</span> Nội dung bài đăng:
+                </label>
+
+                <!-- Media Preview Container -->
+                <div id="socialMediaPreviewContainer" class="rounded-xl border border-white/15 bg-slate-950/80 p-2.5 flex items-center gap-3">
+                    <div id="socialMediaPreviewBox" class="w-20 h-20 rounded-lg overflow-hidden bg-slate-900 border border-white/10 flex items-center justify-center flex-shrink-0">
+                        <span class="material-symbols-outlined text-3xl text-slate-500">image</span>
+                    </div>
+                    <div class="min-w-0 flex-1 space-y-1">
+                        <div class="flex items-center justify-between">
+                            <span id="socialMediaBadge" class="text-[10px] bg-purple-500/20 text-purple-300 border border-purple-400/30 px-1.5 py-0.2 rounded font-mono">
+                                Image / Poster
+                            </span>
+                            <span id="socialMediaSize" class="text-[10px] text-slate-400 font-mono">1024x576</span>
+                        </div>
+                        <input type="text" id="socialMediaUrlInput" placeholder="URL Media hoặc base64..."
+                            class="w-full bg-slate-900 border border-white/10 rounded px-2 py-1 text-[11px] text-slate-300 font-mono truncate outline-none focus:border-cyan-400">
+                    </div>
+                </div>
+
+                <!-- Caption Textarea -->
+                <div>
+                    <label class="block text-[11px] text-slate-400 mb-1">Nội dung Caption:</label>
+                    <textarea id="socialCaptionInput" rows="3" placeholder="Nhập nội dung chia sẻ bài viết lên Facebook / TikTok..."
+                        class="w-full bg-slate-950/80 border border-white/15 rounded-xl p-3 text-xs text-white placeholder:text-slate-500 outline-none focus:border-purple-400 transition-all resize-none"></textarea>
+                </div>
+
+                <!-- Hashtags Input -->
+                <div>
+                    <label class="block text-[11px] text-slate-400 mb-1">Hashtags (cách nhau bởi dấu cách hoặc phẩy):</label>
+                    <input type="text" id="socialHashtagsInput" placeholder="#aikarik #cyberpunk #poster"
+                        class="w-full bg-slate-950/80 border border-white/15 rounded-lg px-3 py-2 text-xs text-cyan-300 font-mono placeholder:text-slate-500 outline-none focus:border-cyan-400 transition-all">
+                </div>
+
+                <!-- Channel Target Selector (Personal vs Admin Channel) -->
+                <div class="p-3 rounded-xl bg-slate-950/50 border border-white/10 space-y-2">
+                    <label class="block text-[11px] text-slate-300 font-semibold">Chế độ xuất bản:</label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                        <label class="flex items-start gap-2 p-2 rounded-lg border border-purple-500/40 bg-purple-900/20 cursor-pointer">
+                            <input type="radio" name="socialAccountTypeRadio" value="personal" checked class="mt-0.5">
+                            <div>
+                                <strong class="text-purple-200 block">Kênh Cá Nhân của bạn</strong>
+                                <span class="text-[10px] text-slate-400">Xuất bản trực tiếp / lên lịch, không cần duyệt.</span>
+                            </div>
+                        </label>
+
+                        <label class="flex items-start gap-2 p-2 rounded-lg border border-white/10 bg-slate-900/40 cursor-pointer hover:border-white/20">
+                            <input type="radio" name="socialAccountTypeRadio" value="admin_system" class="mt-0.5">
+                            <div>
+                                <strong class="text-amber-300 block flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-xs">verified_user</span> Kênh Admin / Hệ thống
+                                </strong>
+                                <span class="text-[10px] text-slate-400">Cần Admin phê duyệt (PENDING_APPROVAL).</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Schedule Date Picker Container (Toggleable) -->
+                <div id="scheduleContainer" class="hidden p-3 rounded-xl bg-cyan-950/30 border border-cyan-500/30 space-y-2 animate-fadeIn">
+                    <div class="flex items-center justify-between">
+                        <label class="text-xs font-semibold text-cyan-300 flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-sm">schedule</span>
+                            Chọn ngày giờ xuất bản tự động (Queue):
+                        </label>
+                    </div>
+                    <input type="datetime-local" id="socialScheduleDateInput"
+                        class="w-full bg-slate-900 border border-cyan-500/40 rounded-lg px-3 py-2 text-xs text-cyan-200 font-mono outline-none focus:border-cyan-300">
+                </div>
+            </div>
+
+            <!-- Status / Error Alert Banner -->
+            <div id="socialStatusAlert" class="hidden p-3 rounded-xl text-xs flex items-center gap-2"></div>
+        </div>
+
+        <!-- Modal Footer Actions -->
+        <div class="flex items-center justify-between px-5 py-3.5 border-t border-white/10 bg-slate-950/80 flex-shrink-0">
+            <button type="button" id="btnToggleScheduleMode" onclick="window.socialPublish.toggleScheduleMode()"
+                class="bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-400/40 px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all">
+                <span class="material-symbols-outlined text-sm">schedule</span>
+                <span id="btnToggleScheduleText">⏰ Hẹn Giờ Đăng</span>
+            </button>
+
+            <div class="flex items-center gap-2.5">
+                <button type="button" id="btnCancelSocialModal" onclick="window.socialPublish.closeModal()"
+                    class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl text-xs font-semibold transition-colors">
+                    Hủy
+                </button>
+                <button type="button" id="btnSubmitPublish" onclick="window.socialPublish.submitPost()"
+                    class="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold px-5 py-2 rounded-xl text-xs flex items-center gap-1.5 transition-all shadow-[0_0_20px_rgba(219,39,119,0.3)]">
+                    <span class="material-symbols-outlined text-sm">rocket_launch</span>
+                    <span id="btnSubmitPublishText">Đăng Ngay</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

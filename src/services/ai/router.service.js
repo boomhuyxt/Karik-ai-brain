@@ -9,14 +9,37 @@ class RouterService {
     return 'gemini';
   }
 
-  selectProvider() {
-    // Exclusively use Google Gemini as the core underlying provider
-    return 'gemini';
+  /**
+   * Phân luồng Provider (OpenAI, Gemini, Groq, DeepSeek, Claude, Gemini-Image)
+   */
+  selectProvider(prompt = '', category = '') {
+    const lower = (prompt + ' ' + category).toLowerCase();
+
+    if (lower.includes('tạo ảnh') || lower.includes('vẽ ảnh') || lower.includes('tao anh') || lower.includes('ve anh') || lower.includes('vẽ') || lower.includes('image') || lower.includes('imagen') || lower.includes('picture') || lower.includes('draw')) {
+      return 'gemini-image';
+    }
+    if (lower.includes('code') || lower.includes('lap trinh') || lower.includes('function') || lower.includes('bug')) {
+      return 'openai';
+    }
+    if (lower.includes('nghien cuu') || lower.includes('research') || lower.includes('tim hieu') || lower.includes('wiki')) {
+      return 'gemini';
+    }
+    if (lower.includes('nhanh') || lower.includes('fast') || lower.includes('tom tat') || lower.includes('quick')) {
+      return 'groq';
+    }
+    if (lower.includes('deepseek') || lower.includes('tokenrouter') || lower.includes('r1') || lower.includes('suy luan') || lower.includes('reasoning')) {
+      return 'deepseek';
+    }
+    if (lower.includes('phan tich') || lower.includes('long') || lower.includes('sau') || lower.includes('analysis')) {
+      return 'claude';
+    }
+
+    return 'gemini'; // Default AI provider
   }
 
   /**
    * AI Karik Agent Dispatcher:
-   * AI Karik is the primary orchestrator that delegates specialized tasks to dedicated sub-agents
+   * AI Karik là orchestrator chính điều phối các tác vụ chuyên biệt cho các sub-agents
    * @param {string} prompt - User prompt
    * @param {string} category - Optional category
    * @returns {{ id: string, name: string, model: string, role: string, badge: string }}
@@ -24,7 +47,7 @@ class RouterService {
   dispatchAgent(prompt = '', category = '') {
     const text = `${prompt} ${category}`.toLowerCase();
 
-    // 1. Image Generation & Visual Concept Agent (Gemini 3.5 Flash Lite)
+    // 1. Image Generation & Visual Concept Agent
     const imageKeywords = [
       'tạo ảnh', 'vẽ ảnh', 'hình ảnh', 'tạo hình', 'poster', 'banner',
       'concept art', 'midjourney', 'dall-e', 'stable diffusion', 'visual',
@@ -34,7 +57,7 @@ class RouterService {
       return geminiConfig.agents.image;
     }
 
-    // 2. Short Video / Clip Scripting Agent (Gemini 3.6 Flash)
+    // 2. Short Video / Clip Scripting Agent
     const videoKeywords = [
       'clip', 'video', 'kịch bản', 'tiktok', 'reels', 'shorts',
       'clip ngắn', 'video ngắn', 'storyboard', 'hook 3s', 'quay video',
@@ -44,7 +67,7 @@ class RouterService {
       return geminiConfig.agents.video;
     }
 
-    // 3. Ad Project Progress & Risk Management Agent (Gemini 3.5 Flash Lite)
+    // 3. Ad Project Progress & Risk Management Agent
     const riskKeywords = [
       'rủi ro', 'tiến độ', 'quảng cáo', 'dự án quảng cáo', 'chiến dịch',
       'ads', 'campaign', 'cpc', 'ctr', 'roas', 'cpa', 'ngân sách',
@@ -54,18 +77,12 @@ class RouterService {
       return geminiConfig.agents.risk;
     }
 
-    // 4. Default: AI Karik Main Orchestrator (Gemini 3.5 Flash Lite)
+    // 4. Mặc định: AI Karik Main Orchestrator
     return geminiConfig.agents.orchestrator;
   }
 
   /**
-   * AI Karik Prompt Engineering & Task Analysis Engine:
-   * AI Karik receives the raw user request, analyzes intent & requirements,
-   * and crafts an enriched, structured, production-ready prompt for the assigned Agent.
-   * @param {string} prompt - Raw user prompt
-   * @param {{ id: string, name: string, model: string }} agent - Assigned Agent
-   * @param {string} context - Optional RAG context
-   * @returns {string} Enriched prompt
+   * AI Karik Prompt Engineering & Task Analysis Engine
    */
   buildOrchestratedPrompt(prompt = '', agent = null, context = '') {
     if (!agent || agent.id === 'orchestrator') {

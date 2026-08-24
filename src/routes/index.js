@@ -12,6 +12,7 @@ const workflowRoute = require('./workflow.route');
 const githubRoute = require('./github.route');
 const uploadRoute = require('./upload.route');
 const adminRoute = require('./admin.route');
+const socialRoute = require('./social.route');
 
 // Service dependencies for legacy / standalone graph dashboard endpoints
 const graphService = require('../services/obsidian/graph.service');
@@ -32,6 +33,7 @@ router.use('/workflow', workflowRoute);
 router.use('/github', githubRoute);
 router.use('/upload', uploadRoute);
 router.use('/admin', adminRoute);
+router.use('/social', socialRoute);
 
 // Server-side TTS Endpoint (Guaranteed Audio Stream for all browsers)
 router.get('/tts', async (req, res, next) => {
