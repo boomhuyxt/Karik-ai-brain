@@ -11,7 +11,7 @@
 
 class JarvisVoiceManager {
     constructor() {
-        this.isWakeWordActive = true;
+        this.isWakeWordActive = false; // Default OFF - user must explicitly enable or click 'Gọi AI'
         this.isCallActive = false;
         this.currentLang = 'vi-VN';
 
@@ -33,11 +33,11 @@ class JarvisVoiceManager {
         this.isProcessingAI = false;
         this.silenceTimeout = null;
 
-        // Wake Word Keywords
+        // Wake Word Keywords - Only full, distinct phrases to prevent false triggers from clicks or noise
         this.wakeKeywords = [
-            'nối hay karik', 'nói hay karik', 'hello karik', 'hey karik', 'hay karik', 'hi karik', 'chào karik', 'ơi karik', 'ok karik', 'ê karik', 'alo karik',
-            'karik ơi', 'chào karik ơi', 'ca rik', 'kha rik', 'ca rít', 'kha rít', 'karik', 'ka rít', 'carrick',
-            'hey jarvis', 'hello jarvis', 'jarvis', 'da vít', 'da vit'
+            'nói hey karik', 'hello karik', 'hey karik', 'chào karik', 'alo karik',
+            'karik ơi', 'chào karik ơi',
+            'hey jarvis', 'hello jarvis', 'jarvis ơi'
         ].sort((a, b) => b.length - a.length);
 
         this.initAudioElement();
@@ -47,7 +47,7 @@ class JarvisVoiceManager {
         this.setupLocalWakeWordRecognition();
         this.bindUIControls();
         this.setupGlobalUnlock();
-        this.updateStatusBadge('🟢 Lắng nghe "Hey Karik"...');
+        this.updateStatusBadge('Tắt lắng nghe tự động');
         console.log('🎙️ [Karik JS Voice Engine]: Khởi động thành công (Zero Python Dependency).');
     }
 
@@ -74,14 +74,11 @@ class JarvisVoiceManager {
             if (this.currentAudioElement && this.currentAudioElement.paused) {
                 this.currentAudioElement.play().catch(() => { });
             }
-            if (this.isWakeWordActive && !this.isCallActive) {
-                this.startWakeWordListening();
-            }
         };
-        window.addEventListener('click', unlock, { once: false });
-        window.addEventListener('pointerdown', unlock, { once: false });
-        window.addEventListener('keydown', unlock, { once: false });
-        window.addEventListener('touchstart', unlock, { once: false });
+        window.addEventListener('click', unlock, { once: true });
+        window.addEventListener('pointerdown', unlock, { once: true });
+        window.addEventListener('keydown', unlock, { once: true });
+        window.addEventListener('touchstart', unlock, { once: true });
     }
 
     // ==========================================
@@ -706,7 +703,6 @@ class JarvisVoiceManager {
             jarvisMinPill.addEventListener('click', (e) => {
                 e.stopPropagation();
                 this.openChatWindow();
-                this.startLiveCall();
             });
         }
     }

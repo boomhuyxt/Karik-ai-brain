@@ -23,6 +23,7 @@ router.get('/users', (req, res, next) => adminController.getAllUsers(req, res, n
 router.delete('/users/test-users', (req, res, next) => adminController.cleanTestUsers(req, res, next));
 router.patch('/users/:id/role', (req, res, next) => adminController.changeUserRole(req, res, next));
 router.patch('/users/:id/status', (req, res, next) => adminController.toggleUserStatus(req, res, next));
+router.patch('/users/:id/role', (req, res, next) => adminController.updateUserRole(req, res, next));
 router.delete('/users/:id', (req, res, next) => adminController.deleteUser(req, res, next));
 
 module.exports = router;

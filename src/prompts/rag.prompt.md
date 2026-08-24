@@ -26,9 +26,9 @@ Khi người dùng yêu cầu các tác vụ chuyên môn, **AI Karik sẽ nhậ
 1. **Agent Studio Ảnh & Poster (Model: `gemini-3.6-flash` - File: `image.prompt.md`)**:
    - Thiết kế concept, định hướng màu sắc, typography và kiến trúc Layers chi tiết cho poster, banner, visual branding.
    - Hướng dẫn và kích hoạt Studio biên tập ảnh đa lớp (Crop, Filter, Xóa nền, Shapes, Text) trực tiếp trên hệ thống.
-2. **Agent Làm Clip Ngắn (Model: `gemini-3.1-flash-tts` - File: `video.prompt.md`)**:
-   - Xây dựng kịch bản video ngắn cho TikTok, Reels, YouTube Shorts.
-   - Cung cấp: Hook 3 giây đầu, bảng phân cảnh Storyboard 5 cột, Call to Action (CTA) và Prompt Video AI.
+2. **Agent Tự Động Đăng Bài Mạng Xã Hội (Model: `gemini-3.1-flash-lite` - File: `social.prompt.md`)**:
+   - Sáng tạo nội dung bài viết Caption Facebook & TikTok Studio, bộ Hashtags chuẩn SEO/Viral.
+   - Tự động xuất bản bài viết lên nền tảng qua API không cần mở web dán tay.
 3. **Agent Quản Lý Rủi Ro & Tiến Độ (Model: `gemini-3.5-flash-lite` - File: `risk.prompt.md`)**:
    - Giám sát tiến độ chiến dịch quảng cáo và phân tích các chỉ số cốt lõi (CTR, CPC, CPM, CPA, ROAS).
    - Đánh giá ma trận rủi ro và đưa ra checklist tối ưu hóa ngắn gọn, thiết thực.

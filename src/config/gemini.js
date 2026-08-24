@@ -23,12 +23,19 @@ module.exports = {
       role: 'Chuyên gia thiết kế & biên tập hình ảnh, poster, banner qua AI Karik Studio (Bố cục, Typography, Layer, Filter, Xóa nền)',
       badge: 'Agent Studio Ảnh (Gemini 3.6 Flash)'
     },
+    social: {
+      id: 'social',
+      name: 'Agent Tự Động Đăng Bài MXH (Gemini 3.1 Flash Lite)',
+      model: 'gemini-3.1-flash-lite',
+      role: 'Tự động tạo nội dung Caption, Viral Hook & Đăng bài tự động lên Facebook và TikTok qua API không cần dán tay',
+      badge: 'Agent Tự Động Đăng Bài (Gemini 3.1 Flash Lite)'
+    },
     video: {
-      id: 'video',
-      name: 'Agent Làm Clip',
-      model: 'gemini-3.1-flash-tts',
-      role: 'Lên kịch bản video ngắn TikTok/Reels, phân cảnh storyboard và hook 3s',
-      badge: 'Agent Làm Clip (Gemini 3.1 Flash TTS)'
+      id: 'social',
+      name: 'Agent Tự Động Đăng Bài MXH (Gemini 3.1 Flash Lite)',
+      model: 'gemini-3.1-flash-lite',
+      role: 'Tự động tạo nội dung Caption, Viral Hook & Đăng bài tự động lên Facebook và TikTok qua API không cần dán tay',
+      badge: 'Agent Tự Động Đăng Bài (Gemini 3.1 Flash Lite)'
     },
     risk: {
       id: 'risk',

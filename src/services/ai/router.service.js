@@ -10,13 +10,37 @@ class RouterService {
     return 'gemini';
   }
 
+  /**
+   * Phân luồng Provider (OpenAI, Gemini, Groq, DeepSeek, Claude, Gemini-Image)
+   */
   selectProvider(prompt = '', category = '') {
-    return 'gemini';
+    const lower = (prompt + ' ' + category).toLowerCase();
+
+    if (lower.includes('tạo ảnh') || lower.includes('vẽ ảnh') || lower.includes('tao anh') || lower.includes('ve anh') || lower.includes('vẽ') || lower.includes('image') || lower.includes('imagen') || lower.includes('picture') || lower.includes('draw')) {
+      return 'gemini-image';
+    }
+    if (lower.includes('code') || lower.includes('lap trinh') || lower.includes('function') || lower.includes('bug')) {
+      return 'openai';
+    }
+    if (lower.includes('nghien cuu') || lower.includes('research') || lower.includes('tim hieu') || lower.includes('wiki')) {
+      return 'gemini';
+    }
+    if (lower.includes('nhanh') || lower.includes('fast') || lower.includes('tom tat') || lower.includes('quick')) {
+      return 'groq';
+    }
+    if (lower.includes('deepseek') || lower.includes('tokenrouter') || lower.includes('r1') || lower.includes('suy luan') || lower.includes('reasoning')) {
+      return 'deepseek';
+    }
+    if (lower.includes('phan tich') || lower.includes('long') || lower.includes('sau') || lower.includes('analysis')) {
+      return 'claude';
+    }
+
+    return 'gemini'; // Default AI provider
   }
 
   /**
    * AI Karik Agent Dispatcher:
-   * AI Karik is the primary orchestrator that delegates specialized tasks to dedicated sub-agents
+   * AI Karik là orchestrator chính điều phối các tác vụ chuyên biệt cho các sub-agents
    * @param {string} prompt - User prompt
    * @param {string} category - Optional category
    * @returns {{ id: string, name: string, model: string, role: string, badge: string }}
@@ -36,17 +60,18 @@ class RouterService {
       return geminiConfig.agents.image;
     }
 
-    // 2. Short Video / Clip Scripting Agent (Gemini 3.6 Flash)
-    const videoKeywords = [
-      'clip', 'video', 'kịch bản', 'tiktok', 'reels', 'shorts',
-      'clip ngắn', 'video ngắn', 'storyboard', 'hook 3s', 'quay video',
-      'quay clip', 'dựng clip', 'kịch bản video', 'kịch bản clip'
+    // 2. Social Media Publishing & Viral Copywriting Agent (Gemini 3.1 Flash)
+    const socialKeywords = [
+      'đăng bài', 'xuất bản', 'post bài', 'facebook', 'tiktok', 'bài đăng',
+      'caption', 'viết bài facebook', 'viết bài tiktok', 'đăng fb', 'đăng tiktok',
+      'viral post', 'status', 'content mxh', 'social publish', 'quảng cáo bài viết',
+      'clip', 'video', 'kịch bản', 'reels', 'shorts', 'hook 3s', 'tiktok studio'
     ];
-    if (videoKeywords.some(kw => text.includes(kw))) {
-      return geminiConfig.agents.video;
+    if (socialKeywords.some(kw => text.includes(kw))) {
+      return geminiConfig.agents.social || geminiConfig.agents.video;
     }
 
-    // 3. Ad Project Progress & Risk Management Agent (Gemini 3.5 Flash Lite)
+    // 3. Ad Project Progress & Risk Management Agent
     const riskKeywords = [
       'rủi ro', 'tiến độ', 'quảng cáo', 'dự án quảng cáo', 'chiến dịch',
       'ads', 'campaign', 'cpc', 'ctr', 'roas', 'cpa', 'ngân sách',
@@ -56,18 +81,12 @@ class RouterService {
       return geminiConfig.agents.risk;
     }
 
-    // 4. Default: AI Karik Main Orchestrator (Gemini 3.5 Flash Lite)
+    // 4. Mặc định: AI Karik Main Orchestrator
     return geminiConfig.agents.orchestrator;
   }
 
   /**
-   * AI Karik Prompt Engineering & Task Analysis Engine:
-   * AI Karik receives the raw user request, analyzes intent & requirements,
-   * and crafts an enriched, structured, production-ready prompt for the assigned Agent.
-   * @param {string} prompt - Raw user prompt
-   * @param {{ id: string, name: string, model: string }} agent - Assigned Agent
-   * @param {string} context - Optional RAG context
-   * @returns {string} Enriched prompt
+   * AI Karik Prompt Engineering & Task Analysis Engine
    */
   buildOrchestratedPrompt(prompt = '', agent = null, context = '') {
     if (!agent || agent.id === 'orchestrator') {
@@ -86,16 +105,29 @@ class RouterService {
   5. Tuân thủ nghiêm ngặt quy chuẩn tại image.prompt.md.`;
     }
 
-    if (agent.id === 'video') {
-      return `[CHỈ THỊ ĐIỀU PHỐI TỪ AI KARIK ORCHESTRATOR -> AGENT LÀM CLIP (Model: ${agent.model})]:
-- Mục tiêu: Biên kịch video ngắn triệu view và xây dựng kịch bản chi tiết cho TikTok/Reels/Shorts.
+    if (agent.id === 'social' || agent.id === 'video') {
+      return `[CHỈ THỊ ĐIỀU PHỐI TỪ AI KARIK ORCHESTRATOR -> AGENT TỰ ĐỘNG ĐĂNG BÀI MẠNG XÃ HỘI (Model: ${agent.model})]:
+- Mục tiêu: Sáng tạo Caption bài viết thu hút, bộ Hashtags chuẩn SEO/Viral và kích hoạt cơ chế tự động xuất bản trực tiếp lên Facebook / TikTok qua API (không cần người dùng mở web dán tay).
 - Yêu cầu ban đầu của người dùng: "${prompt}"
 - Hướng dẫn thực thi:
-  1. Xây dựng Hook 3 giây đầu giữ chân người xem (Visual + Voiceover + SFX).
-  2. Lập Bảng phân cảnh Storyboard 5 cột chi tiết (Phân cảnh | Thời lượng | Góc quay & Visual | Lời thoại Voiceover | Âm thanh SFX/BGM).
-  3. Lời kêu gọi hành động (CTA) đẩy cao tỷ lệ chuyển đổi.
-  4. Cung cấp Prompt cho AI Video Generator (Runway Gen-3/Sora/Pika/Kling).
-  5. Tuân thủ nghiêm ngặt quy chuẩn tại video.prompt.md.`;
+  1. Phân tích Góc tiếp cận & Tone giọng (Bán hàng, kể chuyện, hài hước, viral trend).
+  2. Biên soạn Nội dung bài đăng hoàn chỉnh (Tiêu đề Hook + Thân bài phân đoạn thoáng + Lời kêu gọi hành động CTA + Bộ Hashtags 4-8 thẻ).
+  3. BẮT BUỘC xuất khối JSON cấu hình chuẩn với tag \`\`\`json:social-publish để hệ thống kích hoạt card Tự Động Đăng 1-Click:
+     \`\`\`json:social-publish
+     {
+       "platform": "facebook",
+       "headline": "Tiêu đề bài viết ngắn gọn",
+       "caption": "Nội dung caption bài viết hoàn chỉnh...",
+       "hashtags": ["#aikarik", "#marketing", "#viral"],
+       "directUrls": {
+         "facebook": "https://www.facebook.com/",
+         "tiktok": "https://www.tiktok.com/tiktokstudio/upload"
+       },
+       "autoPublish": true
+     }
+     \`\`\`
+  4. Thông báo cho người dùng biết họ có thể bấm nút "⚡ Tự Động Đăng Ngay" để hệ thống tự động đẩy bài lên mà không cần dán thủ công.
+  5. Tuân thủ nghiêm ngặt quy chuẩn tại social.prompt.md.`;
     }
 
     if (agent.id === 'risk') {

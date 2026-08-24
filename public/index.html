@@ -468,6 +468,7 @@
     <div id="userManagementModalContainer"></div>
     <div id="systemMonitoringModalContainer"></div>
     <div id="imageEditorModalContainer"></div>
+    <div id="socialPublishModalContainer"></div>
 
     <!-- Application Script Modules -->
     <script src="/js/header.js"></script>
@@ -481,6 +482,7 @@
     <script src="/js/imageEditor.js"></script>
     <script src="/js/userManagement.js"></script>
     <script src="/js/systemMonitoring.js"></script>
+    <script src="/js/socialPublish.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             // Helper function to load external component HTML files
@@ -504,27 +506,31 @@
                 loadComponent('newNoteModalContainer', '/components/newNoteModal.html'),
                 loadComponent('userManagementModalContainer', '/components/userManagementModal.html'),
                 loadComponent('systemMonitoringModalContainer', '/components/systemMonitoringModal.html'),
-                loadComponent('imageEditorModalContainer', '/components/imageEditorModal.html')
+                loadComponent('imageEditorModalContainer', '/components/imageEditorModal.html'),
+                loadComponent('socialPublishModalContainer', '/components/socialPublishModal.html')
             ]);
 
             // Initialize all feature modules
             if (typeof initHeaderModule === 'function') initHeaderModule();
             if (typeof initUserManagementModule === 'function') initUserManagementModule();
-            initNoteDrawer();
-            initSearchAndFilter();
-            initDailyNote();
-            initNewNoteModal();
-            initAIChat();
+            if (window.socialPublish && typeof window.socialPublish.init === 'function') window.socialPublish.init();
+            if (typeof initNoteDrawer === 'function') initNoteDrawer();
+            if (typeof initSearchAndFilter === 'function') initSearchAndFilter();
+            if (typeof initDailyNote === 'function') initDailyNote();
+            if (typeof initNewNoteModal === 'function') initNewNoteModal();
+            if (typeof initAIChat === 'function') initAIChat();
             if (typeof initImageEditorModule === 'function') initImageEditorModule();
 
             // Bind Refresh Graph action
             const btnRefreshGraph = document.getElementById('btnRefreshGraph');
-            if (btnRefreshGraph) {
+            if (btnRefreshGraph && typeof fetchAndRenderGraph === 'function') {
                 btnRefreshGraph.addEventListener('click', fetchAndRenderGraph);
             }
 
             // Initial graph render
-            fetchAndRenderGraph();
+            if (typeof fetchAndRenderGraph === 'function') {
+                fetchAndRenderGraph();
+            }
         });
     </script>
 </body>

@@ -2,17 +2,14 @@ const authMiddleware = (req, res, next) => {
   const authHeader = req.headers.authorization;
   const roleHeader = req.headers['x-user-role'];
   const emailHeader = req.headers['x-user-email'];
-
-  if (!authHeader && !roleHeader) {
-    req.user = { id: 'anonymous', role: 'guest' };
-    return next();
-  }
+  const userIdHeader = req.headers['x-user-id'];
 
   const token = authHeader ? authHeader.split(' ')[1] : null;
+
   req.user = {
-    id: 'usr_admin',
+    id: userIdHeader || 'usr_admin',
     token,
-    role: roleHeader || '1',
+    role: roleHeader || (emailHeader && emailHeader.includes('admin') ? '1' : '0'),
     email: emailHeader || 'adminai'
   };
   next();

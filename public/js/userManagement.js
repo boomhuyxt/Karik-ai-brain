@@ -137,64 +137,82 @@ function renderUserTable(users) {
     }
 
     userTableBody.innerHTML = users.map(user => {
-        const emailLower = (user.email || '').toLowerCase();
-        const isRootAdmin = emailLower === 'adminai' || emailLower === 'admin@ai-brain.local' || user.id === 'usr_adminAI' || user.id === 'usr_admin';
-        const isUserAdmin = user.role === '1' || user.role === 'admin' || emailLower.includes('admin');
+        const isUserAdmin = user.role === '1' || user.role === 'admin' || (user.email || '').includes('admin');
+        const isRootAdmin = user.id === 'usr_admin' || user.id === 'usr_adminAI' || user.email === 'adminai' || user.email === 'admin@ai-brain.local';
         const isBlocked = user.status === 'blocked';
         const formattedDate = user.createdAt ? new Date(user.createdAt).toLocaleDateString('vi-VN') : '---';
 
         const roleBadge = isUserAdmin
-            ? `<span class="text-[9px] font-mono px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-400/30 font-bold">ADMIN</span>`
+            ? `<span class="text-[9px] font-mono px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-400/30">ADMIN</span>`
             : `<span class="text-[9px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-400/30">USER</span>`;
 
         const statusBadge = isBlocked
             ? `<span class="text-[9px] font-mono px-2 py-0.5 rounded-full bg-red-500/20 text-red-300 border border-red-400/30 flex items-center gap-1 w-max"><span class="w-1.5 h-1.5 rounded-full bg-red-400"></span> ĐÃ KHÓA</span>`
             : `<span class="text-[9px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 flex items-center gap-1 w-max"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> HOẠT ĐỘNG</span>`;
 
-        let roleBtn = '';
-        let statusBtn = '';
+        let roleActionBtn = '';
+        let statusActionBtn = '';
+        let deleteBtn = '';
 
         if (isRootAdmin) {
-            roleBtn = `<span class="text-[10px] text-purple-400/70 font-mono italic px-1.5">Admin Gốc</span>`;
-            statusBtn = `<span class="text-[10px] text-slate-500 font-mono italic">Bảo vệ</span>`;
-        } else {
-            // Nút thay đổi quyền User / Admin
-            if (isUserAdmin) {
-                roleBtn = `
-                    <button type="button" onclick="changeUserRoleAction('${user.id}', '0', '${escapeHtml(user.email)}')" title="Hạ quyền xuống User thông thường"
-                        class="bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-400/40 px-2 sm:px-2.5 py-1 rounded-lg text-xs font-medium flex items-center gap-1 transition-all active:scale-95 shadow-sm">
-                        <span class="material-symbols-outlined text-sm">person</span>
-                        <span class="hidden xs:inline">Hạ User</span>
+            roleActionBtn = `<span class="text-[10px] text-slate-500 font-mono italic">Root Admin</span>`;
+        } else if (isUserAdmin) {
+            roleActionBtn = `
+                <button type="button" onclick="changeUserRoleAction('${user.id}', '0', '${escapeHtml(user.email)}')" title="Hạ quyền xuống User"
+                    class="bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-400/40 px-2 py-1 rounded-lg text-xs font-medium flex items-center gap-1 transition-all active:scale-95">
+                    <span class="material-symbols-outlined text-sm">person_remove</span> Hạ User
+                </button>
+            `;
+            if (isBlocked) {
+                statusActionBtn = `
+                    <button type="button" onclick="toggleUserStatusAction('${user.id}', 'active')"
+                        class="bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-400/40 px-2.5 py-1 rounded-lg text-xs font-medium flex items-center gap-1 transition-all active:scale-95">
+                        <span class="material-symbols-outlined text-sm">lock_open</span> Mở khóa
                     </button>
                 `;
             } else {
-                roleBtn = `
-                    <button type="button" onclick="changeUserRoleAction('${user.id}', '1', '${escapeHtml(user.email)}')" title="Nâng lên quyền Quản trị viên (Admin)"
-                        class="bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-400/40 px-2 sm:px-2.5 py-1 rounded-lg text-xs font-medium flex items-center gap-1 transition-all active:scale-95 shadow-sm">
-                        <span class="material-symbols-outlined text-sm">admin_panel_settings</span>
-                        <span class="hidden xs:inline">Nâng Admin</span>
+                statusActionBtn = `
+                    <button type="button" onclick="toggleUserStatusAction('${user.id}', 'blocked')"
+                        class="bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-400/40 px-2.5 py-1 rounded-lg text-xs font-medium flex items-center gap-1 transition-all active:scale-95">
+                        <span class="material-symbols-outlined text-sm">block</span> Khóa
+                    </button>
+                `;
+            }
+            deleteBtn = `
+                <button type="button" onclick="deleteUserAction('${user.id}', '${escapeHtml(user.email)}')" title="Xóa tài khoản vĩnh viễn"
+                    class="bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-400/40 p-1 rounded-lg text-xs font-medium flex items-center justify-center transition-all active:scale-95">
+                    <span class="material-symbols-outlined text-sm">delete</span>
+                </button>
+            `;
+        } else {
+            roleActionBtn = `
+                <button type="button" onclick="changeUserRoleAction('${user.id}', '1', '${escapeHtml(user.email)}')" title="Thăng cấp lên Admin"
+                    class="bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-400/40 px-2 py-1 rounded-lg text-xs font-medium flex items-center gap-1 transition-all active:scale-95">
+                    <span class="material-symbols-outlined text-sm">admin_panel_settings</span> Thăng Admin
+                </button>
+            `;
+            if (isBlocked) {
+                statusActionBtn = `
+                    <button type="button" onclick="toggleUserStatusAction('${user.id}', 'active')"
+                        class="bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-400/40 px-2.5 py-1 rounded-lg text-xs font-medium flex items-center gap-1 transition-all active:scale-95">
+                        <span class="material-symbols-outlined text-sm">lock_open</span> Mở khóa
+                    </button>
+                `;
+            } else {
+                statusActionBtn = `
+                    <button type="button" onclick="toggleUserStatusAction('${user.id}', 'blocked')"
+                        class="bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-400/40 px-2.5 py-1 rounded-lg text-xs font-medium flex items-center gap-1 transition-all active:scale-95">
+                        <span class="material-symbols-outlined text-sm">block</span> Khóa
                     </button>
                 `;
             }
 
-            // Nút Khóa / Mở khóa tài khoản
-            if (isBlocked) {
-                statusBtn = `
-                    <button type="button" onclick="toggleUserStatusAction('${user.id}', 'active')" title="Mở khóa tài khoản"
-                        class="bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-400/40 px-2 sm:px-2.5 py-1 rounded-lg text-xs font-medium flex items-center gap-1 transition-all active:scale-95 shadow-sm">
-                        <span class="material-symbols-outlined text-sm">lock_open</span>
-                        <span class="hidden xs:inline">Mở khóa</span>
-                    </button>
-                `;
-            } else {
-                statusBtn = `
-                    <button type="button" onclick="toggleUserStatusAction('${user.id}', 'blocked')" title="Khóa tài khoản"
-                        class="bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-400/40 px-2 sm:px-2.5 py-1 rounded-lg text-xs font-medium flex items-center gap-1 transition-all active:scale-95 shadow-sm">
-                        <span class="material-symbols-outlined text-sm">block</span>
-                        <span class="hidden xs:inline">Khóa</span>
-                    </button>
-                `;
-            }
+            deleteBtn = `
+                <button type="button" onclick="deleteUserAction('${user.id}', '${escapeHtml(user.email)}')" title="Xóa tài khoản vĩnh viễn"
+                    class="bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-400/40 p-1 rounded-lg text-xs font-medium flex items-center justify-center transition-all active:scale-95">
+                    <span class="material-symbols-outlined text-sm">delete</span>
+                </button>
+            `;
         }
 
         return `
@@ -212,70 +230,15 @@ function renderUserTable(users) {
                 <td class="py-2 px-2 sm:px-3">${statusBadge}</td>
                 <td class="py-2 px-2 sm:px-3 hidden sm:table-cell font-mono text-[11px] text-slate-400">${formattedDate}</td>
                 <td class="py-2 px-2.5 sm:px-3 text-right">
-                    <div class="flex items-center gap-1.5 justify-end flex-wrap">
-                        ${roleBtn}
-                        ${statusBtn}
+                    <div class="flex items-center gap-1.5 justify-end">
+                        ${roleActionBtn}
+                        ${statusActionBtn}
+                        ${deleteBtn}
                     </div>
                 </td>
             </tr>
         `;
     }).join('');
-}
-
-async function changeUserRoleAction(userId, targetRole, email) {
-    const isTargetAdmin = String(targetRole) === '1' || targetRole === 'admin';
-    const actionText = isTargetAdmin 
-        ? `NÂNG LÊN QUYỀN QUẢN TRỊ VIÊN (ADMIN)` 
-        : `HẠ XUỐNG QUYỀN NGƯỜI DÙNG (USER)`;
-        
-    if (!confirm(`Bạn có chắc chắn muốn ${actionText} cho tài khoản "${email}" không?`)) {
-        return;
-    }
-
-    const token = localStorage.getItem('auth_token');
-    const userInfoRaw = localStorage.getItem('user_info');
-    let userRole = '1';
-    let userEmail = 'adminai';
-
-    if (userInfoRaw) {
-        try {
-            const u = JSON.parse(userInfoRaw);
-            if (u.role) userRole = u.role;
-            if (u.email) userEmail = u.email;
-        } catch (e) { }
-    }
-
-    const headers = {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'X-User-Role': userRole,
-        'X-User-Email': userEmail,
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-    };
-
-    try {
-        const res = await fetch(`/api/admin/users/${userId}/role`, {
-            method: 'PATCH',
-            headers,
-            body: JSON.stringify({ role: isTargetAdmin ? '1' : '0' })
-        });
-
-        const text = await res.text();
-        let data;
-        try {
-            data = JSON.parse(text);
-        } catch (e) {
-            throw new Error(`Máy chủ phản hồi không đúng định dạng (Mã HTTP: ${res.status}).`);
-        }
-
-        if (!res.ok || !data.success) {
-            throw new Error(data.error || 'Thay đổi quyền người dùng thất bại.');
-        }
-
-        await fetchUserListData();
-    } catch (err) {
-        alert('⚠️ Lỗi: ' + err.message);
-    }
 }
 
 async function toggleUserStatusAction(userId, targetStatus) {
@@ -409,6 +372,58 @@ async function cleanTestUsersAction() {
         }
 
         alert(data.message || 'Đã dọn dẹp tài khoản test thành công!');
+        await fetchUserListData();
+    } catch (err) {
+        alert('⚠️ Lỗi: ' + err.message);
+    }
+}
+
+async function changeUserRoleAction(userId, targetRole, email) {
+    const roleText = targetRole === '1' ? 'THĂNG CẤP lên ADMIN' : 'HẠ CẤP xuống USER';
+    if (!confirm(`Bạn có chắc chắn muốn ${roleText} cho tài khoản "${email}" không?`)) {
+        return;
+    }
+
+    const token = localStorage.getItem('auth_token');
+    const userInfoRaw = localStorage.getItem('user_info');
+    let userRole = '1';
+    let userEmail = 'adminai';
+
+    if (userInfoRaw) {
+        try {
+            const u = JSON.parse(userInfoRaw);
+            if (u.role) userRole = u.role;
+            if (u.email) userEmail = u.email;
+        } catch (e) { }
+    }
+
+    const headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-User-Role': userRole,
+        'X-User-Email': userEmail,
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+    };
+
+    try {
+        const res = await fetch(`/api/admin/users/${userId}/role`, {
+            method: 'PATCH',
+            headers,
+            body: JSON.stringify({ role: targetRole })
+        });
+
+        const text = await res.text();
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch (e) {
+            throw new Error(`Máy chủ trả về phản hồi không phải JSON (Mã HTTP: ${res.status}).`);
+        }
+
+        if (!res.ok || !data.success) {
+            throw new Error(data.error || 'Cập nhật phân quyền thất bại.');
+        }
+
         await fetchUserListData();
     } catch (err) {
         alert('⚠️ Lỗi: ' + err.message);

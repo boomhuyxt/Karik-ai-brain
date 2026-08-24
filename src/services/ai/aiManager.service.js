@@ -8,6 +8,8 @@ const openaiService = require('../providers/openai.service');
 const groqService = require('../providers/groq.service');
 const claudeService = require('../providers/claude.service');
 const openrouterService = require('../providers/openrouter.service');
+const tokenrouterService = require('../providers/tokenrouter.service');
+const geminiImageService = require('../providers/geminiImage.service');
 
 const knowledgePipelineService = require('../knowledge/knowledgePipeline.service');
 
@@ -18,7 +20,13 @@ class AIManagerService {
       openai: openaiService,
       groq: groqService,
       claude: claudeService,
-      openrouter: openrouterService
+      openrouter: openrouterService,
+      tokenrouter: tokenrouterService,
+      deepseek: tokenrouterService,
+      'gemini-image': geminiImageService,
+      gemini_image: geminiImageService,
+      imagen3: geminiImageService,
+      imagen: geminiImageService
     };
   }
 
@@ -53,6 +61,7 @@ class AIManagerService {
 
     const rawUsage = typeof chatResult === 'object' && chatResult !== null ? chatResult.usage : null;
     const audioData = typeof chatResult === 'object' && chatResult !== null ? chatResult.audioData : null;
+    const imageData = typeof chatResult === 'object' && chatResult !== null ? chatResult.imageData : null;
     const mimeType = typeof chatResult === 'object' && chatResult !== null ? chatResult.mimeType : null;
     const voice = typeof chatResult === 'object' && chatResult !== null ? chatResult.voice : null;
 
@@ -85,12 +94,13 @@ class AIManagerService {
       reply,
       agent: delegatedAgent,
       model: targetModel,
-      image: generatedImageResult && generatedImageResult.success ? {
+      image: (typeof generatedImageResult !== 'undefined' && generatedImageResult && generatedImageResult.success) ? {
         url: generatedImageResult.url,
         model: generatedImageResult.model,
         mimeType: generatedImageResult.mimeType
       } : null,
       audioData,
+      imageData,
       mimeType,
       voice,
       provider: targetProvider,
