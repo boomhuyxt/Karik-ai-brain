@@ -1,11 +1,98 @@
 /**
  * TikTok Content Posting API Provider
- * Hỗ trợ xuất bản Video và Photo Mode (Poster / Ảnh) lên TikTok.
+ * Hỗ trợ xuất bản Video, Photo Mode (Poster / Ảnh) và Luồng xác thực OAuth2 kèm PKCE code_challenge.
  */
+
+const crypto = require('crypto');
 
 class TikTokProvider {
   constructor(options = {}) {
     this.baseUrl = options.baseUrl || 'https://open.tiktokapis.com/v2';
+    this.pkceStore = new Map();
+  }
+
+  /**
+   * Tạo PKCE Verifier và Challenge cho TikTok OAuth
+   */
+  generatePKCE() {
+    const codeVerifier = crypto.randomBytes(32).toString('base64url');
+    const codeChallenge = crypto.createHash('sha256').update(codeVerifier).digest('hex');
+    return { codeVerifier, codeChallenge };
+  }
+
+  /**
+   * Tạo URL đăng nhập TikTok OAuth2 kèm PKCE code_challenge (bắt buộc bởi TikTok API v2)
+   */
+  getAuthorizationUrl({ clientKey, redirectUri, state }) {
+    const scopes = 'user.info.basic,video.upload,video.publish';
+    const authState = state || `jarvis_tt_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
+    const { codeVerifier, codeChallenge } = this.generatePKCE();
+
+    // Lưu codeVerifier cho bước exchange token
+    this.pkceStore.set(authState, codeVerifier);
+    this.pkceStore.set('latest', codeVerifier);
+
+    const params = new URLSearchParams({
+      client_key: clientKey,
+      scope: scopes,
+      response_type: 'code',
+      redirect_uri: redirectUri,
+      state: authState,
+      code_challenge: codeChallenge,
+      code_challenge_method: 'S256'
+    });
+
+    return {
+      url: `https://www.tiktok.com/v2/auth/authorize/?${params.toString()}`,
+      state: authState,
+      codeVerifier,
+      codeChallenge
+    };
+  }
+
+  /**
+   * Đổi Authorization Code lấy Access Token từ TikTok API
+   */
+  async exchangeCodeForToken({ clientKey, clientSecret, code, redirectUri, state }) {
+    const tokenUrl = `${this.baseUrl}/oauth/token/`;
+    const codeVerifier = (state && this.pkceStore.get(state)) || this.pkceStore.get('latest') || '';
+
+    const payload = {
+      client_key: clientKey,
+      client_secret: clientSecret,
+      code,
+      grant_type: 'authorization_code',
+      redirect_uri: redirectUri
+    };
+
+    if (codeVerifier) {
+      payload.code_verifier = codeVerifier;
+    }
+
+    const params = new URLSearchParams(payload);
+
+    const response = await fetch(tokenUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Cache-Control': 'no-cache'
+      },
+      body: params.toString()
+    });
+
+    const data = await response.json();
+    if (!response.ok || data.error || !data.data?.access_token) {
+      const msg = data.error_description || data.error?.message || data.message || 'Lỗi cấp Access Token từ TikTok';
+      throw new Error(`TikTok Token Exchange Error: ${msg}`);
+    }
+
+    return {
+      accessToken: data.data.access_token,
+      refreshToken: data.data.refresh_token,
+      expiresIn: data.data.expires_in,
+      openId: data.data.open_id,
+      scope: data.data.scope
+    };
   }
 
   /**
@@ -63,15 +150,25 @@ class TikTokProvider {
       publishId,
       postId: publishId,
       postUrl: `https://www.tiktok.com/@user/video/${publishId}`,
+      mediaType: 'video',
       raw: data
     };
   }
 
   /**
-   * Đăng Ảnh / Poster (TikTok Photo Mode)
+   * Alias publishPhoto -> publishPhotoMode
    */
-  async publishPhoto({ accessToken, photoUrls = [], title = '', description = '', privacyLevel = 'PUBLIC_TO_EVERYONE' }) {
+  async publishPhoto(params) {
+    return this.publishPhotoMode(params);
+  }
+
+  /**
+   * Đăng Poster / Hình ảnh đơn lẻ hoặc nhiều ảnh (Photo Mode) lên TikTok
+   */
+  async publishPhotoMode({ accessToken, photoUrls, title = '', description = '' }) {
     if (!accessToken) throw new Error('TikTok accessToken is required');
+    const images = Array.isArray(photoUrls) ? photoUrls : [photoUrls];
+    if (images.length === 0) throw new Error('TikTok photo mode requires at least one image');
 
     if (accessToken.startsWith('mock_') || process.env.NODE_ENV === 'test') {
       return {
@@ -80,21 +177,22 @@ class TikTokProvider {
         postId: `tt_photo_${Date.now()}`,
         publishId: `p_pub_${Date.now()}`,
         postUrl: `https://www.tiktok.com/@user/photo/${Date.now()}`,
-        mediaType: 'image'
+        mediaType: 'photo_mode'
       };
     }
 
     const initUrl = `${this.baseUrl}/post/publish/content/init/`;
     const payload = {
       post_info: {
-        title: title || description.slice(0, 50),
+        title,
         description,
-        privacy_level: privacyLevel
+        privacy_level: 'PUBLIC_TO_EVERYONE',
+        disable_comment: false
       },
       source_info: {
         source: 'PULL_FROM_URL',
         photo_cover_index: 0,
-        photo_images: photoUrls
+        photo_images: images
       },
       post_mode: 'DIRECT_POST',
       media_type: 'PHOTO'
@@ -111,8 +209,8 @@ class TikTokProvider {
 
     const data = await response.json();
     if (!response.ok || data.error?.code !== 'ok') {
-      const msg = data.error?.message || 'Lỗi đăng ảnh/poster lên TikTok';
-      throw new Error(`TikTok Photo Error: ${msg}`);
+      const msg = data.error?.message || 'Lỗi đăng ảnh Photo Mode lên TikTok';
+      throw new Error(`TikTok Photo Mode Error: ${msg}`);
     }
 
     const publishId = data.data?.publish_id;

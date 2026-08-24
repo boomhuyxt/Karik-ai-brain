@@ -57,5 +57,10 @@ module.exports = {
     port: parseInt(process.env.SMTP_PORT || '587', 10),
     user: process.env.SMTP_USER || '',
     pass: process.env.SMTP_PASS || ''
+  },
+  social: {
+    tiktokClientKey: process.env.TIKTOK_CLIENT_KEY || 'awq52zjptnlgnwvj',
+    tiktokClientSecret: process.env.TIKTOK_CLIENT_SECRET || 'stMCBls1d8uCOueZoikZPBrZ6bn6DloC',
+    tiktokRedirectUri: process.env.TIKTOK_REDIRECT_URI || 'http://localhost:3000/api/social/tiktok/callback'
   }
 };

@@ -8,7 +8,9 @@ const {
   validateReviewPost
 } = require('../validations/social.validation');
 
-// 1. Quản lý tài khoản mạng xã hội liên kết
+// 1. Quản lý tài khoản mạng xã hội liên kết & OAuth2
+router.get('/tiktok/login', (req, res, next) => socialController.getTikTokAuthUrl(req, res, next));
+router.get('/tiktok/callback', (req, res, next) => socialController.handleTikTokCallback(req, res, next));
 router.post('/accounts', validateConnectAccount, (req, res, next) => socialController.connectAccount(req, res, next));
 router.get('/channels', (req, res, next) => socialController.getAvailableChannels(req, res, next));
 router.delete('/accounts/:id', (req, res, next) => socialController.disconnectAccount(req, res, next));

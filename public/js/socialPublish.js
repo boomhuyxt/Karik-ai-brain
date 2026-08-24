@@ -1,6 +1,6 @@
 /**
  * Social Publishing Module (Facebook Graph API & TikTok Content Posting Bridge)
- * Supports SHA-256 Client-side account encryption, account switching/logout, and Direct/Scheduled publishing.
+ * Supports SHA-256 Client-side account encryption, TikTok 1-Click OAuth2, account switching/logout, and Direct/Scheduled publishing.
  */
 
 (function () {
@@ -13,6 +13,21 @@
         caption: '',
         hashtags: []
     };
+
+    /**
+     * Helper to safely parse JSON responses
+     */
+    async function parseJsonResponse(res) {
+        const text = await res.text();
+        try {
+            return JSON.parse(text);
+        } catch (e) {
+            if (!res.ok) {
+                throw new Error(`Máy chủ phản hồi trạng thái ${res.status}: Vui lòng khởi động lại server ('node server.js') để nạp routes mới.`);
+            }
+            throw new Error('Dữ liệu phản hồi từ máy chủ không đúng định dạng JSON.');
+        }
+    }
 
     /**
      * Helper to get Authentication Headers from LocalStorage
@@ -70,6 +85,14 @@
             if (e.target === modal) closeModal();
         });
 
+        // Lắng nghe sự kiện callback từ cửa sổ popup OAuth2 của TikTok
+        window.addEventListener('message', (event) => {
+            if (event.data && event.data.type === 'TIKTOK_AUTH_SUCCESS') {
+                showStatusAlert(`✅ ${event.data.account?.account_name || 'Kênh TikTok'} đã kết nối thành công!`, 'success');
+                fetchConnectedAccounts();
+            }
+        });
+
         // Tải trước danh sách các kênh đã liên kết
         fetchConnectedAccounts().catch(() => {});
     }
@@ -83,7 +106,7 @@
                 headers: getAuthHeaders()
             });
             if (!res.ok) return [];
-            const data = await res.json();
+            const data = await parseJsonResponse(res);
             if (data.success && Array.isArray(data.data)) {
                 connectedAccounts = data.data;
                 renderAccountCard();
@@ -170,6 +193,7 @@
         const tabBtnFb = document.getElementById('tabBtnFacebook');
         const tabBtnTt = document.getElementById('tabBtnTiktok');
         const loginLabel = document.getElementById('loginPlatformLabel');
+        const tiktokOAuthBox = document.getElementById('btnTiktokOAuthContainer');
 
         if (platform === 'facebook') {
             if (tabBtnFb) {
@@ -179,6 +203,7 @@
                 tabBtnTt.className = 'flex items-center justify-center gap-2.5 p-3 rounded-xl border border-white/10 bg-slate-800/40 text-slate-400 font-bold transition-all hover:bg-slate-800/80 hover:text-white';
             }
             if (loginLabel) loginLabel.textContent = 'Facebook Page';
+            if (tiktokOAuthBox) tiktokOAuthBox.classList.add('hidden');
         } else {
             if (tabBtnTt) {
                 tabBtnTt.className = 'flex items-center justify-center gap-2.5 p-3 rounded-xl border border-pink-500/50 bg-pink-600/25 text-white font-bold transition-all shadow-md hover:bg-pink-600/35';
@@ -187,9 +212,32 @@
                 tabBtnFb.className = 'flex items-center justify-center gap-2.5 p-3 rounded-xl border border-white/10 bg-slate-800/40 text-slate-400 font-bold transition-all hover:bg-slate-800/80 hover:text-white';
             }
             if (loginLabel) loginLabel.textContent = 'TikTok Channel';
+            if (tiktokOAuthBox) tiktokOAuthBox.classList.remove('hidden');
         }
 
         renderAccountCard();
+    }
+
+    /**
+     * Mở popup Ủy quyền đăng nhập TikTok OAuth2
+     */
+    async function loginWithTikTokOAuth() {
+        showStatusAlert('Đang mở cửa sổ ủy quyền TikTok...', 'info');
+        try {
+            const res = await fetch('/api/social/tiktok/login');
+            const data = await parseJsonResponse(res);
+            if (data.success && data.url) {
+                const width = 600;
+                const height = 750;
+                const left = (window.innerWidth - width) / 2;
+                const top = (window.innerHeight - height) / 2;
+                window.open(data.url, 'tiktok_oauth', `width=${width},height=${height},top=${top},left=${left}`);
+            } else {
+                showStatusAlert('Không thể lấy URL đăng nhập TikTok.', 'error');
+            }
+        } catch (err) {
+            showStatusAlert(`Lỗi kết nối: ${err.message}`, 'error');
+        }
     }
 
     /**
@@ -254,16 +302,15 @@
             return;
         }
 
-        showStatusAlert('Đang mã hóa SHA-256 và xác thực kết nối...', 'info');
+        showStatusAlert('Đang xác thực kết nối...', 'info');
 
         try {
-            // Mã hóa mật khẩu bằng SHA-256 an toàn ngay trên trình duyệt
             const hashedPasswordSha256 = await hashSHA256(password);
 
             const payload = {
                 platform: currentPlatform,
                 platformAccountId: username,
-                accountName: `${username} (${currentPlatform.toUpperCase()})`,
+                accountName: username.startsWith('@') ? username : `@${username}`,
                 accessToken: password.startsWith('EAA') || password.startsWith('act_') ? password : `mock_oauth_${currentPlatform}_${hashedPasswordSha256.slice(0, 16)}`,
                 accountType: 'personal'
             };
@@ -274,7 +321,7 @@
                 body: JSON.stringify(payload)
             });
 
-            const data = await res.json();
+            const data = await parseJsonResponse(res);
             if (data.success && data.data) {
                 showStatusAlert(`✅ Đăng nhập và liên kết tài khoản ${currentPlatform} thành công!`, 'success');
                 if (usernameInput) usernameInput.value = '';
@@ -295,7 +342,6 @@
         const personalAccount = connectedAccounts.find(acc => acc.platform === currentPlatform && acc.accountType === 'personal');
         
         if (!personalAccount) {
-            // Nếu không có tài khoản cá nhân, lập tức reset về form đăng nhập
             renderAccountCard();
             return;
         }
@@ -310,16 +356,14 @@
                 method: 'DELETE',
                 headers: getAuthHeaders()
             });
-            const data = await res.json();
+            const data = await parseJsonResponse(res);
             
-            // Xóa khỏi danh sách local và vẽ lại form đăng nhập
             connectedAccounts = connectedAccounts.filter(acc => acc.id !== personalAccount.id);
             renderAccountCard();
 
             showStatusAlert(`Đã đăng xuất tài khoản ${currentPlatform}. Bạn có thể đăng nhập tài khoản khác.`, 'success');
             await fetchConnectedAccounts();
         } catch (err) {
-            // Fallback: xóa trên UI và mở lại form đăng nhập
             connectedAccounts = connectedAccounts.filter(acc => acc.id !== personalAccount.id);
             renderAccountCard();
             showStatusAlert(`Đã đăng xuất trên thiết bị. Bạn có thể đăng nhập tài khoản khác.`, 'success');
@@ -342,7 +386,6 @@
             if (btnText) btnText.textContent = '⚡ Hủy Hẹn Giờ';
             if (submitText) submitText.textContent = 'Lên Lịch Đăng (Queue)';
 
-            // Điền sẵn thời gian gợi ý là 1 tiếng sau
             if (dateInput && !dateInput.value) {
                 const oneHourLater = new Date(Date.now() + 60 * 60 * 1000);
                 dateInput.value = oneHourLater.toISOString().slice(0, 16);
@@ -372,7 +415,6 @@
         const mediaUrl = mediaUrlInput ? mediaUrlInput.value.trim() : activeMediaData.url;
         const targetType = accountTypeRadio ? accountTypeRadio.value : 'personal';
 
-        // Kiểm tra tài khoản đăng bài tương ứng
         if (targetType === 'personal' && !personalAccount) {
             showStatusAlert(`⚠️ Bạn chưa đăng nhập tài khoản cá nhân ${currentPlatform}. Vui lòng nhập tài khoản & mật khẩu phía trên!`, 'error');
             return;
@@ -395,7 +437,6 @@
             scheduledAt = new Date(dateInput.value).toISOString();
         }
 
-        // Xác định ID tài khoản đích
         let targetAccountId = (targetType === 'admin_system' && adminAccount) ? adminAccount.id : personalAccount?.id;
 
         const payload = {
@@ -419,7 +460,7 @@
                 body: JSON.stringify(payload)
             });
 
-            const result = await res.json();
+            const result = await parseJsonResponse(res);
             if (result.success) {
                 if (result.requiresApproval) {
                     showStatusAlert(`📋 ${result.message} (Đã gửi vào hàng chờ Admin phê duyệt)`, 'success');
@@ -476,6 +517,7 @@
         openModal,
         closeModal,
         switchPlatform,
+        loginWithTikTokOAuth,
         handleLoginAndConnect,
         disconnectCurrentAccount,
         toggleScheduleMode,
