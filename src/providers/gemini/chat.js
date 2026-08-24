@@ -20,9 +20,9 @@ async function chat(prompt, options = {}) {
         if (options.agent.id === 'image') {
           const imageDoc = promptService.readPromptMd('image.prompt.md');
           agentInstruction = `\n\n--- CHỈ THỊ CHUYÊN BIỆT TỪ FILE: image.prompt.md (Model: ${modelName}) ---\n${imageDoc}`;
-        } else if (options.agent.id === 'video') {
-          const videoDoc = promptService.readPromptMd('video.prompt.md');
-          agentInstruction = `\n\n--- CHỈ THỊ CHUYÊN BIỆT TỪ FILE: video.prompt.md (Model: ${modelName}) ---\n${videoDoc}`;
+        } else if (options.agent.id === 'social' || options.agent.id === 'video') {
+          const socialDoc = promptService.readPromptMd('social.prompt.md');
+          agentInstruction = `\n\n--- CHỈ THỊ CHUYÊN BIỆT TỪ FILE: social.prompt.md (Model: ${modelName}) ---\n${socialDoc}`;
         } else if (options.agent.id === 'risk') {
           const riskDoc = promptService.readPromptMd('risk.prompt.md');
           agentInstruction = `\n\n--- CHỈ THỊ CHUYÊN BIỆT TỪ FILE: risk.prompt.md (Model: ${modelName}) ---\n${riskDoc}`;

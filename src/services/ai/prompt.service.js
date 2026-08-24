@@ -101,10 +101,17 @@ class PromptService {
   }
 
   /**
-   * Short-form Video & Scripting Prompt template renderer
+   * Social Publishing & Viral Copywriting Prompt template renderer
    */
-  getVideoPrompt(topic = '', platform = 'TikTok / Reels') {
-    return this.renderPrompt('video.prompt.md', { topic, platform });
+  getSocialPrompt(topic = '', platform = 'Facebook / TikTok') {
+    return this.renderPrompt('social.prompt.md', { topic, platform });
+  }
+
+  /**
+   * Legacy alias for Social Publishing
+   */
+  getVideoPrompt(topic = '', platform = 'Facebook / TikTok') {
+    return this.getSocialPrompt(topic, platform);
   }
 
   /**

@@ -30,13 +30,6 @@ module.exports = {
       role: 'Tự động tạo nội dung Caption, Viral Hook & Đăng bài tự động lên Facebook và TikTok qua API không cần dán tay',
       badge: 'Agent Tự Động Đăng Bài (Gemini 3.1 Flash Lite)'
     },
-    video: {
-      id: 'social',
-      name: 'Agent Tự Động Đăng Bài MXH (Gemini 3.1 Flash Lite)',
-      model: 'gemini-3.1-flash-lite',
-      role: 'Tự động tạo nội dung Caption, Viral Hook & Đăng bài tự động lên Facebook và TikTok qua API không cần dán tay',
-      badge: 'Agent Tự Động Đăng Bài (Gemini 3.1 Flash Lite)'
-    },
     risk: {
       id: 'risk',
       name: 'Agent Quản Lý Rủi Ro & Tiến Độ',

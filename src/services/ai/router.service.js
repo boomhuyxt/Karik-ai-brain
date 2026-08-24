@@ -68,7 +68,7 @@ class RouterService {
       'clip', 'video', 'kịch bản', 'reels', 'shorts', 'hook 3s', 'tiktok studio'
     ];
     if (socialKeywords.some(kw => text.includes(kw))) {
-      return geminiConfig.agents.social || geminiConfig.agents.video;
+      return geminiConfig.agents.social;
     }
 
     // 3. Ad Project Progress & Risk Management Agent
@@ -105,7 +105,7 @@ class RouterService {
   5. Tuân thủ nghiêm ngặt quy chuẩn tại image.prompt.md.`;
     }
 
-    if (agent.id === 'social' || agent.id === 'video') {
+    if (agent.id === 'social') {
       return `[CHỈ THỊ ĐIỀU PHỐI TỪ AI KARIK ORCHESTRATOR -> AGENT TỰ ĐỘNG ĐĂNG BÀI MẠNG XÃ HỘI (Model: ${agent.model})]:
 - Mục tiêu: Sáng tạo Caption bài viết thu hút, bộ Hashtags chuẩn SEO/Viral và kích hoạt cơ chế tự động xuất bản trực tiếp lên Facebook / TikTok qua API (không cần người dùng mở web dán tay).
 - Yêu cầu ban đầu của người dùng: "${prompt}"
