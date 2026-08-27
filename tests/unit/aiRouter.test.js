@@ -13,14 +13,14 @@ try {
   assert.ok(imageEnriched.includes('image.prompt.md'));
   console.log('✅ Image Studio Agent Dispatch & Prompt Engineering Passed: Model set to Gemini 3.6 Flash');
 
-  // Test 2: Video/Clip Agent Dispatch & Orchestrated Prompt
-  const videoAgent = routerService.dispatchAgent('Viết kịch bản clip ngắn TikTok viral');
-  assert.strictEqual(videoAgent.id, 'video');
-  assert.strictEqual(videoAgent.model, 'gemini-3.1-flash-tts');
-  const videoEnriched = routerService.buildOrchestratedPrompt('Viết kịch bản clip ngắn TikTok viral', videoAgent);
-  assert.ok(videoEnriched.includes('CHỈ THỊ ĐIỀU PHỐI TỪ AI KARIK ORCHESTRATOR -> AGENT LÀM CLIP'));
-  assert.ok(videoEnriched.includes('video.prompt.md'));
-  console.log('✅ Video Agent Dispatch & Prompt Engineering Passed: Model set to Gemini 3.1 Flash TTS');
+  // Test 2: Social Media Publishing & Viral Copywriting Agent Dispatch & Orchestrated Prompt
+  const socialAgent = routerService.dispatchAgent('Viết kịch bản clip ngắn TikTok viral');
+  assert.strictEqual(socialAgent.id, 'social');
+  assert.strictEqual(socialAgent.model, 'gemini-3.1-flash-lite');
+  const socialEnriched = routerService.buildOrchestratedPrompt('Viết kịch bản clip ngắn TikTok viral', socialAgent);
+  assert.ok(socialEnriched.includes('CHỈ THỊ ĐIỀU PHỐI TỪ AI KARIK ORCHESTRATOR -> AGENT TỰ ĐỘNG ĐĂNG BÀI MẠNG XÃ HỘI'));
+  assert.ok(socialEnriched.includes('social.prompt.md'));
+  console.log('✅ Social Media Agent Dispatch & Prompt Engineering Passed: Model set to Gemini 3.1 Flash Lite');
 
   // Test 3: Risk & Progress Agent Dispatch & Orchestrated Prompt
   const riskAgent = routerService.dispatchAgent('Kiểm tra độ rủi ro và tiến độ dự án quảng cáo');

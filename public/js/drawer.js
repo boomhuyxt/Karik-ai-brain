@@ -253,12 +253,15 @@ function initNoteDrawer() {
         window.currentMode = mode;
         if (!readView || !editView) return;
 
+        const activeClass = 'px-2.5 py-1 text-xs font-bold rounded-md bg-purple-100 dark:bg-primary/20 text-purple-900 dark:text-primary border border-purple-300 dark:border-primary/30 flex items-center gap-1';
+        const inactiveClass = 'px-2.5 py-1 text-xs font-semibold rounded-md text-slate-700 dark:text-on-surface-variant hover:bg-slate-100 dark:hover:bg-white/10 flex items-center gap-1';
+
         if (mode === 'read') {
             readView.classList.remove('hidden');
             editView.classList.add('hidden');
-            if (btnTabRead) btnTabRead.className = 'px-2.5 py-1 text-xs font-semibold rounded-md bg-primary/20 text-primary border border-primary/30 flex items-center gap-1';
-            if (btnTabEdit) btnTabEdit.className = 'px-2.5 py-1 text-xs font-semibold rounded-md text-on-surface-variant hover:bg-white/10 flex items-center gap-1';
-            if (btnTabSplit) btnTabSplit.className = 'px-2.5 py-1 text-xs font-semibold rounded-md text-on-surface-variant hover:bg-white/10 flex items-center gap-1';
+            if (btnTabRead) btnTabRead.className = activeClass;
+            if (btnTabEdit) btnTabEdit.className = inactiveClass;
+            if (btnTabSplit) btnTabSplit.className = inactiveClass;
 
             if (noteContentTextarea && noteContentTextarea.value) {
                 readView.innerHTML = renderCustomMarkdown(noteContentTextarea.value);
@@ -266,16 +269,16 @@ function initNoteDrawer() {
         } else if (mode === 'edit') {
             readView.classList.add('hidden');
             editView.classList.remove('hidden');
-            if (btnTabEdit) btnTabEdit.className = 'px-2.5 py-1 text-xs font-semibold rounded-md bg-primary/20 text-primary border border-primary/30 flex items-center gap-1';
-            if (btnTabRead) btnTabRead.className = 'px-2.5 py-1 text-xs font-semibold rounded-md text-on-surface-variant hover:bg-white/10 flex items-center gap-1';
-            if (btnTabSplit) btnTabSplit.className = 'px-2.5 py-1 text-xs font-semibold rounded-md text-on-surface-variant hover:bg-white/10 flex items-center gap-1';
+            if (btnTabEdit) btnTabEdit.className = activeClass;
+            if (btnTabRead) btnTabRead.className = inactiveClass;
+            if (btnTabSplit) btnTabSplit.className = inactiveClass;
             if (noteContentTextarea) noteContentTextarea.focus();
         } else if (mode === 'split') {
             readView.classList.remove('hidden');
             editView.classList.remove('hidden');
-            if (btnTabSplit) btnTabSplit.className = 'px-2.5 py-1 text-xs font-semibold rounded-md bg-primary/20 text-primary border border-primary/30 flex items-center gap-1';
-            if (btnTabRead) btnTabRead.className = 'px-2.5 py-1 text-xs font-semibold rounded-md text-on-surface-variant hover:bg-white/10 flex items-center gap-1';
-            if (btnTabEdit) btnTabEdit.className = 'px-2.5 py-1 text-xs font-semibold rounded-md text-on-surface-variant hover:bg-white/10 flex items-center gap-1';
+            if (btnTabSplit) btnTabSplit.className = activeClass;
+            if (btnTabRead) btnTabRead.className = inactiveClass;
+            if (btnTabEdit) btnTabEdit.className = inactiveClass;
             if (noteContentTextarea && noteContentTextarea.value) {
                 readView.innerHTML = renderCustomMarkdown(noteContentTextarea.value);
             }

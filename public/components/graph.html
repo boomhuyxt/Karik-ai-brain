@@ -5,75 +5,75 @@
 
     <!-- 1. Quick Floating Canvas Action Bar (Top-Left) -->
     <div id="controlsGraphBox"
-        class="absolute top-4 left-6 z-20 glass-panel px-3 py-1.5 rounded-2xl border border-white/15 text-xs flex items-center gap-2 shadow-2xl backdrop-blur-xl bg-[#10131a]/90 pointer-events-auto flex-wrap max-w-[calc(100vw-3rem)]">
+        class="absolute top-4 left-6 z-20 glass-panel px-3 py-1.5 rounded-2xl border border-white/15 dark:border-white/15 border-slate-300/60 text-xs flex items-center gap-2 shadow-2xl backdrop-blur-xl pointer-events-auto flex-wrap max-w-[calc(100vw-3rem)]">
         
         <!-- Toggle Graph Settings Button (Iconic Obsidian Gear Button) -->
         <button id="btnToggleGraphSettings" title="Mở/Đóng Cài đặt đồ thị (Graph view settings)" onclick="window.toggleGraphSettings()"
-            class="px-2.5 py-1.5 rounded-xl bg-primary/20 hover:bg-primary/30 text-primary hover:text-white border border-primary/40 flex items-center gap-1.5 font-bold transition-all text-xs shadow-[0_0_12px_rgba(211,187,255,0.25)] hover:scale-105 active:scale-95">
+            class="px-2.5 py-1.5 rounded-xl bg-primary/20 hover:bg-primary/30 text-primary dark:text-primary text-purple-700 hover:text-purple-900 border border-primary/40 flex items-center gap-1.5 font-bold transition-all text-xs shadow-[0_0_12px_rgba(211,187,255,0.25)] hover:scale-105 active:scale-95">
             <span class="material-symbols-outlined text-base animate-spin-slow">settings</span>
             <span class="font-headline-md font-bold tracking-wide">Cài đặt</span>
         </button>
 
-        <div class="h-4 w-[1px] bg-white/15 hidden xs:block"></div>
+        <div class="h-4 w-[1px] bg-slate-300 dark:bg-white/15 hidden xs:block"></div>
 
         <!-- Quick Search Input -->
         <div class="relative flex items-center">
             <span class="material-symbols-outlined text-slate-400 text-xs absolute left-2 pointer-events-none">search</span>
             <input id="graphSearchInput" type="text" placeholder="Tìm note hoặc link..."
-                class="bg-white/5 border border-white/10 rounded-lg pl-6 pr-2 py-1 text-xs text-white placeholder:text-slate-400 outline-none focus:border-cyan-400 focus:bg-slate-900/90 transition-all w-28 sm:w-36 font-mono">
+                class="bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/10 rounded-lg pl-6 pr-2 py-1 text-xs text-slate-800 dark:text-white placeholder:text-slate-400 outline-none focus:border-cyan-400 focus:bg-white dark:focus:bg-slate-900/90 transition-all w-28 sm:w-36 font-mono">
         </div>
 
         <!-- Quick Toggle: Labels -->
         <button id="btnToggleLabels" title="Bật/Tắt hiển thị tất cả nhãn chữ" onclick="window.toggleGraphLabels()"
-            class="px-2 py-1 rounded-xl bg-white/5 hover:bg-cyan-500/20 text-slate-300 hover:text-cyan-300 border border-white/10 hover:border-cyan-400/40 flex items-center gap-1 font-semibold transition-all text-xs">
-            <span class="material-symbols-outlined text-sm text-cyan-400">label</span>
+            class="px-2 py-1 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-cyan-500/20 text-slate-700 dark:text-slate-300 hover:text-cyan-700 dark:hover:text-cyan-300 border border-slate-200 dark:border-white/10 hover:border-cyan-400/40 flex items-center gap-1 font-semibold transition-all text-xs">
+            <span class="material-symbols-outlined text-sm text-cyan-600 dark:text-cyan-400">label</span>
             <span class="hidden sm:inline">Nhãn</span>
         </button>
 
         <!-- Quick Toggle: Arrows -->
         <button id="btnToggleArrows" title="Bật/Tắt mũi tên hướng liên kết [[WikiLink]]" onclick="window.toggleGraphArrows()"
-            class="px-2 py-1 rounded-xl bg-white/5 hover:bg-purple-500/20 text-slate-300 hover:text-purple-300 border border-white/10 hover:border-purple-400/40 flex items-center gap-1 font-semibold transition-all text-xs">
-            <span class="material-symbols-outlined text-sm text-purple-400">arrow_right_alt</span>
+            class="px-2 py-1 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-purple-500/20 text-slate-700 dark:text-slate-300 hover:text-purple-700 dark:hover:text-purple-300 border border-slate-200 dark:border-white/10 hover:border-purple-400/40 flex items-center gap-1 font-semibold transition-all text-xs">
+            <span class="material-symbols-outlined text-sm text-purple-600 dark:text-purple-400">arrow_right_alt</span>
             <span class="hidden sm:inline">Mũi tên</span>
         </button>
 
         <!-- Quick Toggle: Orphans -->
         <button id="btnToggleOrphans" title="Ẩn/Hiện ghi chú mồ côi (không liên kết)" onclick="window.toggleOrphanNodes()"
-            class="px-2 py-1 rounded-xl bg-white/5 hover:bg-emerald-500/20 text-slate-300 hover:text-emerald-300 border border-white/10 hover:border-emerald-400/40 flex items-center gap-1 font-semibold transition-all text-xs">
-            <span class="material-symbols-outlined text-sm text-emerald-400">filter_alt</span>
+            class="px-2 py-1 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-emerald-500/20 text-slate-700 dark:text-slate-300 hover:text-emerald-700 dark:hover:text-emerald-300 border border-slate-200 dark:border-white/10 hover:border-emerald-400/40 flex items-center gap-1 font-semibold transition-all text-xs">
+            <span class="material-symbols-outlined text-sm text-emerald-600 dark:text-emerald-400">filter_alt</span>
             <span class="hidden sm:inline">Lọc link</span>
         </button>
 
         <!-- Zoom Controls -->
-        <div class="flex items-center bg-white/10 rounded-xl border border-white/20 p-0.5 shadow-sm">
+        <div class="flex items-center bg-slate-100 dark:bg-white/10 rounded-xl border border-slate-200 dark:border-white/20 p-0.5 shadow-sm">
             <button title="Phóng to (+)" onclick="window.zoomInGraph()"
-                class="px-1.5 py-0.5 rounded-lg hover:bg-cyan-500/20 text-cyan-300 hover:text-white font-bold flex items-center justify-center transition-all active:scale-90 text-xs">
+                class="px-1.5 py-0.5 rounded-lg hover:bg-cyan-500/20 text-cyan-600 dark:text-cyan-300 hover:text-cyan-800 dark:hover:text-white font-bold flex items-center justify-center transition-all active:scale-90 text-xs">
                 <span class="material-symbols-outlined text-sm">add</span>
             </button>
-            <div class="h-3 w-[1px] bg-white/20"></div>
+            <div class="h-3 w-[1px] bg-slate-300 dark:bg-white/20"></div>
             <button title="Thu nhỏ (-)" onclick="window.zoomOutGraph()"
-                class="px-1.5 py-0.5 rounded-lg hover:bg-cyan-500/20 text-cyan-300 hover:text-white font-bold flex items-center justify-center transition-all active:scale-90 text-xs">
+                class="px-1.5 py-0.5 rounded-lg hover:bg-cyan-500/20 text-cyan-600 dark:text-cyan-300 hover:text-cyan-800 dark:hover:text-white font-bold flex items-center justify-center transition-all active:scale-90 text-xs">
                 <span class="material-symbols-outlined text-sm">remove</span>
             </button>
         </div>
 
         <!-- Recenter Button -->
         <button title="Căn lại vị trí góc nhìn trung tâm" onclick="window.recenterGraphView()"
-            class="px-2 py-1 rounded-xl bg-gradient-to-r from-blue-600/30 via-indigo-600/30 to-cyan-500/30 hover:from-blue-600/50 hover:to-cyan-500/50 text-cyan-200 hover:text-white border border-cyan-400/50 flex items-center gap-1 font-semibold transition-all text-xs active:scale-95">
-            <span class="material-symbols-outlined text-sm text-cyan-300 animate-pulse">center_focus_strong</span>
+            class="px-2 py-1 rounded-xl bg-gradient-to-r from-blue-600/20 via-indigo-600/20 to-cyan-500/20 hover:from-blue-600/40 hover:to-cyan-500/40 text-blue-800 dark:text-cyan-200 hover:text-blue-900 dark:hover:text-white border border-cyan-400/50 flex items-center gap-1 font-semibold transition-all text-xs active:scale-95">
+            <span class="material-symbols-outlined text-sm text-cyan-600 dark:text-cyan-300 animate-pulse">center_focus_strong</span>
             <span class="hidden sm:inline">Căn giữa</span>
         </button>
     </div>
 
     <!-- 2. Authentic Obsidian Graph View Settings Panel (Top-Right Drawer / Accordion) -->
     <div id="obsidianGraphSettingsPanel"
-        class="absolute top-4 right-6 z-30 w-80 max-w-[calc(100vw-3rem)] max-h-[calc(100vh-6rem)] glass-panel rounded-2xl border border-white/15 shadow-2xl backdrop-blur-2xl bg-[#10131a]/95 pointer-events-auto flex flex-col transition-all duration-300 overflow-hidden font-sans">
+        class="absolute top-4 right-6 z-30 w-80 max-w-[calc(100vw-3rem)] max-h-[calc(100vh-6rem)] glass-panel rounded-2xl border border-white/15 dark:border-white/15 border-slate-300 shadow-2xl backdrop-blur-2xl pointer-events-auto flex flex-col transition-all duration-300 overflow-hidden font-sans">
         
         <!-- Panel Header -->
-        <div class="px-4 py-3 border-b border-white/10 flex items-center justify-between bg-surface-container-low/80 flex-shrink-0">
+        <div class="px-4 py-3 border-b border-slate-200 dark:border-white/10 flex items-center justify-between bg-slate-100/90 dark:bg-surface-container-low/80 flex-shrink-0">
             <div class="flex items-center gap-2">
                 <span class="material-symbols-outlined text-primary text-lg">tune</span>
-                <h3 class="font-headline-md text-xs font-bold text-white tracking-wide text-glow">Cài đặt đồ thị (Graph view)</h3>
+                <h3 class="font-headline-md text-xs font-bold text-slate-800 dark:text-white tracking-wide text-glow">Cài đặt đồ thị (Graph view)</h3>
             </div>
             <div class="flex items-center gap-1">
                 <button title="Khôi phục cài đặt mặc định" onclick="window.resetGraphSettingsToDefault()"
@@ -93,25 +93,25 @@
             <!-- ==========================================
                  SECTION 1: FILTERS (BỘ LỌC)
                  ========================================== -->
-            <div class="border border-white/10 rounded-xl bg-white/[0.02] overflow-hidden">
+            <div class="border border-slate-200 dark:border-white/10 rounded-xl bg-slate-50/80 dark:bg-white/[0.02] overflow-hidden">
                 <button onclick="window.toggleAccordion('sectionFilters', 'iconFilters')"
-                    class="w-full px-3.5 py-2.5 flex items-center justify-between bg-white/[0.04] hover:bg-white/[0.08] transition-colors font-bold text-white text-left">
+                    class="w-full px-3.5 py-2.5 flex items-center justify-between bg-slate-100 dark:bg-white/[0.04] hover:bg-slate-200/80 dark:hover:bg-white/[0.08] transition-colors font-bold text-slate-800 dark:text-white text-left">
                     <span class="flex items-center gap-2 font-headline-md tracking-wide">
-                        <span class="material-symbols-outlined text-sm text-cyan-400">filter_list</span>
+                        <span class="material-symbols-outlined text-sm text-cyan-600 dark:text-cyan-400">filter_list</span>
                         Bộ lọc (Filters)
                     </span>
-                    <span id="iconFilters" class="material-symbols-outlined text-sm text-slate-400 transition-transform duration-200">expand_less</span>
+                    <span id="iconFilters" class="material-symbols-outlined text-sm text-slate-500 dark:text-slate-400 transition-transform duration-200">expand_less</span>
                 </button>
 
                 <div id="sectionFilters" class="p-3.5 space-y-3">
                     <!-- Search files input -->
                     <div>
-                        <label class="text-[11px] text-slate-400 font-medium mb-1 block">Tìm kiếm file / từ khóa</label>
+                        <label class="text-[11px] text-slate-600 dark:text-slate-400 font-medium mb-1 block">Tìm kiếm file / từ khóa</label>
                         <div class="relative flex items-center">
                             <span class="material-symbols-outlined text-slate-400 text-xs absolute left-2.5 pointer-events-none">search</span>
                             <input id="filterSearchInput" type="text" placeholder="Tìm theo tên file, folder..."
-                                class="w-full bg-[#181b24] border border-white/15 rounded-lg pl-7 pr-7 py-1.5 text-xs text-white placeholder:text-slate-500 outline-none focus:border-cyan-400 transition-all font-mono">
-                            <button id="btnClearFilterSearch" onclick="window.clearGraphSearch()" class="absolute right-2 text-slate-500 hover:text-white hidden">
+                                class="w-full bg-slate-100 dark:bg-[#181b24] border border-slate-300 dark:border-white/15 rounded-lg pl-7 pr-7 py-1.5 text-xs text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none focus:border-cyan-500 transition-all font-mono">
+                            <button id="btnClearFilterSearch" onclick="window.clearGraphSearch()" class="absolute right-2 text-slate-400 hover:text-slate-800 dark:hover:text-white hidden">
                                 <span class="material-symbols-outlined text-xs">cancel</span>
                             </button>
                         </div>
@@ -119,49 +119,49 @@
 
                     <!-- Toggle: Tags -->
                     <div class="flex items-center justify-between py-1">
-                        <span class="text-slate-300 font-medium flex items-center gap-1.5">
-                            <span class="material-symbols-outlined text-xs text-purple-400">tag</span>
+                        <span class="text-slate-700 dark:text-slate-300 font-medium flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-xs text-purple-600 dark:text-purple-400">tag</span>
                             Thẻ tag (Tags)
                         </span>
                         <label class="relative inline-flex items-center cursor-pointer">
                             <input id="toggleTagsInput" type="checkbox" checked onchange="window.toggleGraphTags(this.checked)" class="sr-only peer">
-                            <div class="w-8 h-4 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3.5 after:transition-all peer-checked:bg-purple-600"></div>
+                            <div class="w-8 h-4 bg-slate-300 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3.5 after:transition-all peer-checked:bg-purple-600"></div>
                         </label>
                     </div>
 
                     <!-- Toggle: Attachments -->
                     <div class="flex items-center justify-between py-1">
-                        <span class="text-slate-300 font-medium flex items-center gap-1.5">
-                            <span class="material-symbols-outlined text-xs text-amber-400">attach_file</span>
+                        <span class="text-slate-700 dark:text-slate-300 font-medium flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-xs text-amber-600 dark:text-amber-400">attach_file</span>
                             Tệp đính kèm (Attachments)
                         </span>
                         <label class="relative inline-flex items-center cursor-pointer">
                             <input id="toggleAttachmentsInput" type="checkbox" onchange="window.toggleGraphAttachments(this.checked)" class="sr-only peer">
-                            <div class="w-8 h-4 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3.5 after:transition-all peer-checked:bg-amber-600"></div>
+                            <div class="w-8 h-4 bg-slate-300 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3.5 after:transition-all peer-checked:bg-amber-600"></div>
                         </label>
                     </div>
 
                     <!-- Toggle: Existing files only -->
                     <div class="flex items-center justify-between py-1">
-                        <span class="text-slate-300 font-medium flex items-center gap-1.5">
-                            <span class="material-symbols-outlined text-xs text-cyan-400">task_alt</span>
+                        <span class="text-slate-700 dark:text-slate-300 font-medium flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-xs text-cyan-600 dark:text-cyan-400">task_alt</span>
                             Chỉ tệp tồn tại (Existing files)
                         </span>
                         <label class="relative inline-flex items-center cursor-pointer">
                             <input id="toggleExistingInput" type="checkbox" checked onchange="window.toggleGraphExisting(this.checked)" class="sr-only peer">
-                            <div class="w-8 h-4 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3.5 after:transition-all peer-checked:bg-cyan-600"></div>
+                            <div class="w-8 h-4 bg-slate-300 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3.5 after:transition-all peer-checked:bg-cyan-600"></div>
                         </label>
                     </div>
 
                     <!-- Toggle: Orphans (Ghi chú mồ côi) -->
                     <div class="flex items-center justify-between py-1">
-                        <span class="text-slate-300 font-medium flex items-center gap-1.5">
-                            <span class="material-symbols-outlined text-xs text-emerald-400">share</span>
+                        <span class="text-slate-700 dark:text-slate-300 font-medium flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-xs text-emerald-600 dark:text-emerald-400">share</span>
                             Hiện tệp mồ côi (Orphans)
                         </span>
                         <label class="relative inline-flex items-center cursor-pointer">
                             <input id="toggleOrphansInput" type="checkbox" checked onchange="window.toggleOrphanNodes(this.checked)" class="sr-only peer">
-                            <div class="w-8 h-4 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3.5 after:transition-all peer-checked:bg-emerald-600"></div>
+                            <div class="w-8 h-4 bg-slate-300 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3.5 after:transition-all peer-checked:bg-emerald-600"></div>
                         </label>
                     </div>
                 </div>
@@ -170,25 +170,25 @@
             <!-- ==========================================
                  SECTION 2: GROUPS (NHÓM MÀU / THƯ MỤC)
                  ========================================== -->
-            <div class="border border-white/10 rounded-xl bg-white/[0.02] overflow-hidden">
+            <div class="border border-slate-200 dark:border-white/10 rounded-xl bg-slate-50/80 dark:bg-white/[0.02] overflow-hidden">
                 <button onclick="window.toggleAccordion('sectionGroups', 'iconGroups')"
-                    class="w-full px-3.5 py-2.5 flex items-center justify-between bg-white/[0.04] hover:bg-white/[0.08] transition-colors font-bold text-white text-left">
+                    class="w-full px-3.5 py-2.5 flex items-center justify-between bg-slate-100 dark:bg-white/[0.04] hover:bg-slate-200/80 dark:hover:bg-white/[0.08] transition-colors font-bold text-slate-800 dark:text-white text-left">
                     <span class="flex items-center gap-2 font-headline-md tracking-wide">
-                        <span class="material-symbols-outlined text-sm text-purple-400">palette</span>
+                        <span class="material-symbols-outlined text-sm text-purple-600 dark:text-purple-400">palette</span>
                         Nhóm màu (Groups)
                     </span>
-                    <span id="iconGroups" class="material-symbols-outlined text-sm text-slate-400 transition-transform duration-200">expand_less</span>
+                    <span id="iconGroups" class="material-symbols-outlined text-sm text-slate-500 dark:text-slate-400 transition-transform duration-200">expand_less</span>
                 </button>
 
                 <div id="sectionGroups" class="p-3.5 space-y-3">
                     <div class="flex items-center justify-between">
-                        <span class="text-[11px] text-slate-400 font-medium">Nhóm theo thư mục Vault:</span>
-                        <button onclick="window.filterGraphByFolder(null)" class="text-[10px] text-cyan-400 hover:underline">Hiện tất cả</button>
+                        <span class="text-[11px] text-slate-600 dark:text-slate-400 font-medium">Nhóm theo thư mục Vault:</span>
+                        <button onclick="window.filterGraphByFolder(null)" class="text-[10px] text-cyan-700 dark:text-cyan-400 font-semibold hover:underline">Hiện tất cả</button>
                     </div>
                     
                     <!-- Dynamic Folder Legend List -->
                     <div id="legendList" class="flex flex-col gap-1.5 max-h-48 overflow-y-auto pr-1">
-                        <div class="text-xs text-on-surface-variant italic py-1">Đang tải danh mục từ repo...</div>
+                        <div class="text-xs text-slate-500 dark:text-on-surface-variant italic py-1">Đang tải danh mục từ repo...</div>
                     </div>
                 </div>
             </div>
@@ -196,72 +196,72 @@
             <!-- ==========================================
                  SECTION 3: DISPLAY (HIỂN THỊ)
                  ========================================== -->
-            <div class="border border-white/10 rounded-xl bg-white/[0.02] overflow-hidden">
+            <div class="border border-slate-200 dark:border-white/10 rounded-xl bg-slate-50/80 dark:bg-white/[0.02] overflow-hidden">
                 <button onclick="window.toggleAccordion('sectionDisplay', 'iconDisplay')"
-                    class="w-full px-3.5 py-2.5 flex items-center justify-between bg-white/[0.04] hover:bg-white/[0.08] transition-colors font-bold text-white text-left">
+                    class="w-full px-3.5 py-2.5 flex items-center justify-between bg-slate-100 dark:bg-white/[0.04] hover:bg-slate-200/80 dark:hover:bg-white/[0.08] transition-colors font-bold text-slate-800 dark:text-white text-left">
                     <span class="flex items-center gap-2 font-headline-md tracking-wide">
-                        <span class="material-symbols-outlined text-sm text-emerald-400">visibility</span>
+                        <span class="material-symbols-outlined text-sm text-emerald-600 dark:text-emerald-400">visibility</span>
                         Hiển thị (Display)
                     </span>
-                    <span id="iconDisplay" class="material-symbols-outlined text-sm text-slate-400 transition-transform duration-200">expand_less</span>
+                    <span id="iconDisplay" class="material-symbols-outlined text-sm text-slate-500 dark:text-slate-400 transition-transform duration-200">expand_less</span>
                 </button>
 
                 <div id="sectionDisplay" class="p-3.5 space-y-3.5">
                     <!-- Toggle: Arrows -->
                     <div class="flex items-center justify-between py-0.5">
-                        <span class="text-slate-300 font-medium flex items-center gap-1.5">
-                            <span class="material-symbols-outlined text-xs text-purple-400">arrow_right_alt</span>
+                        <span class="text-slate-700 dark:text-slate-300 font-medium flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-xs text-purple-600 dark:text-purple-400">arrow_right_alt</span>
                             Mũi tên liên kết (Arrows)
                         </span>
                         <label class="relative inline-flex items-center cursor-pointer">
                             <input id="toggleArrowsInput" type="checkbox" onchange="window.toggleGraphArrows(this.checked)" class="sr-only peer">
-                            <div class="w-8 h-4 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3.5 after:transition-all peer-checked:bg-purple-600"></div>
+                            <div class="w-8 h-4 bg-slate-300 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3.5 after:transition-all peer-checked:bg-purple-600"></div>
                         </label>
                     </div>
 
                     <!-- Toggle: Always Show Labels -->
                     <div class="flex items-center justify-between py-0.5">
-                        <span class="text-slate-300 font-medium flex items-center gap-1.5">
-                            <span class="material-symbols-outlined text-xs text-cyan-400">label</span>
+                        <span class="text-slate-700 dark:text-slate-300 font-medium flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-xs text-cyan-600 dark:text-cyan-400">label</span>
                             Luôn hiện nhãn chữ (Labels)
                         </span>
                         <label class="relative inline-flex items-center cursor-pointer">
                             <input id="toggleLabelsInput" type="checkbox" onchange="window.toggleGraphLabels(this.checked)" class="sr-only peer">
-                            <div class="w-8 h-4 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3.5 after:transition-all peer-checked:bg-cyan-600"></div>
+                            <div class="w-8 h-4 bg-slate-300 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3.5 after:transition-all peer-checked:bg-cyan-600"></div>
                         </label>
                     </div>
 
                     <!-- Slider: Text Fade Threshold -->
                     <div>
                         <div class="flex justify-between items-center text-[11px] mb-1">
-                            <span class="text-slate-400 font-medium">Ngưỡng mờ chữ (Text fade)</span>
-                            <span id="valTextFade" class="font-mono text-cyan-300 font-bold">1.35x</span>
+                            <span class="text-slate-600 dark:text-slate-400 font-medium">Ngưỡng mờ chữ (Text fade)</span>
+                            <span id="valTextFade" class="font-mono text-cyan-700 dark:text-cyan-300 font-bold">1.35x</span>
                         </div>
                         <input id="sliderTextFade" type="range" min="0.5" max="3.0" step="0.05" value="1.35"
                             oninput="window.updateTextFadeThreshold(this.value)"
-                            class="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-cyan-400">
+                            class="w-full h-1.5 bg-slate-300 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-cyan-600 dark:accent-cyan-400">
                     </div>
 
                     <!-- Slider: Node Size -->
                     <div>
                         <div class="flex justify-between items-center text-[11px] mb-1">
-                            <span class="text-slate-400 font-medium">Kích thước Node (Node size)</span>
-                            <span id="valNodeSize" class="font-mono text-primary font-bold">1.0x</span>
+                            <span class="text-slate-600 dark:text-slate-400 font-medium">Kích thước Node (Node size)</span>
+                            <span id="valNodeSize" class="font-mono text-purple-700 dark:text-primary font-bold">1.0x</span>
                         </div>
                         <input id="sliderNodeSize" type="range" min="0.4" max="2.5" step="0.1" value="1.0"
                             oninput="window.updateNodeSizeMultiplier(this.value)"
-                            class="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-primary">
+                            class="w-full h-1.5 bg-slate-300 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-purple-600 dark:accent-primary">
                     </div>
 
                     <!-- Slider: Link Thickness -->
                     <div>
                         <div class="flex justify-between items-center text-[11px] mb-1">
-                            <span class="text-slate-400 font-medium">Độ dày liên kết (Link thickness)</span>
-                            <span id="valLinkThickness" class="font-mono text-secondary font-bold">1.0x</span>
+                            <span class="text-slate-600 dark:text-slate-400 font-medium">Độ dày liên kết (Link thickness)</span>
+                            <span id="valLinkThickness" class="font-mono text-cyan-700 dark:text-secondary font-bold">1.0x</span>
                         </div>
                         <input id="sliderLinkThickness" type="range" min="0.4" max="3.0" step="0.1" value="1.0"
                             oninput="window.updateLinkThicknessMultiplier(this.value)"
-                            class="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-secondary">
+                            class="w-full h-1.5 bg-slate-300 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-cyan-600 dark:accent-secondary">
                     </div>
                 </div>
             </div>
@@ -269,65 +269,65 @@
             <!-- ==========================================
                  SECTION 4: FORCES (LỰC VẬT LÝ D3)
                  ========================================== -->
-            <div class="border border-white/10 rounded-xl bg-white/[0.02] overflow-hidden">
+            <div class="border border-slate-200 dark:border-white/10 rounded-xl bg-slate-50/80 dark:bg-white/[0.02] overflow-hidden">
                 <button onclick="window.toggleAccordion('sectionForces', 'iconForces')"
-                    class="w-full px-3.5 py-2.5 flex items-center justify-between bg-white/[0.04] hover:bg-white/[0.08] transition-colors font-bold text-white text-left">
+                    class="w-full px-3.5 py-2.5 flex items-center justify-between bg-slate-100 dark:bg-white/[0.04] hover:bg-slate-200/80 dark:hover:bg-white/[0.08] transition-colors font-bold text-slate-800 dark:text-white text-left">
                     <span class="flex items-center gap-2 font-headline-md tracking-wide">
-                        <span class="material-symbols-outlined text-sm text-amber-400">bubble_chart</span>
+                        <span class="material-symbols-outlined text-sm text-amber-600 dark:text-amber-400">bubble_chart</span>
                         Lực vật lý (Forces)
                     </span>
-                    <span id="iconForces" class="material-symbols-outlined text-sm text-slate-400 transition-transform duration-200">expand_less</span>
+                    <span id="iconForces" class="material-symbols-outlined text-sm text-slate-500 dark:text-slate-400 transition-transform duration-200">expand_less</span>
                 </button>
 
                 <div id="sectionForces" class="p-3.5 space-y-3.5">
                     <!-- Slider: Center Force -->
                     <div>
                         <div class="flex justify-between items-center text-[11px] mb-1">
-                            <span class="text-slate-400 font-medium">Lực hút tâm (Center force)</span>
-                            <span id="valCenterForce" class="font-mono text-cyan-300 font-bold">0.035</span>
+                            <span class="text-slate-600 dark:text-slate-400 font-medium">Lực hút tâm (Center force)</span>
+                            <span id="valCenterForce" class="font-mono text-cyan-700 dark:text-cyan-300 font-bold">0.035</span>
                         </div>
                         <input id="sliderCenterForce" type="range" min="0.005" max="0.15" step="0.005" value="0.035"
                             oninput="window.updateCenterForce(this.value)"
-                            class="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-cyan-400">
+                            class="w-full h-1.5 bg-slate-300 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-cyan-600 dark:accent-cyan-400">
                     </div>
 
                     <!-- Slider: Repel Force -->
                     <div>
                         <div class="flex justify-between items-center text-[11px] mb-1">
-                            <span class="text-slate-400 font-medium">Lực đẩy (Repel force)</span>
-                            <span id="valRepelForce" class="font-mono text-purple-300 font-bold">-75</span>
+                            <span class="text-slate-600 dark:text-slate-400 font-medium">Lực đẩy (Repel force)</span>
+                            <span id="valRepelForce" class="font-mono text-purple-700 dark:text-purple-300 font-bold">-75</span>
                         </div>
                         <input id="sliderRepelForce" type="range" min="-300" max="-20" step="5" value="-75"
                             oninput="window.updateRepelForce(this.value)"
-                            class="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-purple-400">
+                            class="w-full h-1.5 bg-slate-300 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-purple-600 dark:accent-purple-400">
                     </div>
 
                     <!-- Slider: Link Force -->
                     <div>
                         <div class="flex justify-between items-center text-[11px] mb-1">
-                            <span class="text-slate-400 font-medium">Lực liên kết (Link force)</span>
-                            <span id="valLinkForce" class="font-mono text-emerald-300 font-bold">0.45</span>
+                            <span class="text-slate-600 dark:text-slate-400 font-medium">Lực liên kết (Link force)</span>
+                            <span id="valLinkForce" class="font-mono text-emerald-700 dark:text-emerald-300 font-bold">0.45</span>
                         </div>
                         <input id="sliderLinkForce" type="range" min="0.05" max="1.0" step="0.05" value="0.45"
                             oninput="window.updateLinkForce(this.value)"
-                            class="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-400">
+                            class="w-full h-1.5 bg-slate-300 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-600 dark:accent-emerald-400">
                     </div>
 
                     <!-- Slider: Link Distance -->
                     <div>
                         <div class="flex justify-between items-center text-[11px] mb-1">
-                            <span class="text-slate-400 font-medium">Khoảng cách liên kết (Link distance)</span>
-                            <span id="valLinkDistance" class="font-mono text-amber-300 font-bold">90px</span>
+                            <span class="text-slate-600 dark:text-slate-400 font-medium">Khoảng cách liên kết (Link distance)</span>
+                            <span id="valLinkDistance" class="font-mono text-amber-700 dark:text-amber-300 font-bold">90px</span>
                         </div>
                         <input id="sliderLinkDistance" type="range" min="30" max="250" step="5" value="90"
                             oninput="window.updateLinkDistance(this.value)"
-                            class="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-amber-400">
+                            class="w-full h-1.5 bg-slate-300 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-amber-600 dark:accent-amber-400">
                     </div>
 
                     <!-- Reset Button inside Forces -->
                     <button onclick="window.resetGraphForces()"
-                        class="w-full py-1.5 px-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white flex items-center justify-center gap-1.5 text-xs font-semibold transition-all">
-                        <span class="material-symbols-outlined text-sm text-slate-400">restart_alt</span>
+                        class="w-full py-1.5 px-3 rounded-lg bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 border border-slate-300 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white flex items-center justify-center gap-1.5 text-xs font-semibold transition-all">
+                        <span class="material-symbols-outlined text-sm text-slate-500 dark:text-slate-400">restart_alt</span>
                         <span>Khôi phục lực mặc định</span>
                     </button>
                 </div>
@@ -338,26 +338,26 @@
 
     <!-- 3. Obsidian Bottom Status Bar (Clean Minimalist Overlay at Bottom-Right) -->
     <div id="obsidianStatusBar"
-        class="absolute bottom-4 right-6 z-20 glass-panel px-3.5 py-1.5 rounded-full border border-white/15 text-xs flex items-center gap-3 shadow-xl backdrop-blur-xl bg-[#10131a]/90 pointer-events-auto select-none">
+        class="absolute bottom-4 right-6 z-20 glass-panel px-3.5 py-1.5 rounded-full border border-white/15 dark:border-white/15 border-slate-300 text-xs flex items-center gap-3 shadow-xl backdrop-blur-xl pointer-events-auto select-none text-slate-800 dark:text-slate-200">
         
         <!-- Vault Badge -->
-        <div class="flex items-center gap-1.5 text-purple-300 font-mono text-[11px]">
-            <span class="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse"></span>
+        <div class="flex items-center gap-1.5 text-purple-700 dark:text-purple-300 font-mono text-[11px]">
+            <span class="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse"></span>
             <span id="graphRepoBadge">Obsidian-Karik-Ai</span>
         </div>
 
-        <div class="h-3 w-[1px] bg-white/20"></div>
+        <div class="h-3 w-[1px] bg-slate-300 dark:bg-white/20"></div>
 
         <!-- Notes & Connections Counter -->
-        <span id="totalNotesCount" class="text-[11px] font-mono text-cyan-300">0 Notes • 0 Links</span>
+        <span id="totalNotesCount" class="text-[11px] font-mono text-cyan-700 dark:text-cyan-300">0 Notes • 0 Links</span>
 
-        <div class="h-3 w-[1px] bg-white/20 hidden sm:block"></div>
+        <div class="h-3 w-[1px] bg-slate-300 dark:bg-white/20 hidden sm:block"></div>
 
         <!-- AI API Token Usage Pill (Expandable / Drawer Trigger) -->
         <div class="hidden sm:flex items-center gap-2">
-            <span class="material-symbols-outlined text-xs text-amber-400">toll</span>
-            <span class="text-[10px] text-slate-400">Token:</span>
-            <span id="legendTotalTokensValue" class="font-mono text-[11px] font-bold text-primary">0</span>
+            <span class="material-symbols-outlined text-xs text-amber-500">toll</span>
+            <span class="text-[10px] text-slate-500 dark:text-slate-400">Token:</span>
+            <span id="legendTotalTokensValue" class="font-mono text-[11px] font-bold text-primary dark:text-primary text-purple-700">0</span>
         </div>
     </div>
 

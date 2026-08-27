@@ -118,8 +118,8 @@ function renderObsidianGroups(data) {
             const isSelected = activeFilterFolder === cat.folder;
             const dotColor = cat.color || '#a0a0a0';
             const itemBg = isSelected
-                ? `bg-cyan-500/20 border-cyan-400/60 shadow-[0_0_12px_rgba(34,211,238,0.3)] text-cyan-200`
-                : `bg-white/5 hover:bg-white/10 border-white/10 text-white`;
+                ? `bg-cyan-100 dark:bg-cyan-500/20 border-cyan-400 dark:border-cyan-400/60 shadow-sm text-cyan-950 dark:text-cyan-200 font-bold`
+                : `bg-slate-100 hover:bg-slate-200/80 dark:bg-white/5 dark:hover:bg-white/10 border-slate-200 dark:border-white/10 text-slate-800 dark:text-white`;
 
             return `
             <div class="flex items-center justify-between gap-2.5 text-xs font-medium ${itemBg} px-3 py-1.5 rounded-lg border transition-all cursor-pointer group hover:scale-[1.01]" onclick="window.filterGraphByFolder('${cat.folder}')">
@@ -127,12 +127,12 @@ function renderObsidianGroups(data) {
                     <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background: ${dotColor}"></span>
                     <span class="font-semibold tracking-wide text-xs truncate">${cat.folder}</span>
                 </div>
-                <span class="text-[10px] font-mono text-slate-300 bg-white/10 border border-white/10 px-1.5 py-0.2 rounded flex-shrink-0">${count}</span>
+                <span class="text-[10px] font-mono text-slate-700 dark:text-slate-300 bg-white dark:bg-white/10 border border-slate-300/80 dark:border-white/10 px-1.5 py-0.2 rounded flex-shrink-0 shadow-2xs">${count}</span>
             </div>
             `;
         }).join('');
     } else {
-        legendList.innerHTML = '<div class="text-xs text-on-surface-variant italic py-1">Không có thư mục</div>';
+        legendList.innerHTML = '<div class="text-xs text-slate-500 dark:text-on-surface-variant italic py-1">Không có thư mục</div>';
     }
 }
 
@@ -243,6 +243,12 @@ function render2DGraph(data) {
         }
     });
 
+    // Theme Colors Helper
+    const isDarkMode = document.documentElement.classList.contains('dark');
+    const defaultLinkStroke = isDarkMode ? 'rgba(255, 255, 255, 0.16)' : 'rgba(15, 23, 42, 0.18)';
+    const arrowColor = isDarkMode ? '#64748b' : '#94a3b8';
+    const arrowActiveColor = isDarkMode ? '#ffffff' : '#0f172a';
+
     // SVG Defs for Arrowheads
     const defs = svg.append('defs');
 
@@ -256,7 +262,7 @@ function render2DGraph(data) {
         .attr('orient', 'auto')
         .append('path')
         .attr('d', 'M0,-3.5L7,0L0,3.5')
-        .attr('fill', '#64748b')
+        .attr('fill', arrowColor)
         .attr('opacity', 0.6);
 
     defs.append('marker')
@@ -269,7 +275,7 @@ function render2DGraph(data) {
         .attr('orient', 'auto')
         .append('path')
         .attr('d', 'M0,-4L8,0L0,4')
-        .attr('fill', '#ffffff');
+        .attr('fill', arrowActiveColor);
 
     svgSelection2D = svg;
     containerGroup2D = svg.append('g');
@@ -306,9 +312,9 @@ function render2DGraph(data) {
         .data(validLinks)
         .enter().append('line')
         .attr('class', 'graph-link')
-        .attr('stroke', 'rgba(255, 255, 255, 0.16)')
+        .attr('stroke', defaultLinkStroke)
         .attr('stroke-width', 0.8 * linkThicknessMultiplier)
-        .attr('stroke-opacity', 0.35)
+        .attr('stroke-opacity', isDarkMode ? 0.35 : 0.45)
         .attr('marker-end', stateShowArrows ? 'url(#obsidian-arrow)' : null);
 
     // Nodes Layer (Flat, solid, clean dots)
@@ -398,48 +404,50 @@ function render2DGraph(data) {
         const neighborSet = new Set(d.neighbors || []);
         neighborSet.add(d);
         const linkSet = new Set(d.links || []);
+        const isDark = document.documentElement.classList.contains('dark');
 
         // Dim non-neighbors
         nodeItems.style('opacity', n => neighborSet.has(n) ? 1 : 0.08);
 
         // Highlight hovered node circle
         nodeItems.selectAll('.node-circle')
-            .attr('fill', n => n === d ? '#ffffff' : (neighborSet.has(n) ? '#e2e8f0' : (n.displayColor || '#a0a0a0')))
-            .attr('stroke', n => n === d ? 'rgba(255,255,255,0.9)' : 'none')
+            .attr('fill', n => n === d ? (isDark ? '#ffffff' : '#0f172a') : (neighborSet.has(n) ? (isDark ? '#e2e8f0' : '#334155') : (n.displayColor || '#a0a0a0')))
+            .attr('stroke', n => n === d ? (isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.8)') : 'none')
             .attr('stroke-width', n => n === d ? '2px' : '0px')
             .attr('r', n => n === d ? (n.radius * 1.25 + 1) : n.radius);
 
         nodeItems.selectAll('.node-text')
             .style('opacity', n => neighborSet.has(n) ? 1 : 0)
-            .style('fill', n => n === d ? '#ffffff' : '#e4e4e7')
+            .style('fill', n => n === d ? (isDark ? '#ffffff' : '#000000') : (isDark ? '#e4e4e7' : '#1e293b'))
             .style('font-weight', n => n === d ? '700' : '600');
 
         // Brighten connected links
         linkLines
             .style('stroke-opacity', l => linkSet.has(l) ? 0.85 : 0.02)
             .style('stroke-width', l => linkSet.has(l) ? (1.3 * linkThicknessMultiplier) : (0.6 * linkThicknessMultiplier))
-            .attr('stroke', l => linkSet.has(l) ? '#cbd5e1' : 'rgba(255, 255, 255, 0.16)')
+            .attr('stroke', l => linkSet.has(l) ? (isDark ? '#cbd5e1' : '#334155') : (isDark ? 'rgba(255, 255, 255, 0.16)' : 'rgba(15, 23, 42, 0.18)'))
             .attr('marker-end', l => linkSet.has(l) ? 'url(#obsidian-arrow-active)' : (stateShowArrows ? 'url(#obsidian-arrow)' : null));
     }
 
     function unhighlightNode2D() {
         hoverNode2D = null;
+        const isDark = document.documentElement.classList.contains('dark');
         nodeItems.style('opacity', 1);
 
         nodeItems.selectAll('.node-circle')
             .attr('fill', d => d.displayColor || '#a0a0a0')
-            .attr('stroke', d => d.degree >= 4 ? 'rgba(255,255,255,0.4)' : 'none')
+            .attr('stroke', d => d.degree >= 4 ? (isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.2)') : 'none')
             .attr('stroke-width', d => d.degree >= 4 ? '0.75px' : '0px')
             .attr('r', d => d.radius || 2.5);
 
         nodeItems.selectAll('.node-text')
-            .style('fill', '#e4e4e7')
+            .style('fill', isDark ? '#e4e4e7' : '#0f172a')
             .style('font-weight', d => d.degree >= 3 ? '600' : '450');
 
         linkLines
-            .style('stroke-opacity', 0.35)
+            .style('stroke-opacity', isDark ? 0.35 : 0.45)
             .style('stroke-width', 0.8 * linkThicknessMultiplier)
-            .attr('stroke', 'rgba(255, 255, 255, 0.16)')
+            .attr('stroke', isDark ? 'rgba(255, 255, 255, 0.16)' : 'rgba(15, 23, 42, 0.18)')
             .attr('marker-end', stateShowArrows ? 'url(#obsidian-arrow)' : null);
 
         updateLabelVisibility();
@@ -862,6 +870,13 @@ window.zoomOutGraph = function () {
 window.getCurrentGraphData = function () {
     return currentGraphData;
 };
+
+// Re-render or update graph styling seamlessly on theme change
+window.addEventListener('themechange', () => {
+    if (currentGraphData) {
+        renderGraph(currentGraphData);
+    }
+});
 
 document.addEventListener('DOMContentLoaded', () => {
     fetchAndRenderGraph();

@@ -132,6 +132,92 @@ function initHeaderModule() {
             desktopSearchInput.dispatchEvent(new Event('input', { bubbles: true }));
         });
     }
+
+    // 7. Initialize Theme UI State
+    updateThemeUI();
+}
+
+/* ==========================================================
+   THEME SWITCHER ENGINE (Dark / Light Mode)
+   ========================================================== */
+
+function getCurrentTheme() {
+    return localStorage.getItem('theme') || 'dark';
+}
+
+function applyTheme(theme) {
+    const isDark = theme === 'dark';
+    if (isDark) {
+        document.documentElement.classList.add('dark');
+        document.documentElement.classList.remove('light');
+    } else {
+        document.documentElement.classList.remove('dark');
+        document.documentElement.classList.add('light');
+    }
+    localStorage.setItem('theme', theme);
+    updateThemeUI();
+
+    // Dispatch global themechange event so D3 Obsidian graph and canvas can react
+    window.dispatchEvent(new CustomEvent('themechange', { detail: { theme, isDark } }));
+}
+
+function toggleTheme() {
+    const current = getCurrentTheme();
+    const next = current === 'dark' ? 'light' : 'dark';
+    applyTheme(next);
+}
+
+function updateThemeUI() {
+    const theme = getCurrentTheme();
+    const isDark = theme === 'dark';
+
+    // Desktop Header Theme Elements
+    const themeToggleIcon = document.getElementById('themeToggleIcon');
+    const themeToggleText = document.getElementById('themeToggleText');
+    const btnThemeToggle = document.getElementById('btnThemeToggle');
+
+    // Mobile Header Theme Elements
+    const themeToggleIconMobileQuick = document.getElementById('themeToggleIconMobileQuick');
+    const themeToggleIconMobile = document.getElementById('themeToggleIconMobile');
+    const themeToggleLabelMobile = document.getElementById('themeToggleLabelMobile');
+    const themeModeBadgeMobile = document.getElementById('themeModeBadgeMobile');
+
+    // In Dark Mode: Show Sun icon (indicates click for Light Mode)
+    // In Light Mode: Show Moon icon (indicates click for Dark Mode)
+    const iconName = isDark ? 'light_mode' : 'dark_mode';
+    const iconColor = isDark ? 'text-amber-400' : 'text-purple-600';
+    const modeLabel = isDark ? 'Tối (Dark)' : 'Sáng (Light)';
+    const badgeText = isDark ? 'DARK' : 'LIGHT';
+    const badgeClass = isDark 
+        ? 'text-[10px] font-mono px-2 py-0.5 rounded bg-primary/20 text-primary border border-primary/30'
+        : 'text-[10px] font-mono px-2 py-0.5 rounded bg-purple-100 text-purple-700 border border-purple-300';
+
+    if (themeToggleIcon) {
+        themeToggleIcon.textContent = iconName;
+        themeToggleIcon.className = `material-symbols-outlined text-base ${iconColor}`;
+    }
+    if (themeToggleText) {
+        themeToggleText.textContent = isDark ? 'Sáng' : 'Tối';
+    }
+    if (btnThemeToggle) {
+        btnThemeToggle.title = isDark ? 'Chuyển sang chế độ Sáng (Light Mode)' : 'Chuyển sang chế độ Tối (Dark Mode)';
+    }
+
+    if (themeToggleIconMobileQuick) {
+        themeToggleIconMobileQuick.textContent = iconName;
+        themeToggleIconMobileQuick.className = `material-symbols-outlined text-base ${iconColor}`;
+    }
+    if (themeToggleIconMobile) {
+        themeToggleIconMobile.textContent = iconName;
+        themeToggleIconMobile.className = `material-symbols-outlined text-base ${iconColor}`;
+    }
+    if (themeToggleLabelMobile) {
+        themeToggleLabelMobile.textContent = modeLabel;
+    }
+    if (themeModeBadgeMobile) {
+        themeModeBadgeMobile.textContent = badgeText;
+        themeModeBadgeMobile.className = badgeClass;
+    }
 }
 
 // Function to transform User Workspace into a Dedicated AI Assistant Workspace (Gemini/ChatGPT style)
@@ -181,6 +267,10 @@ function applyUserAssistantLayout(retryCount = 0) {
 // Export for global invocation
 window.initHeaderModule = initHeaderModule;
 window.applyUserAssistantLayout = applyUserAssistantLayout;
+window.getCurrentTheme = getCurrentTheme;
+window.applyTheme = applyTheme;
+window.toggleTheme = toggleTheme;
+window.updateThemeUI = updateThemeUI;
 
 // Auto-run if DOM already loaded or wait for DOMContentLoaded
 if (document.readyState === 'loading') {

@@ -16,9 +16,17 @@
         border: none !important;
         margin: 0 !important;
         padding: 1rem 1.5rem !important;
-        background: #090c13 !important;
         box-shadow: none !important;
         z-index: 25 !important;
+    }
+
+    .dark #chatBoxContainer.user-fullscreen-chat {
+        background: #090c13 !important;
+    }
+
+    html:not(.dark) #chatBoxContainer.user-fullscreen-chat,
+    html.light #chatBoxContainer.user-fullscreen-chat {
+        background: #f8fafc !important;
     }
 
     #chatBoxContainer.user-fullscreen-chat .chat-header-inner,
@@ -38,7 +46,7 @@
         padding-bottom: 1.5rem !important;
     }
 
-    #chatBoxContainer.user-fullscreen-chat #chatForm {
+    .dark #chatBoxContainer.user-fullscreen-chat #chatForm {
         background: rgba(24, 27, 38, 0.95) !important;
         border: 1px solid rgba(255, 255, 255, 0.16) !important;
         border-radius: 1.25rem !important;
@@ -46,31 +54,114 @@
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6) !important;
     }
 
+    html:not(.dark) #chatBoxContainer.user-fullscreen-chat #chatForm,
+    html.light #chatBoxContainer.user-fullscreen-chat #chatForm {
+        background: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 1.25rem !important;
+        padding: 0.6rem 0.85rem !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06) !important;
+    }
+
+    /* Light Mode Floating Chat Box Container */
+    html:not(.dark) #chatBoxContainer:not(.user-fullscreen-chat),
+    html.light #chatBoxContainer:not(.user-fullscreen-chat) {
+        background: rgba(255, 255, 255, 0.95) !important;
+        border-color: rgba(109, 40, 217, 0.3) !important;
+        box-shadow: 0 10px 35px rgba(0, 0, 0, 0.08) !important;
+    }
+
+    html:not(.dark) #chatBoxContainer .chat-header-inner,
+    html.light #chatBoxContainer .chat-header-inner {
+        border-bottom-color: rgba(109, 40, 217, 0.15) !important;
+    }
+
+    html:not(.dark) #chatBoxContainer .font-headline-md,
+    html.light #chatBoxContainer .font-headline-md {
+        color: #0f172a !important;
+        text-shadow: none !important;
+    }
+
+    html:not(.dark) #voiceStatusText,
+    html.light #voiceStatusText {
+        color: #64748b !important;
+    }
+
+    /* Light Mode Chat Messages & Bubbles */
+    html:not(.dark) #chatMessages > div,
+    html.light #chatMessages > div {
+        background-color: #ffffff !important;
+        border-color: #e2e8f0 !important;
+        color: #0f172a !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+    }
+
+    html:not(.dark) #chatMessages p,
+    html.light #chatMessages p {
+        color: #1e293b !important;
+    }
+
+    html:not(.dark) #chatMessages strong,
+    html.light #chatMessages strong {
+        color: #0f172a !important;
+        text-shadow: none !important;
+    }
+
+    html:not(.dark) #chatInput,
+    html.light #chatInput {
+        color: #0f172a !important;
+        border-bottom-color: rgba(109, 40, 217, 0.3) !important;
+        filter: none !important;
+    }
+
+    html:not(.dark) #chatInput::placeholder,
+    html.light #chatInput::placeholder {
+        color: #94a3b8 !important;
+    }
+
+    html:not(.dark) #jarvisMinPill,
+    html.light #jarvisMinPill {
+        background: rgba(255, 255, 255, 0.95) !important;
+        border-color: rgba(109, 40, 217, 0.3) !important;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1) !important;
+    }
+    html:not(.dark) #jarvisMinPill span.font-headline-md,
+    html.light #jarvisMinPill span.font-headline-md {
+        color: #0f172a !important;
+    }
+
     /* Custom Sleek Glass & Neon Scrollbar */
     #chatMessages::-webkit-scrollbar {
         width: 5px;
     }
 
-    #chatMessages::-webkit-scrollbar-track {
+    .dark #chatMessages::-webkit-scrollbar-track {
         background: rgba(15, 23, 42, 0.5);
         border-radius: 9999px;
         margin: 4px 0;
     }
 
-    #chatMessages::-webkit-scrollbar-thumb {
+    .dark #chatMessages::-webkit-scrollbar-thumb {
         background: linear-gradient(180deg, rgba(168, 85, 247, 0.7), rgba(6, 182, 212, 0.8));
         border-radius: 9999px;
         box-shadow: 0 0 8px rgba(6, 182, 212, 0.4);
     }
 
-    #chatMessages::-webkit-scrollbar-thumb:hover {
-        background: linear-gradient(180deg, rgba(192, 132, 252, 1), rgba(34, 211, 238, 1));
-        box-shadow: 0 0 12px rgba(34, 211, 238, 0.8);
+    html:not(.dark) #chatMessages::-webkit-scrollbar-track,
+    html.light #chatMessages::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 9999px;
+        margin: 4px 0;
+    }
+
+    html:not(.dark) #chatMessages::-webkit-scrollbar-thumb,
+    html.light #chatMessages::-webkit-scrollbar-thumb {
+        background: rgba(109, 40, 217, 0.4);
+        border-radius: 9999px;
     }
 
     #chatMessages {
         scrollbar-width: thin;
-        scrollbar-color: rgba(6, 182, 212, 0.7) rgba(15, 23, 42, 0.5);
     }
 </style>
 
@@ -94,41 +185,41 @@
         <div class="flex items-center gap-1 flex-shrink-0">
             <!-- Image & Poster Studio Button (Studio Ảnh) -->
             <button id="btnOpenImageEditorHeader" onclick="if(typeof window.openImageEditor==='function'){window.openImageEditor();}else{console.warn('ImageEditor not ready');}" type="button" title="Mở Studio thiết kế ảnh & poster chuyên nghiệp"
-                class="flex items-center gap-1 bg-purple-900 hover:bg-purple-800 active:scale-95 border border-purple-400/60 px-2 py-0.5 rounded-full text-purple-200 hover:text-white text-[10px] font-semibold transition-all shadow-[0_0_10px_rgba(168,85,247,0.4)] cursor-pointer z-10">
-                <span class="material-symbols-outlined text-[12px] text-purple-300">palette</span>
+                class="flex items-center gap-1 bg-purple-100 hover:bg-purple-200 dark:bg-purple-900 dark:hover:bg-purple-800 active:scale-95 border border-purple-300 dark:border-purple-400/60 px-2 py-0.5 rounded-full text-purple-800 dark:text-purple-200 text-[10px] font-semibold transition-all shadow-sm cursor-pointer z-10">
+                <span class="material-symbols-outlined text-[12px] text-purple-600 dark:text-purple-300">palette</span>
                 <span class="font-mono">Studio Ảnh</span>
             </button>
 
             <!-- Live Call Button (Gọi AI Trực Tiếp) -->
             <button id="btnWebRTCCall" type="button" title="Gọi trực tiếp AI Karik (Đàm thoại 2 chiều + Ngắt lời tự nhiên)"
-                class="flex items-center gap-1 bg-emerald-950/80 hover:bg-emerald-800/90 border border-emerald-400/50 px-2 py-0.5 rounded-full text-emerald-200 text-[10px] font-semibold transition-all active:scale-95 shadow-[0_0_10px_rgba(16,185,129,0.3)]">
-                <span id="callBtnIcon" class="material-symbols-outlined text-[12px] text-emerald-400">call</span>
+                class="flex items-center gap-1 bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-950/80 dark:hover:bg-emerald-800/90 border border-emerald-300 dark:border-emerald-400/50 px-2 py-0.5 rounded-full text-emerald-800 dark:text-emerald-200 text-[10px] font-semibold transition-all active:scale-95 shadow-sm">
+                <span id="callBtnIcon" class="material-symbols-outlined text-[12px] text-emerald-600 dark:text-emerald-400">call</span>
                 <span id="callBtnLabel" class="font-mono">Gọi AI</span>
             </button>
 
             <!-- Language Switcher -->
             <button id="btnLangToggle" type="button" title="Đổi ngôn ngữ nhận diện giọng nói (🇻🇳 Tiếng Việt / 🇺🇸 English)"
-                class="flex items-center gap-0.5 sm:gap-1 bg-cyan-950/60 hover:bg-cyan-900/80 border border-cyan-400/40 px-1.5 sm:px-2 py-0.5 rounded-full text-cyan-200 text-[10px] font-semibold transition-all active:scale-95">
+                class="flex items-center gap-0.5 sm:gap-1 bg-cyan-100 hover:bg-cyan-200 dark:bg-cyan-950/60 dark:hover:bg-cyan-900/80 border border-cyan-300 dark:border-cyan-400/40 px-1.5 sm:px-2 py-0.5 rounded-full text-cyan-800 dark:text-cyan-200 text-[10px] font-semibold transition-all active:scale-95">
                 <span id="langIcon" class="text-[11px] sm:text-[12px]">🇻🇳</span>
                 <span id="langBtnLabel" class="font-mono">VI</span>
             </button>
 
             <!-- Wake Word Listening Toggle Button -->
             <button id="btnWakeWordToggle" type="button" title="Bật/Tắt chế độ lắng nghe từ khóa 'Hey Karik'"
-                class="flex items-center gap-1 bg-purple-900/40 hover:bg-purple-800/60 border border-purple-400/40 px-1.5 sm:px-2 py-0.5 rounded-full text-purple-200 text-[10px] font-semibold transition-all active:scale-95">
-                <span id="wakeWordIcon" class="material-symbols-outlined text-[12px] text-slate-400">mic_off</span>
+                class="flex items-center gap-1 bg-purple-100 hover:bg-purple-200 dark:bg-purple-900/40 dark:hover:bg-purple-800/60 border border-purple-300 dark:border-purple-400/40 px-1.5 sm:px-2 py-0.5 rounded-full text-purple-800 dark:text-purple-200 text-[10px] font-semibold transition-all active:scale-95">
+                <span id="wakeWordIcon" class="material-symbols-outlined text-[12px] text-slate-500 dark:text-slate-400">mic_off</span>
                 <span id="wakeWordBtnLabel" class="font-mono text-[9px]">OFF</span>
             </button>
 
             <!-- Live Response Timer Badge -->
-            <div id="aiTimerBadge" class="hidden items-center gap-1 bg-cyan-500/20 border border-cyan-400/40 px-1.5 sm:px-2 py-0.5 rounded-full text-cyan-300 text-[10px] font-mono text-glow">
+            <div id="aiTimerBadge" class="hidden items-center gap-1 bg-cyan-500/20 border border-cyan-400/40 px-1.5 sm:px-2 py-0.5 rounded-full text-cyan-700 dark:text-cyan-300 text-[10px] font-mono text-glow">
                 <span class="material-symbols-outlined text-[12px] animate-spin">sync</span>
                 <span id="aiTimerValue">0.0s</span>
             </div>
 
             <!-- Minimize Chat Window Button -->
             <button id="btnMinimizeChat" type="button" title="Thu nhỏ / Ẩn cửa sổ AI Karik"
-                class="text-slate-400 hover:text-white p-1 rounded-md transition-all active:scale-95 flex items-center justify-center">
+                class="text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white p-1 rounded-md transition-all active:scale-95 flex items-center justify-center">
                 <span class="material-symbols-outlined text-base">expand_more</span>
             </button>
         </div>
@@ -211,29 +302,29 @@
     <!-- Chat Footer Container -->
     <div class="chat-footer-inner flex flex-col gap-2 w-full pt-1">
         <!-- Input Form (ChatGPT Pill Style) -->
-        <form id="chatForm" class="flex items-center gap-1 sm:gap-1.5 pt-1 border-t border-purple-500/30 w-full">
+        <form id="chatForm" class="flex items-center gap-1 sm:gap-1.5 pt-1 border-t border-purple-500/20 w-full">
             <!-- Open Image Studio Button -->
             <button type="button" id="btnOpenImageEditorFooter" onclick="if(typeof window.openImageEditor==='function'){window.openImageEditor();}else{console.warn('ImageEditor not ready');}" title="Mở Studio thiết kế & chỉnh sửa ảnh (Poster, Filter, Xóa nền)"
-                class="bg-purple-600/30 hover:bg-purple-500/50 border border-purple-400/50 text-purple-200 hover:text-white p-1.5 rounded-lg transition-all active:scale-95 flex items-center justify-center flex-shrink-0 cursor-pointer shadow-sm">
+                class="bg-purple-100 hover:bg-purple-200 dark:bg-purple-600/30 dark:hover:bg-purple-500/50 border border-purple-300 dark:border-purple-400/50 text-purple-700 dark:text-purple-200 p-1.5 rounded-lg transition-all active:scale-95 flex items-center justify-center flex-shrink-0 cursor-pointer shadow-sm">
                 <span class="material-symbols-outlined text-base">palette</span>
             </button>
 
             <!-- Attach File Button -->
             <button type="button" id="btnAttachFile" title="Đính kèm file (Ảnh, Video, Word, PDF dưới 50MB)"
-                class="bg-purple-500/20 hover:bg-purple-500/40 border border-purple-400/40 text-purple-300 p-1.5 rounded-lg transition-all active:scale-95 flex items-center justify-center flex-shrink-0">
+                class="bg-purple-100 hover:bg-purple-200 dark:bg-purple-500/20 dark:hover:bg-purple-500/40 border border-purple-300 dark:border-purple-400/40 text-purple-700 dark:text-purple-300 p-1.5 rounded-lg transition-all active:scale-95 flex items-center justify-center flex-shrink-0 shadow-sm">
                 <span class="material-symbols-outlined text-base">attach_file</span>
             </button>
 
             <!-- Voice Speech Mic Button -->
             <button type="button" id="btnMicToggle" title="Nói trực tiếp với AI Karik (hoặc bật Gọi AI)"
-                class="bg-cyan-500/20 hover:bg-cyan-500/40 border border-cyan-400/40 text-cyan-300 p-1.5 rounded-lg transition-all active:scale-95 flex items-center justify-center flex-shrink-0">
+                class="bg-cyan-100 hover:bg-cyan-200 dark:bg-cyan-500/20 dark:hover:bg-cyan-500/40 border border-cyan-300 dark:border-cyan-400/40 text-cyan-700 dark:text-cyan-300 p-1.5 rounded-lg transition-all active:scale-95 flex items-center justify-center flex-shrink-0 shadow-sm">
                 <span id="micBtnIcon" class="material-symbols-outlined text-base">mic</span>
             </button>
 
             <input id="chatInput" type="text" placeholder="Nhập tin nhắn hoặc nói 'Hey Karik'..."
-                class="bg-transparent border-b border-purple-500/40 px-1.5 sm:px-2 py-1 text-xs sm:text-sm text-white placeholder:text-slate-400 flex-1 min-w-0 outline-none focus:border-cyan-400 transition-all font-medium drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+                class="bg-transparent border-b border-purple-300 dark:border-purple-500/40 px-1.5 sm:px-2 py-1 text-xs sm:text-sm text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 flex-1 min-w-0 outline-none focus:border-cyan-500 transition-all font-medium">
             <button type="submit" id="sendBtn"
-                class="bg-purple-600/40 hover:bg-purple-500/60 text-white px-2.5 py-1.5 rounded-lg transition-all border border-purple-400/40 shadow-sm active:scale-95 flex items-center justify-center font-bold flex-shrink-0">
+                class="bg-purple-600 hover:bg-purple-700 text-white px-2.5 py-1.5 rounded-lg transition-all border border-purple-500 shadow-sm active:scale-95 flex items-center justify-center font-bold flex-shrink-0">
                 <span class="material-symbols-outlined text-base">send</span>
             </button>
         </form>
