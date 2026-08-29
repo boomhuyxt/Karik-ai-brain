@@ -1497,19 +1497,24 @@
     function setupExportAndChatIntegration() {
         const btnDownload = document.getElementById('btnDownloadImage');
         const btnSendToChat = document.getElementById('btnSendToChat');
+        const btnPostFB = document.getElementById('btnPostFacebookFromStudio');
         const formatSelect = document.getElementById('exportFormatSelect');
         const scaleSelect = document.getElementById('exportScaleSelect');
 
+        // 1. Tải ảnh về máy
         if (btnDownload) {
             btnDownload.addEventListener('click', () => {
-                const format = formatSelect.value || 'png';
-                const multiplier = parseInt(scaleSelect.value, 10) || 1;
+                const format = formatSelect?.value || 'png';
+                const multiplier = parseInt(scaleSelect?.value, 10) || 1;
 
                 const dataUrl = canvas.toDataURL({
                     format: format,
                     multiplier: multiplier,
                     quality: 0.95
                 });
+
+                window.lastStudioEditedImage = dataUrl;
+                window.lastUploadedImageUrl = dataUrl;
 
                 const link = document.createElement('a');
                 link.download = `karik_poster_${Date.now()}.${format === 'jpeg' ? 'jpg' : format}`;
@@ -1518,6 +1523,7 @@
             });
         }
 
+        // 2. Gửi ảnh vào khung Chat AI Karik
         if (btnSendToChat) {
             btnSendToChat.addEventListener('click', async () => {
                 btnSendToChat.disabled = true;
@@ -1530,6 +1536,9 @@
                         multiplier: 1.5,
                         quality: 0.95
                     });
+
+                    window.lastStudioEditedImage = dataUrl;
+                    window.lastUploadedImageUrl = dataUrl;
 
                     // Send base64 image directly to Chat module
                     if (typeof window.attachStudioImageToChat === 'function') {
@@ -1549,6 +1558,45 @@
                 } finally {
                     btnSendToChat.disabled = false;
                     btnSendToChat.innerHTML = origHtml;
+                }
+            });
+        }
+
+        // 3. Đăng trực tiếp lên Facebook qua AI Browser Bot
+        if (btnPostFB) {
+            btnPostFB.addEventListener('click', () => {
+                btnPostFB.disabled = true;
+                const origHtml = btnPostFB.innerHTML;
+                btnPostFB.innerHTML = `<span class="material-symbols-outlined text-sm animate-spin">sync</span> Đang chuẩn bị bài đăng...`;
+
+                try {
+                    const dataUrl = canvas.toDataURL({
+                        format: 'png',
+                        multiplier: 1.5,
+                        quality: 0.95
+                    });
+
+                    window.lastStudioEditedImage = dataUrl;
+                    window.lastUploadedImageUrl = dataUrl;
+
+                    window.closeImageEditor();
+
+                    // 2. Mở Modal Social Publish để người dùng XEM TRƯỚC VÀ ĐỒNG Ý trước khi đăng
+                    if (window.socialPublish && typeof window.socialPublish.openModal === 'function') {
+                        window.socialPublish.openModal({
+                            url: dataUrl,
+                            mediaType: 'image',
+                            caption: window.lastProductCaption || '',
+                            hashtags: window.lastProductHashtags || ['#aikarik', '#sanpham', '#viral', '#facebook'],
+                            platform: 'facebook'
+                        });
+                    }
+                } catch (err) {
+                    console.error('[ImageStudio] Post to FB error:', err);
+                    alert('Lỗi xuất ảnh từ Studio: ' + err.message);
+                } finally {
+                    btnPostFB.disabled = false;
+                    btnPostFB.innerHTML = origHtml;
                 }
             });
         }
@@ -1949,6 +1997,9 @@
                                     format: 'png',
                                     multiplier: 1.5
                                 });
+
+                                window.lastStudioEditedImage = completedDataUrl;
+                                window.lastUploadedImageUrl = completedDataUrl;
 
                                 if (typeof window.receiveCompletedPosterFromStudio === 'function') {
                                     window.receiveCompletedPosterFromStudio(completedDataUrl, config);

@@ -112,6 +112,9 @@ function initAIChat() {
     // --- Bridge: Receive Edited Image from Image Studio ---
     window.attachStudioImageToChat = async function(dataUrl, fileName = 'poster.png') {
         try {
+            window.lastStudioEditedImage = dataUrl;
+            window.lastUploadedImageUrl = dataUrl;
+
             // Convert base64 dataUrl to File object
             const res = await fetch(dataUrl);
             const blob = await res.blob();
@@ -144,6 +147,7 @@ function initAIChat() {
     window.receiveCompletedPosterFromStudio = function(dataUrl, config = {}) {
         if (!chatMessages) return;
 
+        window.lastStudioEditedImage = dataUrl;
         window.lastUploadedImageUrl = dataUrl;
 
         const posterDiv = document.createElement('div');
@@ -170,13 +174,17 @@ function initAIChat() {
                 <img src="${dataUrl}" alt="${escapeHtml(title)}" class="max-h-96 w-auto max-w-full object-contain rounded-lg shadow-lg cursor-pointer hover:scale-[1.02] transition-transform" onclick="window.openImageEditor('${dataUrl}')" />
             </div>
             <div class="mt-3 flex flex-wrap items-center gap-2 w-full">
-                <a href="${dataUrl}" download="${fileName}" class="flex-1 min-w-[140px] px-3 py-2 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-xs shadow-md transition-all active:scale-95 flex items-center justify-center gap-1.5 text-center cursor-pointer">
+                <button type="button" onclick="window.triggerSocialPublishFromChat('facebook', 'bot')" class="flex-1 min-w-[140px] px-3 py-2 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-bold text-xs shadow-md transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer border border-blue-400/40">
+                    <span class="material-symbols-outlined text-sm text-cyan-200">smart_toy</span>
+                    <span>🤖 Đăng Lên FB (AI Bot)</span>
+                </button>
+                <a href="${dataUrl}" download="${fileName}" class="flex-1 min-w-[130px] px-3 py-2 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-xs shadow-md transition-all active:scale-95 flex items-center justify-center gap-1.5 text-center cursor-pointer">
                     <span class="material-symbols-outlined text-sm">download</span>
-                    <span>Tải Poster Xuống (PNG)</span>
+                    <span>Tải Poster (PNG)</span>
                 </a>
-                <button type="button" onclick="window.openImageEditor('${dataUrl}')" class="flex-1 min-w-[140px] px-3 py-2 rounded-xl bg-purple-900/80 hover:bg-purple-800 border border-purple-400/50 text-purple-200 hover:text-white font-bold text-xs shadow-md transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer">
+                <button type="button" onclick="window.openImageEditor('${dataUrl}')" class="flex-1 min-w-[130px] px-3 py-2 rounded-xl bg-purple-900/80 hover:bg-purple-800 border border-purple-400/50 text-purple-200 hover:text-white font-bold text-xs shadow-md transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer">
                     <span class="material-symbols-outlined text-sm text-cyan-300">palette</span>
-                    <span>Mở Lại Trong Studio</span>
+                    <span>Mở Trong Studio</span>
                 </button>
             </div>
         `;
@@ -392,10 +400,32 @@ function initAIChat() {
                     const parsed = JSON.parse(socialJsonMatch[1]);
                     if (parsed && (parsed.platform || parsed.caption || parsed.directUrls)) {
                         parsedSocialConfig = parsed;
+                        if (parsed.caption) window.lastProductCaption = parsed.caption;
+                        if (parsed.hashtags) window.lastProductHashtags = parsed.hashtags;
                     }
                 }
             } catch (err) {
                 console.warn('[Chat] Failed to parse social config JSON:', err);
+            }
+
+            // Also check if poster config contains product caption
+            if (parsedPosterConfig) {
+                if (parsedPosterConfig.productCaption) {
+                    window.lastProductCaption = parsedPosterConfig.productCaption;
+                }
+                if (parsedPosterConfig.hashtags) {
+                    window.lastProductHashtags = parsedPosterConfig.hashtags;
+                }
+            }
+
+            // Fallback product caption if none parsed from JSON
+            const fallbackCaption = (result.reply || result.message || '')
+                .replace(/```[\s\S]*?```/g, '')
+                .replace(/!\[.*?\]\(.*?\)/g, '')
+                .replace(/\[CHỈ THỊ.*?\]/g, '')
+                .trim();
+            if (!window.lastProductCaption && fallbackCaption) {
+                window.lastProductCaption = fallbackCaption;
             }
 
             // Social Media Direct Browser Publishing Action Card
@@ -409,7 +439,7 @@ function initAIChat() {
                 const platformBadgeClass = postPlatform === 'tiktok' ? 'bg-pink-600/30 text-pink-300 border-pink-500/40' : 'bg-blue-600/30 text-blue-300 border-blue-500/40';
 
                 socialActionCardHtml = `
-                    <div class="my-3 p-3.5 rounded-2xl bg-gradient-to-r from-blue-950/90 via-slate-900 to-pink-950/90 border border-pink-500/50 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-3 w-full animate-fadeIn">
+                    <div class="my-3 p-3.5 rounded-2xl bg-gradient-to-r from-blue-950/90 via-slate-900 to-pink-950/90 border border-blue-500/50 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-3 w-full animate-fadeIn">
                         <div class="flex items-center gap-3 min-w-0 w-full sm:w-auto">
                             <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-500 flex items-center justify-center flex-shrink-0 shadow-md">
                                 <span class="material-symbols-outlined text-white text-lg">smart_toy</span>
@@ -419,19 +449,15 @@ function initAIChat() {
                                     <span>${escapeHtml(postHeadline)}</span>
                                     <span class="text-[9px] ${platformBadgeClass} border px-1.5 py-0.2 rounded font-mono">${platformBadgeName}</span>
                                 </div>
-                                <div class="text-[10px] text-cyan-300 truncate">🤖 Agent Social: Tự mở trình duyệt đăng bài hoặc xuất bản tự động</div>
+                                <div class="text-[10px] text-cyan-300 truncate">🤖 AI Browser Bot: Mở Chrome/Edge tự động đăng bài & ảnh Studio</div>
                             </div>
                         </div>
                         <div class="flex items-center gap-2 w-full sm:w-auto shrink-0">
-                            <button type="button" onclick="window.triggerSocialPublishFromChat('${postPlatform}', 'bot')" class="flex-1 sm:flex-initial px-3.5 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs shadow-lg transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer border border-blue-400/50">
+                            <button type="button" onclick="window.triggerSocialPublishFromChat('${postPlatform}', 'bot')" class="flex-1 sm:flex-initial px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-bold text-xs shadow-lg transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer border border-blue-400/50">
                                 <span class="material-symbols-outlined text-sm text-cyan-200">smart_toy</span>
-                                <span>🤖 Bot Vào FB Đăng Bài</span>
+                                <span>🤖 AI Vào Trình Duyệt Đăng Bài</span>
                             </button>
-                            <button type="button" onclick="window.triggerSocialPublishFromChat('${postPlatform}', 'api')" class="px-3 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 text-white font-bold text-xs shadow transition-all active:scale-95 flex items-center justify-center gap-1 cursor-pointer border border-emerald-400/40" title="Đăng ngầm qua API">
-                                <span class="material-symbols-outlined text-sm">bolt</span>
-                                <span>API</span>
-                            </button>
-                            <button type="button" onclick="window.triggerSocialPublishFromChat('${postPlatform}', 'modal')" class="px-2.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold flex items-center justify-center gap-1 cursor-pointer border border-white/10" title="Mở modal xem & sửa">
+                            <button type="button" onclick="window.triggerSocialPublishFromChat('${postPlatform}', 'modal')" class="px-2.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold flex items-center justify-center gap-1 cursor-pointer border border-white/10" title="Xem & Tùy chỉnh trước khi đăng">
                                 <span class="material-symbols-outlined text-sm">tune</span>
                             </button>
                         </div>
@@ -463,16 +489,16 @@ function initAIChat() {
                         ${voiceBadgeHtml}
                     </span>
                     <div class="flex items-center gap-1.5">
-                        <button type="button" class="btn-publish-social bg-gradient-to-r from-blue-600/30 via-purple-600/30 to-pink-600/30 hover:from-blue-600/50 hover:to-pink-600/50 text-white border border-purple-400/40 px-2 py-0.5 rounded text-[10px] font-mono flex items-center gap-1 transition-all shadow-sm" title="Liên kết & Đăng bài lên Facebook / TikTok">
-                            <span class="material-symbols-outlined text-[12px] text-pink-400">share</span>
-                            <span>Đăng Bài</span>
+                        <button type="button" class="btn-publish-social bg-gradient-to-r from-blue-600/30 via-purple-600/30 to-pink-600/30 hover:from-blue-600/50 hover:to-pink-600/50 text-white border border-purple-400/40 px-2 py-0.5 rounded text-[10px] font-mono flex items-center gap-1 transition-all shadow-sm" title="Mở Trình Duyệt Đăng Bài Lên Facebook / TikTok">
+                            <span class="material-symbols-outlined text-[12px] text-cyan-300">smart_toy</span>
+                            <span>Đăng Bài MXH</span>
                         </button>
                         <span class="text-[10px] text-cyan-300 font-mono flex items-center gap-1 bg-cyan-500/20 border border-cyan-400/40 px-1.5 py-0.5 rounded-full" title="Thời gian AI xử lý và phản hồi">
                             <span class="material-symbols-outlined text-[11px]">timer</span> ${totalDuration}s
                         </span>
                     </div>
                 </strong>
-                <div id="${msgId}" class="text-slate-100 font-medium text-xs sm:text-sm leading-relaxed border-t border-purple-500/20 pt-1.5 mt-1 w-full break-words">
+                <div id="${msgId}" class="chat-markdown text-slate-100 font-medium text-xs sm:text-sm leading-relaxed border-t border-purple-500/20 pt-1.5 mt-1 w-full break-words">
                     ${renderFn(replyText)}
                     ${imageHtml}
                     ${studioActionCardHtml}
@@ -493,37 +519,30 @@ function initAIChat() {
             // Bind global trigger function for chat action card
             window.triggerSocialPublishFromChat = function(platform, mode = 'modal') {
                 if (window.socialPublish && typeof window.socialPublish.openModal === 'function') {
-                    let mediaUrl = result.imageData || targetImageUrl || '';
-                    let mediaType = result.imageData ? 'image' : 'poster';
+                    // Ưu tiên lấy ảnh mới nhất từ Studio hoặc ảnh upload gần nhất
+                    let mediaUrl = window.lastStudioEditedImage || result.imageData || window.lastUploadedImageUrl || '';
+                    let mediaType = (mediaUrl && mediaUrl.endsWith('.mp4')) ? 'video' : 'image';
                     
                     let cleanCaption = (parsedSocialConfig && parsedSocialConfig.caption) 
                         ? parsedSocialConfig.caption 
-                        : (result.reply || result.message || '')
+                        : (window.lastProductCaption || (result.reply || result.message || '')
                             .replace(/```[\s\S]*?```/g, '')
                             .replace(/!\[.*?\]\(.*?\)/g, '')
                             .replace(/\[CHỈ THỊ.*?\]/g, '')
-                            .trim();
+                            .trim());
+
+                    window.lastProductCaption = cleanCaption;
 
                     window.socialPublish.openModal({
                         url: mediaUrl,
                         mediaType,
-                        caption: cleanCaption.slice(0, 1000),
-                        hashtags: parsedSocialConfig?.hashtags || ['#aikarik', '#marketing', '#viral', '#facebook', '#tiktok'],
+                        caption: cleanCaption.slice(0, 2000),
+                        hashtags: parsedSocialConfig?.hashtags || window.lastProductHashtags || ['#aikarik', '#sanpham', '#viral', '#facebook'],
                         platform: platform || parsedSocialConfig?.platform || 'facebook'
                     });
 
                     if (platform) {
                         window.socialPublish.switchPlatform(platform);
-                    }
-
-                    if (mode === 'bot' && typeof window.socialPublish.runBrowserBotFacebook === 'function') {
-                        setTimeout(() => {
-                            window.socialPublish.runBrowserBotFacebook();
-                        }, 300);
-                    } else if (mode === 'api' && typeof window.socialPublish.autoPublishDirect === 'function') {
-                        setTimeout(() => {
-                            window.socialPublish.autoPublishDirect();
-                        }, 300);
                     }
                 }
             };

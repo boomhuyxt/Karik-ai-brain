@@ -28,6 +28,7 @@ describe('Image & Poster Editor Studio Module', () => {
     assert.ok(html.includes('id="studioLayersList"'), 'Should have layers list');
     assert.ok(html.includes('id="btnDownloadImage"'), 'Should have Download button');
     assert.ok(html.includes('id="btnSendToChat"'), 'Should have Send to Chat button');
+    assert.ok(html.includes('id="btnPostFacebookFromStudio"'), 'Should have Post Facebook button in Studio');
   });
 
   test('JavaScript engine file exists and exposes global API', () => {

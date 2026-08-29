@@ -6,17 +6,17 @@
         <div class="flex items-center justify-between px-5 py-3.5 border-b border-white/10 bg-slate-950/70 flex-shrink-0">
             <div class="flex items-center gap-2.5">
                 <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-600 via-purple-600 to-pink-500 flex items-center justify-center shadow-md">
-                    <span class="material-symbols-outlined text-white text-lg">rocket_launch</span>
+                    <span class="material-symbols-outlined text-white text-lg">fact_check</span>
                 </div>
                 <div>
                     <h2 class="text-sm sm:text-base font-bold text-white flex items-center gap-2">
-                        <span>Tự Động Đăng Bài Mạng Xã Hội</span>
-                        <span class="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 px-1.5 py-0.2 rounded font-mono">Gemini 3.1 Flash Lite</span>
+                        <span>AI Xem Trước & Xác Nhận Đăng Bài</span>
+                        <span class="text-[10px] bg-blue-500/20 text-cyan-300 border border-cyan-400/30 px-1.5 py-0.2 rounded font-mono">Duyệt trước khi đăng</span>
                     </h2>
-                    <p class="text-[11px] text-slate-400">Tự động xuất bản bài viết lên Facebook & TikTok (Không cần dán tay)</p>
+                    <p class="text-[11px] text-slate-400">Xem trước ảnh từ Studio và nội dung Caption sản phẩm. Bạn đồng ý rồi AI mới mở trình duyệt đăng bài.</p>
                 </div>
             </div>
-            <button id="btnCloseSocialModal" class="text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-white/10 transition-colors">
+            <button id="btnCloseSocialModal" class="text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-white/10 transition-colors cursor-pointer">
                 <span class="material-symbols-outlined text-xl">close</span>
             </button>
         </div>
@@ -38,7 +38,7 @@
                         </svg>
                         <div class="text-left">
                             <div class="text-xs font-bold text-white">Facebook</div>
-                            <div class="text-[10px] text-blue-200 font-normal">Tự động đăng qua Graph API</div>
+                            <div class="text-[10px] text-blue-200 font-normal">Bot tự động vào Chrome đăng FB</div>
                         </div>
                     </button>
 
@@ -49,23 +49,23 @@
                             <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/>
                         </svg>
                         <div class="text-left">
-                            <div class="text-xs font-bold">TikTok</div>
-                            <div class="text-[10px] font-normal">Tự động đăng qua Content API</div>
+                            <div class="text-xs font-bold">TikTok Studio</div>
+                            <div class="text-[10px] font-normal">Mở TikTok Creator Studio</div>
                         </div>
                     </button>
                 </div>
             </div>
 
-            <!-- 2. Auto-Publish Highlight Card -->
-            <div class="p-3.5 rounded-xl bg-gradient-to-r from-purple-950/60 via-slate-900/80 to-blue-950/60 border border-purple-500/30 flex items-start gap-3">
-                <span class="material-symbols-outlined text-xl text-emerald-400 flex-shrink-0 mt-0.5">bolt</span>
+            <!-- 2. Review & Confirmation Highlight Card -->
+            <div class="p-3.5 rounded-xl bg-gradient-to-r from-blue-950/70 via-slate-900/80 to-purple-950/70 border border-blue-500/40 flex items-start gap-3">
+                <span class="material-symbols-outlined text-xl text-cyan-400 flex-shrink-0 mt-0.5">verified</span>
                 <div class="space-y-1">
                     <div class="text-xs font-bold text-white flex items-center gap-2">
-                        <span>Chế Độ Tự Động Đăng Bài Nền Tảng (Gemini 3.1 Flash Lite)</span>
-                        <span class="text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 px-1.5 py-0.2 rounded-full font-mono">Tự động hoàn toàn</span>
+                        <span>Xem Trước & Tùy Chỉnh Nội Dung Trước Khi Xuất Bản</span>
+                        <span class="text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 px-1.5 py-0.2 rounded-full font-mono">Bảo đảm an toàn</span>
                     </div>
                     <p class="text-[11px] text-slate-300 leading-relaxed">
-                        Hệ thống sẽ gọi trực tiếp API xuất bản của <strong id="targetPlatformName" class="text-pink-300">Facebook</strong> để tải ảnh, nội dung và hashtags lên trang mà <strong class="text-amber-300">bạn không cần phải mở web dán thủ công (Ctrl + V)</strong>.
+                        Bạn có thể kiểm tra hình ảnh từ Studio và chỉnh sửa Caption sản phẩm bên dưới. Sau khi xem xét và đồng ý, hãy bấm <strong class="text-cyan-300">"🤖 Đồng Ý & Cho AI Vào Trình Duyệt Đăng Bài"</strong> để Bot tự động mở Chrome đăng bài!
                     </p>
                 </div>
             </div>
@@ -74,13 +74,20 @@
             <div class="space-y-3">
                 <div class="flex items-center justify-between">
                     <label class="font-semibold text-xs text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-                        <span class="material-symbols-outlined text-sm text-cyan-400">perm_media</span> Hình Ảnh / Poster / Video:
+                        <span class="material-symbols-outlined text-sm text-cyan-400">perm_media</span> Hình Ảnh Sản Phẩm (Từ Karik Studio):
                     </label>
-                    <button type="button" id="btnDownloadMedia" onclick="window.socialPublish.downloadCurrentMedia()"
-                        class="text-[11px] text-purple-300 hover:text-white bg-purple-900/40 hover:bg-purple-800/60 border border-purple-400/40 px-2.5 py-1 rounded-lg flex items-center gap-1 transition-all cursor-pointer">
-                        <span class="material-symbols-outlined text-xs">download</span>
-                        <span>Tải file về máy</span>
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <button type="button" onclick="window.socialPublish.reloadStudioImage()"
+                            class="text-[11px] text-cyan-300 hover:text-white bg-cyan-950/60 hover:bg-cyan-900 border border-cyan-500/30 px-2 py-1 rounded-lg flex items-center gap-1 transition-all cursor-pointer" title="Lấy lại ảnh mới nhất từ Studio">
+                            <span class="material-symbols-outlined text-xs">sync</span>
+                            <span>Cập nhật ảnh Studio</span>
+                        </button>
+                        <button type="button" id="btnDownloadMedia" onclick="window.socialPublish.downloadCurrentMedia()"
+                            class="text-[11px] text-purple-300 hover:text-white bg-purple-900/40 hover:bg-purple-800/60 border border-purple-400/40 px-2 py-1 rounded-lg flex items-center gap-1 transition-all cursor-pointer">
+                            <span class="material-symbols-outlined text-xs">download</span>
+                            <span>Tải ảnh</span>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Media Preview Container -->
@@ -91,34 +98,113 @@
                     <div class="min-w-0 flex-1 space-y-1.5">
                         <div class="flex items-center justify-between">
                             <span id="socialMediaBadge" class="text-[10px] bg-purple-500/20 text-purple-300 border border-purple-400/30 px-1.5 py-0.2 rounded font-mono">
-                                Image / Poster
+                                Ảnh Sản Phẩm Studio
                             </span>
-                            <span id="socialMediaSize" class="text-[10px] text-slate-400 font-mono">1024x576</span>
+                            <span id="socialMediaSize" class="text-[10px] text-slate-400 font-mono">1080x1350</span>
                         </div>
-                        <input type="text" id="socialMediaUrlInput" placeholder="URL Media hoặc base64..."
+                        <input type="text" id="socialMediaUrlInput" placeholder="URL Media hoặc base64 từ Studio..."
                             class="w-full bg-slate-900 border border-white/10 rounded px-2 py-1 text-[11px] text-slate-300 font-mono truncate outline-none focus:border-cyan-400">
                     </div>
                 </div>
 
-                <!-- Caption Textarea -->
-                <div>
-                    <div class="flex items-center justify-between mb-1">
-                        <label class="block text-[11px] text-slate-400">Nội dung Caption:</label>
+                <!-- Segmented View Tabs: Editor vs Live FB Preview -->
+                <div class="flex items-center justify-between border-b border-white/10 pb-2 pt-1">
+                    <div class="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-white/10">
+                        <button type="button" id="tabViewEditor" onclick="window.socialPublish.toggleViewMode('editor')"
+                            class="px-3 py-1 rounded-lg text-xs font-bold transition-all bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm flex items-center gap-1.5 cursor-pointer">
+                            <span class="material-symbols-outlined text-xs">edit_note</span>
+                            <span>Soạn Thảo</span>
+                        </button>
+                        <button type="button" id="tabViewPreview" onclick="window.socialPublish.toggleViewMode('preview')"
+                            class="px-3 py-1 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition-all flex items-center gap-1.5 cursor-pointer">
+                            <span class="material-symbols-outlined text-xs">visibility</span>
+                            <span>Xem Trước Bảng Tin FB</span>
+                        </button>
+                    </div>
+
+                    <div class="flex items-center gap-1.5">
+                        <button type="button" id="btnAutoFormatFB" onclick="window.socialPublish.autoFormatFacebookText()"
+                            class="text-[11px] text-amber-300 hover:text-amber-200 bg-amber-950/50 hover:bg-amber-900/70 border border-amber-500/40 px-2.5 py-1 rounded-lg flex items-center gap-1 transition-all shadow-sm cursor-pointer"
+                            title="Tự động căn lề, ngắt dòng đôi và chuẩn hóa cấu trúc bài đăng Facebook">
+                            <span class="material-symbols-outlined text-xs text-amber-400">auto_fix_high</span>
+                            <span>🪄 Chuẩn Hóa Canh Lề FB</span>
+                        </button>
                         <button type="button" id="btnCopyCaptionOnly" onclick="window.socialPublish.copyCaptionToClipboard()"
-                            class="text-[10px] text-cyan-300 hover:text-cyan-200 bg-cyan-950/60 hover:bg-cyan-900 border border-cyan-500/30 px-2 py-0.5 rounded flex items-center gap-1 transition-all cursor-pointer">
-                            <span class="material-symbols-outlined text-[11px]">content_copy</span>
+                            class="text-[11px] text-cyan-300 hover:text-cyan-200 bg-cyan-950/60 hover:bg-cyan-900 border border-cyan-500/30 px-2.5 py-1 rounded-lg flex items-center gap-1 transition-all cursor-pointer">
+                            <span class="material-symbols-outlined text-xs">content_copy</span>
                             <span id="copyCaptionBtnText">Copy Caption</span>
                         </button>
                     </div>
-                    <textarea id="socialCaptionInput" rows="3" placeholder="Nhập nội dung chia sẻ bài viết lên Facebook / TikTok..."
-                        class="w-full bg-slate-950/80 border border-white/15 rounded-xl p-3 text-xs text-white placeholder:text-slate-500 outline-none focus:border-purple-400 transition-all resize-none"></textarea>
                 </div>
 
-                <!-- Hashtags Input -->
-                <div>
-                    <label class="block text-[11px] text-slate-400 mb-1">Hashtags (cách nhau bởi dấu cách hoặc phẩy):</label>
-                    <input type="text" id="socialHashtagsInput" placeholder="#aikarik #cyberpunk #poster #marketing"
-                        class="w-full bg-slate-950/80 border border-white/15 rounded-lg px-3 py-2 text-xs text-cyan-300 font-mono placeholder:text-slate-500 outline-none focus:border-cyan-400 transition-all">
+                <!-- View 1: Caption & Hashtags Editor -->
+                <div id="socialEditorContainer" class="space-y-3">
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <label class="block text-[11px] text-slate-300 font-medium">Nội dung Caption Sản Phẩm (Có ngắt dòng & canh lề):</label>
+                            <span class="text-[10px] text-slate-400 font-mono" id="captionCharCounter">0 ký tự</span>
+                        </div>
+                        <textarea id="socialCaptionInput" rows="7" placeholder="Nội dung bài viết giới thiệu/bán sản phẩm..."
+                            class="w-full bg-slate-950/90 border border-white/15 rounded-xl p-3 text-xs sm:text-sm text-white placeholder:text-slate-500 outline-none focus:border-cyan-400 transition-all font-sans leading-relaxed resize-y min-h-[140px]"></textarea>
+                    </div>
+
+                    <!-- Hashtags Input -->
+                    <div>
+                        <label class="block text-[11px] text-slate-400 mb-1">Hashtags Sản Phẩm (Cách nhau bằng dấu cách):</label>
+                        <input type="text" id="socialHashtagsInput" placeholder="#aikarik #sanpham #viral #marketing"
+                            class="w-full bg-slate-950/90 border border-white/15 rounded-lg px-3 py-2 text-xs text-cyan-300 font-mono placeholder:text-slate-500 outline-none focus:border-cyan-400 transition-all">
+                    </div>
+                </div>
+
+                <!-- View 2: Authentic Facebook Live Feed Preview Card -->
+                <div id="fbLivePreviewCard" class="hidden rounded-2xl bg-[#242526] border border-white/10 shadow-2xl p-4 space-y-3 animate-fadeIn">
+                    <!-- FB Header -->
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-400 flex items-center justify-center text-white font-bold text-sm shadow">
+                                <span class="material-symbols-outlined text-xl">storefront</span>
+                            </div>
+                            <div>
+                                <div class="text-xs font-bold text-white flex items-center gap-1.5">
+                                    <span>AI Karik Store</span>
+                                    <span class="material-symbols-outlined text-[14px] text-blue-400">verified</span>
+                                </div>
+                                <div class="text-[10px] text-slate-400 flex items-center gap-1">
+                                    <span>Vừa xong</span>
+                                    <span>·</span>
+                                    <span class="material-symbols-outlined text-[11px]">public</span>
+                                    <span>Công khai</span>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="text-slate-400 hover:text-white p-1 rounded-full hover:bg-white/10">
+                            <span class="material-symbols-outlined text-lg">more_horiz</span>
+                        </button>
+                    </div>
+
+                    <!-- FB Body Text (Formatted with authentic white-space pre-wrap & spacing) -->
+                    <div id="fbPreviewPostText" class="fb-post-preview text-slate-100 text-xs sm:text-[13px] leading-relaxed pt-1"></div>
+
+                    <!-- FB Media Box -->
+                    <div id="fbPreviewMediaContainer" class="rounded-xl overflow-hidden bg-black/60 border border-white/10 flex justify-center max-h-96">
+                        <img id="fbPreviewMediaImg" src="" alt="Facebook Post Media" class="w-full h-auto object-contain max-h-96 hidden" />
+                    </div>
+
+                    <!-- FB Action Bar (Likes, Comments, Shares) -->
+                    <div class="pt-2 border-t border-white/10 flex items-center justify-between text-[11px] text-slate-400 font-semibold px-2">
+                        <div class="flex items-center gap-1.5 hover:text-white cursor-pointer py-1">
+                            <span class="material-symbols-outlined text-base text-blue-400">thumb_up</span>
+                            <span>Thích</span>
+                        </div>
+                        <div class="flex items-center gap-1.5 hover:text-white cursor-pointer py-1">
+                            <span class="material-symbols-outlined text-base">chat_bubble</span>
+                            <span>Bình luận</span>
+                        </div>
+                        <div class="flex items-center gap-1.5 hover:text-white cursor-pointer py-1">
+                            <span class="material-symbols-outlined text-base">share</span>
+                            <span>Chia sẻ</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -130,29 +216,26 @@
         <div class="flex flex-col sm:flex-row items-center justify-between gap-2.5 px-5 py-3.5 border-t border-white/10 bg-slate-950/80 flex-shrink-0">
             <!-- Left Actions -->
             <div class="flex items-center gap-2 w-full sm:w-auto">
-                <button type="button" id="btnBrowserBotFB" onclick="window.socialPublish.runBrowserBotFacebook()"
-                    class="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold border border-blue-400/50 px-3.5 py-2 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all shadow-[0_0_15px_rgba(59,130,246,0.3)] cursor-pointer active:scale-95">
-                    <span class="material-symbols-outlined text-sm text-cyan-200">smart_toy</span>
-                    <span>🤖 Bot Vào Trình Duyệt Đăng FB</span>
-                </button>
                 <button type="button" id="btnOpenBrowserFallback" onclick="window.socialPublish.openBrowserDirectLink()"
-                    class="hidden sm:inline-flex bg-slate-800 hover:bg-slate-700 text-slate-300 border border-white/10 px-3 py-2 rounded-xl text-xs font-semibold items-center justify-center gap-1 transition-all cursor-pointer" title="Mở web thủ công">
+                    class="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-white/10 px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer" title="Mở web thủ công">
                     <span class="material-symbols-outlined text-sm">open_in_new</span>
+                    <span>Mở Tab Thủ Công</span>
                 </button>
             </div>
 
-            <!-- Right Actions -->
+            <!-- Right Actions: Close + Primary AI Browser Bot Post Button -->
             <div class="flex items-center gap-2.5 w-full sm:w-auto justify-end">
                 <button type="button" id="btnCancelSocialModal" onclick="window.socialPublish.closeModal()"
                     class="bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white px-4 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer">
                     Đóng
                 </button>
-                <button type="button" id="btnAutoPublishDirect" onclick="window.socialPublish.autoPublishDirect()"
-                    class="w-full sm:w-auto bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 text-white font-bold px-5 py-2 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all shadow-[0_0_20px_rgba(16,185,129,0.35)] cursor-pointer active:scale-95">
-                    <span class="material-symbols-outlined text-sm">bolt</span>
-                    <span id="btnAutoPublishText">⚡ API Đăng Ngay</span>
+                <button type="button" id="btnBrowserBotFB" onclick="window.socialPublish.runBrowserBotFacebook()"
+                    class="w-full sm:w-auto bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-bold border border-blue-400/50 px-5 py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition-all shadow-[0_0_20px_rgba(59,130,246,0.4)] cursor-pointer active:scale-95">
+                    <span class="material-symbols-outlined text-sm text-cyan-200">smart_toy</span>
+                    <span id="btnBrowserBotText">🤖 Đồng Ý & Cho AI Vào Trình Duyệt Đăng Bài</span>
                 </button>
             </div>
         </div>
     </div>
 </div>
+

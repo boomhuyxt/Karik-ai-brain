@@ -189,7 +189,11 @@ function initNoteDrawer() {
                     </div>
                 `;
             };
-            return marked.parse(processed, { renderer });
+            return marked.parse(processed, {
+                renderer,
+                breaks: true,
+                gfm: true
+            });
         }
         return processed;
     };

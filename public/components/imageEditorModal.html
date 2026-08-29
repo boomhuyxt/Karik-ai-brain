@@ -740,16 +740,22 @@
 
                 <!-- Export Action Buttons -->
                 <div class="space-y-1.5 pt-1">
-                    <!-- Download to Computer -->
-                    <button id="btnDownloadImage" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs py-2 rounded-xl shadow-[0_0_15px_rgba(168,85,247,0.35)] flex items-center justify-center gap-1.5 transition-all active:scale-98">
-                        <span class="material-symbols-outlined text-sm">save_alt</span>
-                        <span>Tải Ảnh Về Máy</span>
+                    <!-- Post directly to Facebook via AI Browser Bot -->
+                    <button id="btnPostFacebookFromStudio" class="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-bold text-xs py-2 rounded-xl shadow-[0_0_15px_rgba(59,130,246,0.4)] flex items-center justify-center gap-1.5 transition-all active:scale-98 cursor-pointer border border-blue-400/40">
+                        <span class="material-symbols-outlined text-sm text-cyan-200">smart_toy</span>
+                        <span>🤖 Đăng Lên Facebook (AI Bot)</span>
                     </button>
 
                     <!-- Send directly to AI Karik Chat -->
-                    <button id="btnSendToChat" class="w-full bg-gradient-to-r from-cyan-600 to-emerald-600 hover:from-cyan-500 hover:to-emerald-500 text-white font-bold text-xs py-2 rounded-xl shadow-[0_0_15px_rgba(6,182,212,0.35)] flex items-center justify-center gap-1.5 transition-all active:scale-98">
+                    <button id="btnSendToChat" class="w-full bg-gradient-to-r from-cyan-600 to-emerald-600 hover:from-cyan-500 hover:to-emerald-500 text-white font-bold text-xs py-2 rounded-xl shadow-[0_0_15px_rgba(6,182,212,0.35)] flex items-center justify-center gap-1.5 transition-all active:scale-98 cursor-pointer">
                         <span class="material-symbols-outlined text-sm">send</span>
                         <span>💬 Gửi vào Chat AI Karik</span>
+                    </button>
+
+                    <!-- Download to Computer -->
+                    <button id="btnDownloadImage" class="w-full bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-white font-bold text-xs py-2 rounded-xl flex items-center justify-center gap-1.5 transition-all active:scale-98 cursor-pointer">
+                        <span class="material-symbols-outlined text-sm">save_alt</span>
+                        <span>Tải Ảnh Về Máy</span>
                     </button>
                 </div>
             </div>

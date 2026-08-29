@@ -55,7 +55,9 @@ BẮT BUỘC xuất khối JSON cấu hình chuẩn với tag ````json:poster-co
   "brightness": 10,
   "contrast": 25,
   "saturation": 20,
-  "bg": "#0f172a"
+  "bg": "#0f172a",
+  "productCaption": "Toàn bộ bài viết Caption bán hàng/giới thiệu sản phẩm hoàn chỉnh để xuất bản cùng bức ảnh này lên Facebook...",
+  "hashtags": ["#aikarik", "#sanpham", "#viral", "#facebook"]
 }
 ```
 

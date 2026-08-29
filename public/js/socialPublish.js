@@ -42,6 +42,8 @@
         const modal = document.getElementById('socialPublishModal');
         const btnClose = document.getElementById('btnCloseSocialModal');
         const btnCancel = document.getElementById('btnCancelSocialModal');
+        const captionInput = document.getElementById('socialCaptionInput');
+        const hashtagsInput = document.getElementById('socialHashtagsInput');
 
         if (!modal) return;
 
@@ -51,6 +53,175 @@
         modal.addEventListener('click', (e) => {
             if (e.target === modal) closeModal();
         });
+
+        if (captionInput) {
+            captionInput.addEventListener('input', () => {
+                updateLivePreview();
+            });
+        }
+        if (hashtagsInput) {
+            hashtagsInput.addEventListener('input', () => {
+                updateLivePreview();
+            });
+        }
+    }
+
+    /**
+     * Chuyển đổi giữa chế độ Soạn Thảo (Editor) và Xem Trước Bảng Tin FB (Live Preview)
+     */
+    function toggleViewMode(mode = 'editor') {
+        const tabEditor = document.getElementById('tabViewEditor');
+        const tabPreview = document.getElementById('tabViewPreview');
+        const editorContainer = document.getElementById('socialEditorContainer');
+        const previewCard = document.getElementById('fbLivePreviewCard');
+
+        if (mode === 'preview') {
+            updateLivePreview();
+            if (editorContainer) editorContainer.classList.add('hidden');
+            if (previewCard) previewCard.classList.remove('hidden');
+
+            if (tabEditor) {
+                tabEditor.className = 'px-3 py-1 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition-all flex items-center gap-1.5 cursor-pointer';
+            }
+            if (tabPreview) {
+                tabPreview.className = 'px-3 py-1 rounded-lg text-xs font-bold transition-all bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm flex items-center gap-1.5 cursor-pointer';
+            }
+        } else {
+            if (previewCard) previewCard.classList.add('hidden');
+            if (editorContainer) editorContainer.classList.remove('hidden');
+
+            if (tabEditor) {
+                tabEditor.className = 'px-3 py-1 rounded-lg text-xs font-bold transition-all bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm flex items-center gap-1.5 cursor-pointer';
+            }
+            if (tabPreview) {
+                tabPreview.className = 'px-3 py-1 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition-all flex items-center gap-1.5 cursor-pointer';
+            }
+        }
+    }
+
+    /**
+     * Cập nhật bản xem trước Bảng tin Facebook và bộ đếm ký tự trong thời gian thực
+     */
+    function updateLivePreview() {
+        const captionInput = document.getElementById('socialCaptionInput');
+        const hashtagsInput = document.getElementById('socialHashtagsInput');
+        const charCounter = document.getElementById('captionCharCounter');
+        const previewTextDiv = document.getElementById('fbPreviewPostText');
+        const previewImg = document.getElementById('fbPreviewMediaImg');
+
+        const caption = captionInput ? captionInput.value : '';
+        const hashtags = hashtagsInput ? hashtagsInput.value : '';
+
+        if (charCounter) {
+            charCounter.textContent = `${caption.length} ký tự`;
+        }
+
+        if (previewTextDiv) {
+            let fullText = getFullPostText();
+            if (!fullText) {
+                previewTextDiv.innerHTML = '<span class="text-slate-500 italic">Chưa có nội dung bài đăng. Nhập bài viết ở tab Soạn Thảo hoặc yêu cầu AI tạo...</span>';
+            } else {
+                // Escape HTML
+                let safeText = fullText
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;');
+
+                // Highlight hashtags with Facebook blue
+                safeText = safeText.replace(/(#[a-zA-Z0-9_\u00C0-\u1EF9]+)/g, '<span class="text-[#4599ff] font-medium hover:underline cursor-pointer">$1</span>');
+
+                previewTextDiv.innerHTML = safeText;
+            }
+        }
+
+        if (previewImg) {
+            const mediaUrlInput = document.getElementById('socialMediaUrlInput');
+            const targetUrl = (mediaUrlInput ? mediaUrlInput.value.trim() : '') || activeMediaData.url;
+            if (targetUrl && (targetUrl.startsWith('data:') || targetUrl.startsWith('http') || targetUrl.startsWith('/uploads'))) {
+                previewImg.src = targetUrl;
+                previewImg.classList.remove('hidden');
+            } else {
+                previewImg.classList.add('hidden');
+            }
+        }
+    }
+
+    /**
+     * 🪄 Chuẩn Hóa Canh Lề & Xuống Dòng Bài Đăng Chuẩn Facebook 1-Click
+     */
+    function autoFormatFacebookText() {
+        const captionInput = document.getElementById('socialCaptionInput');
+        if (!captionInput) return;
+
+        let text = captionInput.value;
+        if (!text || !text.trim()) {
+            showStatusAlert('⚠️ Chưa có nội dung bài đăng để căn lề. Hãy nhập nội dung trước!', 'error');
+            return;
+        }
+
+        // 1. Chuẩn hóa ký tự ngắt dòng
+        text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
+        // 2. Tách từng dòng và làm sạch khoảng trắng thừa ở hai đầu dòng
+        const rawLines = text.split('\n');
+        const cleanedLines = [];
+
+        // Các emoji bullet phổ biến
+        const bulletIcons = ['🔹', '👉', '✅', '✨', '⭐', '✔', '▪', '•', '🔸', '📍', '📌', '💡', '💎'];
+        const sectionStarters = ['🔥', '💥', '⚡', '🎁', '🚚', '🛡️', '👉', '☎️', '📞', '🌐', '🏠', '🎯', '💯'];
+
+        for (let i = 0; i < rawLines.length; i++) {
+            let line = rawLines[i].trim();
+
+            // Chuẩn hóa icon gạch đầu dòng: đảm bảo có 1 dấu cách sau icon
+            for (const icon of bulletIcons) {
+                if (line.startsWith(icon) && !line.startsWith(icon + ' ')) {
+                    line = icon + ' ' + line.substring(icon.length).trim();
+                    break;
+                }
+            }
+
+            cleanedLines.push(line);
+        }
+
+        // 3. Tái cấu trúc khoảng thở chuẩn Facebook (Double line breaks giữa các phần)
+        const formatted = [];
+        let inBulletList = false;
+
+        for (let i = 0; i < cleanedLines.length; i++) {
+            const cur = cleanedLines[i];
+            const isBullet = bulletIcons.some(ic => cur.startsWith(ic));
+            const isSection = sectionStarters.some(st => cur.startsWith(st));
+
+            if (cur === '') {
+                // Giữ dòng trống
+                if (formatted.length > 0 && formatted[formatted.length - 1] !== '') {
+                    formatted.push('');
+                }
+                inBulletList = false;
+                continue;
+            }
+
+            // Nếu bắt đầu một khối mục mới (như Ưu đãi, Hotline, Hook) và phía trước chưa có dòng trống
+            if (isSection && !isBullet && formatted.length > 0 && formatted[formatted.length - 1] !== '') {
+                formatted.push('');
+            }
+
+            // Nếu đang trong bullet list mà dòng này không phải bullet, thêm dòng trống tạo khoảng thở
+            if (inBulletList && !isBullet && formatted.length > 0 && formatted[formatted.length - 1] !== '') {
+                formatted.push('');
+            }
+
+            formatted.push(cur);
+            inBulletList = isBullet;
+        }
+
+        // 4. Gộp thành văn bản chuẩn và loại bỏ dòng trống dư thừa ở đầu/cuối
+        let resultText = formatted.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+
+        captionInput.value = resultText;
+        updateLivePreview();
+        showStatusAlert('✨ Đã tự động chuẩn hóa canh lề & ngắt dòng đẹp mắt chuẩn phong cách Facebook!', 'success');
     }
 
     /**
@@ -60,12 +231,15 @@
         const modal = document.getElementById('socialPublishModal');
         if (!modal) return;
 
+        // Ưu tiên lấy ảnh mới nhất từ Studio hoặc ảnh upload gần nhất
+        const resolvedUrl = mediaInfo.url || mediaInfo.imageData || window.lastStudioEditedImage || window.lastUploadedImageUrl || '';
+
         // Lưu thông tin media
         activeMediaData = {
-            url: mediaInfo.url || mediaInfo.imageData || '',
-            mediaType: mediaInfo.mediaType || (mediaInfo.url && mediaInfo.url.endsWith('.mp4') ? 'video' : 'image'),
+            url: resolvedUrl,
+            mediaType: mediaInfo.mediaType || (resolvedUrl && resolvedUrl.endsWith('.mp4') ? 'video' : 'image'),
             caption: mediaInfo.caption || '',
-            hashtags: mediaInfo.hashtags || ['#aikarik', '#jarvis', '#facebook', '#tiktok']
+            hashtags: mediaInfo.hashtags || ['#aikarik', '#sanpham', '#viral', '#facebook']
         };
 
         // Điền vào form
@@ -88,10 +262,10 @@
             if (activeMediaData.url) {
                 if (activeMediaData.mediaType === 'video' || activeMediaData.url.endsWith('.mp4')) {
                     mediaPreviewBox.innerHTML = `<video src="${activeMediaData.url}" class="w-full h-full object-cover rounded-lg"></video>`;
-                    if (mediaBadge) mediaBadge.textContent = 'Video / Clip Reel';
+                    if (mediaBadge) mediaBadge.textContent = 'Video Sản Phẩm';
                 } else {
                     mediaPreviewBox.innerHTML = `<img src="${activeMediaData.url}" alt="Preview" class="w-full h-full object-contain rounded-lg" />`;
-                    if (mediaBadge) mediaBadge.textContent = 'Poster / Image';
+                    if (mediaBadge) mediaBadge.textContent = 'Ảnh Sản Phẩm (Studio)';
                 }
             } else {
                 mediaPreviewBox.innerHTML = `<span class="material-symbols-outlined text-3xl text-slate-500">image</span>`;
@@ -104,8 +278,39 @@
         // Chuyển về nền tảng mong muốn hoặc mặc định Facebook
         switchPlatform(mediaInfo.platform || currentPlatform || 'facebook');
 
+        // Khởi tạo xem trước và chế độ xem
+        toggleViewMode('editor');
+        updateLivePreview();
+
         modal.classList.remove('hidden');
         modal.classList.add('flex');
+    }
+
+    /**
+     * Tải lại ảnh mới nhất từ AI Karik Studio vào Modal
+     */
+    function reloadStudioImage() {
+        const latestImg = window.lastStudioEditedImage || window.lastUploadedImageUrl || '';
+        if (!latestImg) {
+            showStatusAlert('⚠️ Chưa có ảnh mới trong AI Karik Studio. Hãy vào Studio để chỉnh sửa hoặc tạo ảnh trước!', 'error');
+            return;
+        }
+
+        activeMediaData.url = latestImg;
+        activeMediaData.mediaType = 'image';
+
+        const mediaUrlInput = document.getElementById('socialMediaUrlInput');
+        const mediaPreviewBox = document.getElementById('socialMediaPreviewBox');
+        const mediaBadge = document.getElementById('socialMediaBadge');
+
+        if (mediaUrlInput) mediaUrlInput.value = latestImg;
+        if (mediaPreviewBox) {
+            mediaPreviewBox.innerHTML = `<img src="${latestImg}" alt="Studio Preview" class="w-full h-full object-contain rounded-lg" />`;
+        }
+        if (mediaBadge) mediaBadge.textContent = 'Ảnh Sản Phẩm (Studio)';
+
+        showStatusAlert('✅ Đã cập nhật bức ảnh mới nhất từ AI Karik Studio vào bài đăng!', 'success');
+        updateLivePreview();
     }
 
     function closeModal() {
@@ -315,7 +520,7 @@
 
         const caption = captionInput ? captionInput.value.trim() : '';
         const rawTags = hashtagsInput ? hashtagsInput.value.trim() : '';
-        const mediaUrl = mediaUrlInput ? mediaUrlInput.value.trim() : activeMediaData.url;
+        const mediaUrl = (mediaUrlInput ? mediaUrlInput.value.trim() : '') || activeMediaData.url || window.lastStudioEditedImage || window.lastUploadedImageUrl || '';
         const hashtags = rawTags.split(/[\s,]+/).filter(t => t.length > 0);
 
         if (!caption && !mediaUrl) {
@@ -323,8 +528,11 @@
             return;
         }
 
-        if (submitBtn) submitBtn.disabled = true;
-        showStatusAlert('🤖 **Đang khởi chạy Browser Bot...**\nĐang mở trình duyệt Chrome/Edge và truy cập Facebook để tự động soạn thảo & đăng bài...', 'info');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.classList.add('opacity-70');
+        }
+        showStatusAlert('🤖 **Đang khởi chạy Browser Bot...**\nĐang mở trình duyệt Chrome/Edge và truy cập Facebook để tự động tải ảnh sản phẩm từ Studio & đăng bài...', 'info');
 
         try {
             const payload = {
@@ -346,7 +554,7 @@
             if (result.success) {
                 const logsFormatted = (result.data?.logs || []).join('\n');
                 showStatusAlert(
-                    `🎉 **Browser Bot Đã Hoàn Thành Đăng Bài Lên Facebook!**\n` +
+                    `🎉 **Browser Bot Đã Đăng Bài Lên Facebook Thành Công!**\n` +
                     (logsFormatted ? `\n\`\`\`\n${logsFormatted}\n\`\`\`` : ''),
                     'success'
                 );
@@ -365,7 +573,10 @@
             console.error('[SocialPublish] Browser Bot Error:', err);
             showStatusAlert(`⚠️ Lỗi khởi chạy Bot: ${err.message}`, 'error');
         } finally {
-            if (submitBtn) submitBtn.disabled = false;
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('opacity-70');
+            }
         }
     }
 
@@ -423,11 +634,15 @@
         init: initSocialPublishModule,
         openModal,
         closeModal,
+        reloadStudioImage,
         switchPlatform,
         copyCaptionToClipboard,
         downloadCurrentMedia,
         autoPublishDirect,
         runBrowserBotFacebook,
-        openBrowserDirectLink
+        openBrowserDirectLink,
+        toggleViewMode,
+        autoFormatFacebookText,
+        updateLivePreview
     };
 })();

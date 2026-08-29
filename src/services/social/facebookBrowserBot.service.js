@@ -57,12 +57,26 @@ class FacebookBrowserBotService {
     const ext = isVideo ? '.mp4' : (isSvg ? '.svg' : '.png');
     const localFilePath = path.join(tempDir, `fb_upload_${Date.now()}${ext}`);
 
-    if (mediaUrl.startsWith('data:image/')) {
-      const base64Data = mediaUrl.replace(/^data:image\/\w+;base64,/, '');
-      fs.writeFileSync(localFilePath, Buffer.from(base64Data, 'base64'));
+    // 1. Base64 DataURL (Xuất trực tiếp từ Karik Studio Canvas)
+    if (mediaUrl.startsWith('data:')) {
+      const cleanBase64 = mediaUrl.replace(/^data:[^;]+;base64,/, '');
+      fs.writeFileSync(localFilePath, Buffer.from(cleanBase64, 'base64'));
       return localFilePath;
     }
 
+    // 2. Relative upload path (e.g. /uploads/filename.png)
+    if (typeof mediaUrl === 'string' && mediaUrl.startsWith('/uploads/')) {
+      const publicUploads = path.join(__dirname, '../../../public', mediaUrl);
+      if (fs.existsSync(publicUploads)) return publicUploads;
+
+      try {
+        const { uploadsPath } = require('../../storage');
+        const directUpload = path.join(uploadsPath, path.basename(mediaUrl));
+        if (fs.existsSync(directUpload)) return directUpload;
+      } catch (e) {}
+    }
+
+    // 3. Remote URL (http / https)
     if (mediaUrl.startsWith('http://') || mediaUrl.startsWith('https://')) {
       try {
         const res = await fetch(mediaUrl);
@@ -74,6 +88,7 @@ class FacebookBrowserBotService {
       }
     }
 
+    // 4. Direct absolute/relative file path
     if (fs.existsSync(mediaUrl)) {
       return mediaUrl;
     }
@@ -100,17 +115,28 @@ class FacebookBrowserBotService {
     addLog(`Đã tìm thấy trình duyệt: ${path.basename(executablePath)}`);
     const userDataDir = this.getUserDataDir();
 
-    // Ghép Caption + Hashtags
+    // Ghép Caption + Hashtags sản phẩm & Chuẩn hóa canh lề Facebook
     let fullText = caption ? caption.trim() : '';
     if (Array.isArray(hashtags) && hashtags.length > 0) {
       const tagStr = hashtags.map(t => (t.startsWith('#') ? t : `#${t}`)).join(' ');
       fullText = fullText ? `${fullText}\n\n${tagStr}` : tagStr;
     }
 
-    // Chuẩn bị file ảnh/video nếu có
-    const localMediaFile = mediaUrls && mediaUrls[0] ? await this.prepareLocalMediaFile(mediaUrls[0]) : null;
+    // Chuẩn hóa xuống dòng và khoảng thở chuẩn phong cách Facebook
+    fullText = fullText
+      .replace(/\r\n/g, '\n')
+      .replace(/\r/g, '\n')
+      .split('\n')
+      .map(line => line.trimEnd())
+      .join('\n')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+
+    // Chuẩn bị file ảnh từ Studio nếu có
+    const mediaToUpload = (mediaUrls && mediaUrls[0]) ? mediaUrls[0] : null;
+    const localMediaFile = mediaToUpload ? await this.prepareLocalMediaFile(mediaToUpload) : null;
     if (localMediaFile) {
-      addLog(`Đã chuẩn bị file đính kèm: ${path.basename(localMediaFile)}`);
+      addLog(`Đã chuẩn bị file ảnh sản phẩm từ Studio: ${path.basename(localMediaFile)}`);
     }
 
     addLog('Đang khởi chạy trình duyệt Chrome trong chế độ giao diện thực tế...');
@@ -135,6 +161,11 @@ class FacebookBrowserBotService {
 
       const pages = await browser.pages();
       const page = pages.length > 0 ? pages[0] : await browser.newPage();
+
+      try {
+        const context = browser.defaultBrowserContext();
+        await context.overridePermissions('https://www.facebook.com', ['clipboard-read', 'clipboard-write']);
+      } catch (permErr) {}
 
       addLog('Đang truy cập https://www.facebook.com/...');
       await page.goto('https://www.facebook.com/', { waitUntil: 'networkidle2', timeout: 45000 });
@@ -161,7 +192,6 @@ class FacebookBrowserBotService {
 
       // Tìm và bấm vào khung tạo bài viết
       const composerOpened = await page.evaluate(() => {
-        // Tìm các selector phổ biến của ô tạo bài viết Facebook
         const selectors = [
           'div[role="button"][tabindex="0"] span',
           'div[aria-label*="Tạo bài viết"]',
@@ -190,86 +220,193 @@ class FacebookBrowserBotService {
       }
 
       addLog('Đang mở khung soạn thảo bài viết...');
-      await new Promise(r => setTimeout(r, 2000));
+      await new Promise(r => setTimeout(r, 2500));
 
-      // Tìm ô textbox contenteditable để gõ nội dung
-      addLog('Đang nhập nội dung bài viết và hashtags...');
-      const typed = await page.evaluate((textToType) => {
-        const textbox = document.querySelector('div[role="textbox"][contenteditable="true"]') ||
-          document.querySelector('div[aria-label*="Bạn đang nghĩ gì"][contenteditable="true"]') ||
-          document.querySelector('div[aria-label*="What\'s on your mind"][contenteditable="true"]');
-        if (textbox) {
-          textbox.focus();
-          // Chèn nội dung
-          document.execCommand('insertText', false, textToType);
-          return true;
-        }
-        return false;
-      }, fullText);
-
-      if (!typed) {
-        // Thử dùng Puppeteer keyboard
-        await page.keyboard.type(fullText, { delay: 10 });
-      }
-
-      addLog('Đã điền nội dung Caption & Hashtags thành công!');
-      await new Promise(r => setTimeout(r, 1500));
-
-      // Đính kèm file ảnh / video nếu có
+      // BƯỚC 1: ĐÍNH KÈM ẢNH SẢN PHẨM TỪ STUDIO TRỰC TIẾP VÀO COMPOSER DIALOG
       if (localMediaFile) {
-        addLog('Đang tải file hình ảnh/video vào bài đăng...');
-        const fileInputs = await page.$$('input[type="file"]');
-        let fileUploaded = false;
+        addLog('Đang nạp ảnh sản phẩm từ Studio vào khung bài đăng Facebook...');
 
-        for (const input of fileInputs) {
-          try {
-            await input.uploadFile(localMediaFile);
-            fileUploaded = true;
-            break;
-          } catch (e) { }
-        }
-
-        if (!fileUploaded) {
-          // Thử bấm nút Ảnh/Video trên thanh công cụ
-          await page.evaluate(() => {
-            const buttons = Array.from(document.querySelectorAll('div[aria-label*="Ảnh/video"], div[aria-label*="Photo/video"]'));
-            if (buttons.length > 0) buttons[0].click();
+        try {
+          // Bắt sự kiện file chooser của Chrome để nạp ảnh trực tiếp qua CDP
+          const fileChooserPromise = page.waitForFileChooser({ timeout: 4000 });
+          
+          const clicked = await page.evaluate(() => {
+            const dialog = document.querySelector('div[role="dialog"]') || document;
+            const photoBtn = dialog.querySelector('div[aria-label*="Ảnh/video"], div[aria-label*="Photo/video"], div[aria-label*="Thêm ảnh"], div[aria-label*="Add photo"]');
+            if (photoBtn) {
+              photoBtn.click();
+              return true;
+            }
+            return false;
           });
-          await new Promise(r => setTimeout(r, 1000));
-          const lateInput = await page.$('input[type="file"]');
-          if (lateInput) {
-            await lateInput.uploadFile(localMediaFile);
+
+          if (clicked) {
+            try {
+              const fileChooser = await fileChooserPromise;
+              await fileChooser.accept([localMediaFile]);
+              addLog('✅ Đã nạp thành công ảnh sản phẩm qua FileChooser!');
+            } catch (fcErr) {
+              // Fallback upload trực tiếp vào input file
+              const allFileInputs = await page.$$('div[role="dialog"] input[type="file"], input[type="file"]');
+              for (const input of allFileInputs) {
+                try { await input.uploadFile(localMediaFile); } catch (e) {}
+              }
+            }
+          } else {
+            const allFileInputs = await page.$$('div[role="dialog"] input[type="file"], input[type="file"]');
+            for (const input of allFileInputs) {
+              try { await input.uploadFile(localMediaFile); } catch (e) {}
+            }
           }
+        } catch (err) {
+          console.warn('[PuppeteerBot] Upload image error:', err.message);
         }
-        addLog('Đã đính kèm hình ảnh vào bài viết!');
-        await new Promise(r => setTimeout(r, 2500));
+
+        // Chờ Facebook render preview ảnh và tải lên máy chủ CDN
+        await new Promise(r => setTimeout(r, 4000));
       }
 
-      // Bấm nút Đăng bài nếu autoClickPost = true
-      if (autoClickPost) {
-        addLog('Đang kích hoạt nút "Đăng" (Post)...');
-        const posted = await page.evaluate(() => {
-          const postBtn = document.querySelector('div[aria-label="Đăng"][role="button"]') ||
-            document.querySelector('div[aria-label="Post"][role="button"]') ||
-            Array.from(document.querySelectorAll('div[role="button"]')).find(b => {
-              const t = (b.textContent || '').trim().toLowerCase();
-              return t === 'đăng' || t === 'post' || t === 'tiếp';
-            });
-          if (postBtn && !postBtn.getAttribute('aria-disabled')) {
-            postBtn.click();
-            return true;
-          }
-          return false;
-        });
+      // BƯỚC 2: NHẬP NỘI DUNG CAPTION SẢN PHẨM CÙNG CHUNG BÀI ĐĂNG (BẢO TOÀN XUỐNG DÒNG & CANH LỀ)
+      if (fullText) {
+        addLog('Đang nhập nội dung Caption Sản Phẩm vào cùng bài đăng (Bảo toàn xuống dòng & canh lề FB)...');
 
-        if (posted) {
-          addLog('🎉 ĐÃ BẤM NÚT ĐĂNG BÀI THÀNH CÔNG!');
-          await new Promise(r => setTimeout(r, 4000));
-        } else {
-          addLog('⚠️ Khung bài viết đã được điền đầy đủ. Bạn có thể nhấn nút "Đăng" trên trình duyệt.');
+        // TẦNG 1: Sử dụng Synthetic ClipboardEvent Paste với DataTransfer
+        // Meta Lexical framework của Facebook sẽ bắt sự kiện paste và tự động tạo các thẻ <p> giữ trọn vẹn từng dòng
+        let inserted = await page.evaluate((textToType) => {
+          const textboxes = Array.from(document.querySelectorAll('div[role="textbox"][contenteditable="true"]'));
+          if (textboxes.length === 0) return false;
+          const activeBox = textboxes[textboxes.length - 1];
+          activeBox.focus();
+
+          try {
+            const dt = new DataTransfer();
+            dt.setData('text/plain', textToType);
+            const pasteEvent = new ClipboardEvent('paste', {
+              bubbles: true,
+              cancelable: true,
+              clipboardData: dt
+            });
+            activeBox.dispatchEvent(pasteEvent);
+
+            const firstLine = textToType.split('\n')[0].trim();
+            if (activeBox.textContent && activeBox.textContent.includes(firstLine.slice(0, 15))) {
+              activeBox.dispatchEvent(new Event('input', { bubbles: true }));
+              activeBox.dispatchEvent(new Event('change', { bubbles: true }));
+              return true;
+            }
+          } catch (e) {}
+          return false;
+        }, fullText);
+
+        // TẦNG 2: Nếu Tầng 1 chưa nhận, ghi vào Clipboard trình duyệt và kích hoạt phím tắt Ctrl + V
+        if (!inserted) {
+          try {
+            const clipboardSet = await page.evaluate(async (textToCopy) => {
+              try {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                  await navigator.clipboard.writeText(textToCopy);
+                  return true;
+                }
+              } catch (e) {}
+              return false;
+            }, fullText);
+
+            if (clipboardSet) {
+              const textbox = await page.$('div[role="textbox"][contenteditable="true"]');
+              if (textbox) {
+                await textbox.focus();
+                await page.keyboard.down('Control');
+                await page.keyboard.press('KeyV');
+                await page.keyboard.up('Control');
+                inserted = true;
+              }
+            }
+          } catch (clipErr) {
+            console.warn('[PuppeteerBot] Clipboard Ctrl+V fallback failed:', clipErr.message);
+          }
+        }
+
+        // TẦNG 3: Fallback gõ từng dòng và bấm Enter để ngắt đoạn chuẩn xác nếu các cách trên chưa thành công
+        const textConfirmed = await page.evaluate((sample) => {
+          const textboxes = Array.from(document.querySelectorAll('div[role="textbox"][contenteditable="true"]'));
+          if (textboxes.length === 0) return false;
+          const activeBox = textboxes[textboxes.length - 1];
+          return Boolean(activeBox.textContent && activeBox.textContent.trim().length > 10);
+        }, fullText.slice(0, 15));
+
+        if (!textConfirmed) {
+          addLog('Đang nhập nội dung dòng-theo-dòng để bảo đảm chuẩn ngắt đoạn...');
+          const textbox = await page.$('div[role="textbox"][contenteditable="true"]');
+          if (textbox) {
+            await textbox.click();
+            const lines = fullText.split('\n');
+            for (let i = 0; i < lines.length; i++) {
+              if (lines[i].length > 0) {
+                await page.keyboard.type(lines[i], { delay: 6 });
+              }
+              if (i < lines.length - 1) {
+                await page.keyboard.press('Enter');
+                await new Promise(r => setTimeout(r, 60));
+              }
+            }
+          }
+        }
+
+        addLog('✅ Đã điền nội dung Caption Sản Phẩm & Hashtags chuẩn canh lề và ngắt dòng Facebook thành công!');
+        await new Promise(r => setTimeout(r, 2000));
+      }
+
+      // BƯỚC 3: CHỜ FACEBOOK XỬ LÝ ẢNH & TỰ ĐỘNG BẤM NÚT ĐĂNG (POST)
+      if (autoClickPost) {
+        addLog('Đang chờ Facebook kích hoạt nút "Đăng" (Post)...');
+        let posted = false;
+
+        // Vòng lặp chờ nút Đăng sẵn sàng (tối đa 15 giây khi ảnh upload hoàn tất)
+        for (let attempt = 1; attempt <= 15; attempt++) {
+          posted = await page.evaluate(() => {
+            const dialog = document.querySelector('div[role="dialog"]') || document;
+            const buttons = Array.from(dialog.querySelectorAll('div[role="button"], button'));
+
+            const postBtn = buttons.find(b => {
+              const label = (b.getAttribute('aria-label') || '').toLowerCase().trim();
+              const txt = (b.textContent || '').toLowerCase().trim();
+              const isDisabled = b.getAttribute('aria-disabled') === 'true' || b.disabled;
+              return !isDisabled && (label === 'đăng' || label === 'post' || label === 'tiếp' || txt === 'đăng' || txt === 'post');
+            });
+
+            if (postBtn) {
+              postBtn.click();
+              return true;
+            }
+            return false;
+          });
+
+          if (posted) {
+            addLog('🎉 ĐÃ TỰ ĐỘNG BẤM NÚT ĐĂNG BÀI THÀNH CÔNG! (Ảnh Studio + Caption Sản Phẩm đã được xuất bản)');
+            await new Promise(r => setTimeout(r, 4500));
+            break;
+          }
+
+          await new Promise(r => setTimeout(r, 1000));
+        }
+
+        if (!posted) {
+          // Thử phím tắt Ctrl + Enter để đăng bài
+          addLog('Đang thử kích hoạt lệnh đăng bài bằng phím tắt Ctrl+Enter...');
+          const textbox = await page.$('div[role="dialog"] div[role="textbox"][contenteditable="true"], div[role="textbox"][contenteditable="true"]');
+          if (textbox) {
+            await textbox.focus();
+            await page.keyboard.down('Control');
+            await page.keyboard.press('Enter');
+            await page.keyboard.up('Control');
+            addLog('🎉 Đã kích hoạt lệnh Đăng bài (Ctrl+Enter)!');
+            await new Promise(r => setTimeout(r, 4500));
+          } else {
+            addLog('⚠️ Đã đính kèm ảnh và điền caption đầy đủ. Bạn có thể nhấn nút "Đăng" trên trình duyệt.');
+          }
         }
       } else {
-        addLog('ℹ️ Đã nạp sẵn bài viết vào Facebook. Người dùng có thể xem lại trước khi bấm Đăng.');
+        addLog('ℹ️ Đã nạp sẵn ảnh và bài viết vào Facebook. Người dùng có thể xem lại trước khi bấm Đăng.');
       }
 
       return {
