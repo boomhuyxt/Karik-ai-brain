@@ -1,4 +1,41 @@
 <!-- User Management Modal Component for Admin (Mobile Responsive) -->
+<style>
+    html:not(.dark) #userManagementModal > div,
+    html.light #userManagementModal > div {
+        background: #ffffff !important;
+        border-color: rgba(109, 40, 217, 0.25) !important;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12) !important;
+    }
+    html:not(.dark) #userManagementModal h2,
+    html.light #userManagementModal h2 {
+        color: #0f172a !important;
+        text-shadow: none !important;
+    }
+    html:not(.dark) #userManagementModal #userSearchInput,
+    html.light #userManagementModal #userSearchInput {
+        background-color: #f8fafc !important;
+        color: #0f172a !important;
+        border-color: #cbd5e1 !important;
+    }
+    html:not(.dark) #userManagementModal thead,
+    html.light #userManagementModal thead {
+        background-color: #f1f5f9 !important;
+        color: #334155 !important;
+        border-bottom-color: #e2e8f0 !important;
+    }
+    html:not(.dark) #userTableBody,
+    html.light #userTableBody {
+        color: #1e293b !important;
+    }
+    html:not(.dark) #userTableBody tr,
+    html.light #userTableBody tr {
+        border-bottom-color: #f1f5f9 !important;
+    }
+    html:not(.dark) #userManagementModal strong#statTotalUsers {
+        color: #0f172a !important;
+        text-shadow: none !important;
+    }
+</style>
 <div id="userManagementModal" class="hidden fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-2 sm:p-6 animate-fadeIn overflow-y-auto">
     <div class="glass-panel w-full max-w-4xl max-h-[94vh] sm:max-h-[90vh] rounded-2xl sm:rounded-3xl p-3.5 sm:p-6 flex flex-col gap-3 sm:gap-4 shadow-2xl border border-purple-500/40 bg-slate-950/95 overflow-hidden my-auto">
         

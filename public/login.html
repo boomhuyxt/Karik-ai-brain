@@ -2,6 +2,23 @@
 <html class="dark" lang="vi">
 
 <head>
+    <script>
+        // Anti-FOUC immediate theme applicator
+        (function() {
+            try {
+                const savedTheme = localStorage.getItem('theme') || 'dark';
+                if (savedTheme === 'light') {
+                    document.documentElement.classList.remove('dark');
+                    document.documentElement.classList.add('light');
+                } else {
+                    document.documentElement.classList.remove('light');
+                    document.documentElement.classList.add('dark');
+                }
+            } catch (e) {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>AI Brain Karik - Đăng nhập / Đăng ký</title>
@@ -34,11 +51,19 @@
         }
     </script>
     <style>
-        .glass-panel {
+        .dark .glass-panel {
             background: rgba(29, 32, 38, 0.85);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             border: 1px solid rgba(211, 187, 255, 0.12);
+        }
+        html:not(.dark) .glass-panel,
+        html.light .glass-panel {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(109, 40, 217, 0.15);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
         }
         .glow-effect {
             box-shadow: 0 0 25px -5px rgba(109, 40, 217, 0.4);
@@ -46,15 +71,50 @@
         .glow-effect:hover {
             box-shadow: 0 0 35px 0px rgba(109, 40, 217, 0.6);
         }
-        .tab-btn.active {
+        .dark .tab-btn.active {
             color: #d3bbff;
             border-bottom: 2px solid #d3bbff;
             background-color: rgba(109, 40, 217, 0.15);
         }
+        html:not(.dark) .tab-btn.active,
+        html.light .tab-btn.active {
+            color: #6d28d9;
+            border-bottom: 2px solid #6d28d9;
+            background-color: rgba(109, 40, 217, 0.08);
+        }
+
+        /* Light Mode Form Adjustments */
+        html:not(.dark) body, html.light body {
+            background-color: #f8fafc !important;
+            color: #1e293b !important;
+        }
+        html:not(.dark) input, html.light input {
+            background-color: #ffffff !important;
+            color: #0f172a !important;
+            border-color: #cbd5e1 !important;
+        }
+        html:not(.dark) input::placeholder, html.light input::placeholder {
+            color: #94a3b8 !important;
+        }
+        html:not(.dark) label, html.light label {
+            color: #334155 !important;
+        }
+        html:not(.dark) h1, html.light h1 {
+            color: #0f172a !important;
+        }
     </style>
 </head>
 
-<body class="bg-background text-gray-200 font-sans min-h-screen flex items-center justify-center p-4 relative overflow-hidden selection:bg-purple-500 selection:text-white">
+<body class="bg-background text-gray-200 font-sans min-h-screen flex items-center justify-center p-4 relative overflow-hidden selection:bg-purple-500 selection:text-white transition-colors duration-200">
+
+    <!-- Top Floating Dark/Light Toggle Button -->
+    <div class="fixed top-4 right-4 z-50">
+        <button id="btnLoginThemeToggle" onclick="toggleLoginTheme()" title="Chuyển đổi giao diện Sáng / Tối"
+            class="p-2.5 rounded-2xl glass-panel border flex items-center gap-2 text-xs font-semibold text-slate-300 hover:text-purple-400 transition-all shadow-md active:scale-95 cursor-pointer">
+            <span id="loginThemeIcon" class="material-symbols-outlined text-base text-amber-400">light_mode</span>
+            <span id="loginThemeText" class="text-xs font-mono">Sáng/Tối</span>
+        </button>
+    </div>
 
     <!-- Background glowing Orbs -->
     <div class="absolute -top-32 -left-32 w-96 h-96 bg-purple-900/30 rounded-full blur-3xl pointer-events-none"></div>
@@ -220,6 +280,35 @@
 
     <!-- Frontend Auth JS Script -->
     <script src="/js/auth.js"></script>
+    <script>
+        function toggleLoginTheme() {
+            const isDark = document.documentElement.classList.contains('dark');
+            const next = isDark ? 'light' : 'dark';
+            if (next === 'dark') {
+                document.documentElement.classList.add('dark');
+                document.documentElement.classList.remove('light');
+            } else {
+                document.documentElement.classList.remove('dark');
+                document.documentElement.classList.add('light');
+            }
+            localStorage.setItem('theme', next);
+            updateLoginThemeUI();
+        }
+
+        function updateLoginThemeUI() {
+            const isDark = document.documentElement.classList.contains('dark');
+            const icon = document.getElementById('loginThemeIcon');
+            const text = document.getElementById('loginThemeText');
+            if (icon) {
+                icon.textContent = isDark ? 'light_mode' : 'dark_mode';
+                icon.className = `material-symbols-outlined text-base ${isDark ? 'text-amber-400' : 'text-purple-600'}`;
+            }
+            if (text) {
+                text.textContent = isDark ? 'Sáng' : 'Tối';
+            }
+        }
+        document.addEventListener('DOMContentLoaded', updateLoginThemeUI);
+    </script>
 </body>
 
 </html>

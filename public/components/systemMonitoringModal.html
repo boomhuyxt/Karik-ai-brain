@@ -1,54 +1,122 @@
 <!-- System Monitoring, Token Consumption & API Risk Modal -->
+<style>
+    html:not(.dark) #systemMonitoringModal > div,
+    html.light #systemMonitoringModal > div {
+        background: #ffffff !important;
+        color: #0f172a !important;
+        border: 1px solid #cbd5e1 !important;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.12) !important;
+    }
+    html:not(.dark) #systemMonitoringModal h2,
+    html.light #systemMonitoringModal h2,
+    html:not(.dark) #systemMonitoringModal h3,
+    html.light #systemMonitoringModal h3,
+    html:not(.dark) #systemMonitoringModal h4,
+    html.light #systemMonitoringModal h4 {
+        color: #0f172a !important;
+    }
+    html:not(.dark) #systemMonitoringModal .bg-black\/30,
+    html.light #systemMonitoringModal .bg-black\/30,
+    html:not(.dark) #systemMonitoringModal .bg-black\/40,
+    html.light #systemMonitoringModal .bg-black\/40 {
+        background-color: #f1f5f9 !important;
+        border-color: #cbd5e1 !important;
+        color: #334155 !important;
+    }
+    html:not(.dark) #systemMonitoringModal .bg-slate-900\/60,
+    html.light #systemMonitoringModal .bg-slate-900\/60,
+    html:not(.dark) #systemMonitoringModal .bg-slate-900\/70,
+    html.light #systemMonitoringModal .bg-slate-900\/70,
+    html:not(.dark) #systemMonitoringModal .bg-slate-900\/80,
+    html.light #systemMonitoringModal .bg-slate-900\/80,
+    html:not(.dark) #systemMonitoringModal .bg-slate-900,
+    html.light #systemMonitoringModal .bg-slate-900 {
+        background-color: #f8fafc !important;
+        border-color: #e2e8f0 !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    html:not(.dark) #systemMonitoringModal .bg-white\/\[0\.02\],
+    html.light #systemMonitoringModal .bg-white\/\[0\.02\],
+    html:not(.dark) #systemMonitoringModal .bg-white\/\[0\.03\],
+    html.light #systemMonitoringModal .bg-white\/\[0\.03\] {
+        background-color: #ffffff !important;
+        border-color: #e2e8f0 !important;
+    }
+    html:not(.dark) #systemMonitoringModal .text-white,
+    html.light #systemMonitoringModal .text-white {
+        color: #0f172a !important;
+    }
+    html:not(.dark) #systemMonitoringModal .text-slate-400,
+    html.light #systemMonitoringModal .text-slate-400,
+    html:not(.dark) #systemMonitoringModal .text-slate-500,
+    html.light #systemMonitoringModal .text-slate-500 {
+        color: #475569 !important;
+    }
+    html:not(.dark) #systemMonitoringModal .text-slate-200,
+    html.light #systemMonitoringModal .text-slate-200,
+    html:not(.dark) #systemMonitoringModal .text-slate-300,
+    html.light #systemMonitoringModal .text-slate-300 {
+        color: #1e293b !important;
+    }
+    html:not(.dark) #systemMonitoringModal .border-white\/10,
+    html.light #systemMonitoringModal .border-white\/10,
+    html:not(.dark) #systemMonitoringModal .border-white\/15,
+    html.light #systemMonitoringModal .border-white\/15,
+    html:not(.dark) #systemMonitoringModal .border-white\/5,
+    html.light #systemMonitoringModal .border-white\/5 {
+        border-color: #e2e8f0 !important;
+    }
+</style>
 <div id="systemMonitoringModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md hidden animate-fadeIn">
     <div class="relative w-full max-w-5xl max-h-[90vh] bg-[#141416]/95 border border-white/15 rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.8)] flex flex-col overflow-hidden text-slate-100">
         
         <!-- Modal Top Header -->
-        <div class="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-white/[0.02]">
+        <div class="px-6 py-4 border-b border-slate-200 dark:border-white/10 flex items-center justify-between bg-slate-50 dark:bg-white/[0.02]">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.3)]">
+                <div class="w-10 h-10 rounded-xl bg-cyan-100 dark:bg-cyan-500/20 border border-cyan-300 dark:border-cyan-400/40 flex items-center justify-center text-cyan-800 dark:text-cyan-300 shadow-sm">
                     <span class="material-symbols-outlined text-2xl">monitoring</span>
                 </div>
                 <div>
-                    <h2 class="text-base font-bold text-white flex items-center gap-2">
+                    <h2 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
                         <span>Trung Tâm Giám Sát Token, Tiến Độ & Rủi Ro API</span>
-                        <span id="overallRiskBadge" class="text-[11px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 flex items-center gap-1">
-                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span id="overallRiskBadge" class="text-[11px] font-mono px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-400/40 flex items-center gap-1 font-semibold">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                             <span>Rủi Ro: 6% (An Toàn)</span>
                         </span>
                     </h2>
-                    <p class="text-xs text-slate-400">Theo dõi tiêu hao Token thời gian thực, tiến độ chiến dịch và ma trận sức khỏe các API liên kết</p>
+                    <p class="text-xs text-slate-600 dark:text-slate-400">Theo dõi tiêu hao Token thời gian thực, tiến độ chiến dịch và ma trận sức khỏe các API liên kết</p>
                 </div>
             </div>
 
             <!-- Header Actions -->
             <div class="flex items-center gap-2">
                 <button id="btnRefreshMonitorData" onclick="window.fetchSystemMonitoringData()" title="Tải lại dữ liệu"
-                    class="p-2 rounded-lg bg-surface-container-high/80 hover:bg-surface-container-high border border-white/10 text-slate-300 hover:text-white transition-all">
+                    class="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-surface-container-high/80 dark:hover:bg-surface-container-high border border-slate-300 dark:border-white/10 text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-all">
                     <span class="material-symbols-outlined text-lg">refresh</span>
                 </button>
                 <button onclick="window.closeSystemMonitorModal()" title="Đóng cửa sổ"
-                    class="p-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-slate-400 hover:text-white transition-all">
+                    class="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-300 dark:border-white/10 text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-all">
                     <span class="material-symbols-outlined text-lg">close</span>
                 </button>
             </div>
         </div>
 
         <!-- Tab Navigation Bar -->
-        <div class="px-6 py-2 border-b border-white/10 bg-black/30 flex items-center gap-2">
+        <div class="px-6 py-2 border-b border-slate-200 dark:border-white/10 bg-slate-100/80 dark:bg-black/30 flex items-center gap-2">
             <button id="tabBtnToken" onclick="window.switchMonitorTab('token')"
-                class="monitor-tab-btn active px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 shadow-[0_0_12px_rgba(6,182,212,0.2)]">
+                class="monitor-tab-btn active px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all bg-cyan-100 dark:bg-cyan-500/20 text-cyan-900 dark:text-cyan-300 border border-cyan-300 dark:border-cyan-400/40 shadow-sm">
                 <span class="material-symbols-outlined text-base">token</span>
                 <span>1. Độ Tiêu Hao Token</span>
             </button>
 
             <button id="tabBtnProgress" onclick="window.switchMonitorTab('progress')"
-                class="monitor-tab-btn px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all text-slate-400 hover:text-slate-200 hover:bg-white/5 border border-transparent">
+                class="monitor-tab-btn px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-white/5 border border-transparent">
                 <span class="material-symbols-outlined text-base">trending_up</span>
                 <span>2. Tiến Độ Dự Án & Ads</span>
             </button>
 
             <button id="tabBtnApiRisk" onclick="window.switchMonitorTab('apirisk')"
-                class="monitor-tab-btn px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all text-slate-400 hover:text-slate-200 hover:bg-white/5 border border-transparent">
+                class="monitor-tab-btn px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-white/5 border border-transparent">
                 <span class="material-symbols-outlined text-base">security</span>
                 <span>3. Độ Rủi Ro & Sức Khỏe API</span>
             </button>
@@ -61,56 +129,56 @@
             <div id="tabContentToken" class="space-y-6">
                 <!-- Quick KPI Stats Cards -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div class="p-4 rounded-xl bg-slate-900/60 border border-white/10 flex flex-col justify-between">
-                        <span class="text-xs text-slate-400 flex items-center justify-between">
+                    <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-white/10 flex flex-col justify-between shadow-2xs">
+                        <span class="text-xs text-slate-600 dark:text-slate-400 font-semibold flex items-center justify-between">
                             <span>Tổng Token Tiêu Thụ</span>
-                            <span class="material-symbols-outlined text-cyan-400 text-base">toll</span>
+                            <span class="material-symbols-outlined text-cyan-600 dark:text-cyan-400 text-base">toll</span>
                         </span>
                         <div class="mt-2">
-                            <span id="kpiTotalTokens" class="text-2xl font-bold text-white font-mono">142.5k</span>
-                            <span class="text-[10px] text-emerald-400 ml-1">Tokens</span>
+                            <span id="kpiTotalTokens" class="text-2xl font-bold text-slate-900 dark:text-white font-mono">142.5k</span>
+                            <span class="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold ml-1">Tokens</span>
                         </div>
-                        <span class="text-[10px] text-slate-400 mt-1">Chế độ: <strong>Token-based (TPM)</strong></span>
+                        <span class="text-[10px] text-slate-500 dark:text-slate-400 mt-1">Chế độ: <strong class="text-slate-700 dark:text-slate-200">Token-based (TPM)</strong></span>
                     </div>
 
-                    <div class="p-4 rounded-xl bg-slate-900/60 border border-white/10 flex flex-col justify-between">
-                        <span class="text-xs text-slate-400 flex items-center justify-between">
+                    <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-white/10 flex flex-col justify-between shadow-2xs">
+                        <span class="text-xs text-slate-600 dark:text-slate-400 font-semibold flex items-center justify-between">
                             <span>Chi Phí Ước Tính</span>
-                            <span class="material-symbols-outlined text-emerald-400 text-base">attach_money</span>
+                            <span class="material-symbols-outlined text-emerald-600 dark:text-emerald-400 text-base">attach_money</span>
                         </span>
                         <div class="mt-2">
-                            <span id="kpiEstimatedCost" class="text-2xl font-bold text-emerald-300 font-mono">$0.0214</span>
+                            <span id="kpiEstimatedCost" class="text-2xl font-bold text-emerald-700 dark:text-emerald-300 font-mono">$0.0214</span>
                         </div>
-                        <span id="kpiCostVnd" class="text-[10px] text-slate-400 mt-1">~ 540 ₫ (Tiết kiệm 92%)</span>
+                        <span id="kpiCostVnd" class="text-[10px] text-slate-500 dark:text-slate-400 mt-1">~ 540 ₫ (Tiết kiệm 92%)</span>
                     </div>
 
-                    <div class="p-4 rounded-xl bg-slate-900/60 border border-white/10 flex flex-col justify-between">
-                        <span class="text-xs text-slate-400 flex items-center justify-between">
+                    <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-white/10 flex flex-col justify-between shadow-2xs">
+                        <span class="text-xs text-slate-600 dark:text-slate-400 font-semibold flex items-center justify-between">
                             <span>Dung Lượng TPM Budget</span>
-                            <span class="material-symbols-outlined text-amber-400 text-base">speed</span>
+                            <span class="material-symbols-outlined text-amber-600 dark:text-amber-400 text-base">speed</span>
                         </span>
                         <div class="mt-2">
-                            <span class="text-2xl font-bold text-amber-300 font-mono">4,000,000</span>
-                            <span class="text-[10px] text-slate-400 ml-1">TPM</span>
+                            <span class="text-2xl font-bold text-amber-700 dark:text-amber-300 font-mono">4,000,000</span>
+                            <span class="text-[10px] text-slate-500 dark:text-slate-400 ml-1">TPM</span>
                         </div>
-                        <span class="text-[10px] text-emerald-400 mt-1">✓ Không giới hạn RPD</span>
+                        <span class="text-[10px] text-emerald-700 dark:text-emerald-400 font-semibold mt-1">✓ Không giới hạn RPD</span>
                     </div>
 
-                    <div class="p-4 rounded-xl bg-slate-900/60 border border-white/10 flex flex-col justify-between">
-                        <span class="text-xs text-slate-400 flex items-center justify-between">
+                    <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-white/10 flex flex-col justify-between shadow-2xs">
+                        <span class="text-xs text-slate-600 dark:text-slate-400 font-semibold flex items-center justify-between">
                             <span>Độ Trễ Phản Hồi AI</span>
-                            <span class="material-symbols-outlined text-purple-400 text-base">timer</span>
+                            <span class="material-symbols-outlined text-purple-600 dark:text-purple-400 text-base">timer</span>
                         </span>
                         <div class="mt-2">
-                            <span id="kpiAvgLatency" class="text-2xl font-bold text-purple-300 font-mono">1.24s</span>
+                            <span id="kpiAvgLatency" class="text-2xl font-bold text-purple-800 dark:text-purple-300 font-mono">1.24s</span>
                         </div>
-                        <span class="text-[10px] text-slate-400 mt-1">Gemini 3.5 Lite / 3.6 Flash</span>
+                        <span class="text-[10px] text-slate-500 dark:text-slate-400 mt-1">Gemini 3.5 Lite / 3.6 Flash</span>
                     </div>
                 </div>
 
                 <!-- Agent Token Breakdown -->
-                <div class="p-5 rounded-2xl bg-slate-900/60 border border-white/10 space-y-4">
-                    <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                <div class="p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-white/10 space-y-4 shadow-2xs">
+                    <div class="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-3">
                         <h3 class="text-sm font-bold text-white flex items-center gap-2">
                             <span class="material-symbols-outlined text-cyan-400 text-lg">smart_toy</span>
                             <span>Phân Bổ Độ Tiêu Hao Token Theo Từng Agent</span>

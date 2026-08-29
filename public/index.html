@@ -2,6 +2,23 @@
 <html class="dark" lang="vi">
 
 <head>
+    <script>
+        // Anti-FOUC immediate theme applicator
+        (function() {
+            try {
+                const savedTheme = localStorage.getItem('theme') || 'dark';
+                if (savedTheme === 'light') {
+                    document.documentElement.classList.remove('dark');
+                    document.documentElement.classList.add('light');
+                } else {
+                    document.documentElement.classList.remove('light');
+                    document.documentElement.classList.add('dark');
+                }
+            } catch (e) {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
     <script src="/js/authGuard.js"></script>
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
@@ -50,13 +67,32 @@
         }
     </script>
     <style>
-        /* Fix Input & Textarea Visibility in Dark Mode */
-        input, textarea, select {
+        /* ==================== THEME VARIABLES & GLOBAL STYLES ==================== */
+        
+        /* Dark Mode Default Inputs */
+        .dark input, .dark textarea, .dark select {
             color: #ffffff !important;
         }
 
-        input::placeholder, textarea::placeholder {
+        .dark input::placeholder, .dark textarea::placeholder {
             color: rgba(204, 195, 215, 0.6) !important;
+        }
+
+        /* Light Mode Inputs */
+        html:not(.dark) input, html:not(.dark) textarea, html:not(.dark) select,
+        html.light input, html.light textarea, html.light select {
+            color: #0f172a !important;
+        }
+
+        html:not(.dark) input::placeholder, html:not(.dark) textarea::placeholder,
+        html.light input::placeholder, html.light textarea::placeholder {
+            color: #64748b !important;
+        }
+
+        /* Global Body Light Mode Typography & Color */
+        html:not(.dark) body,
+        html.light body {
+            color: #0f172a !important;
         }
 
         /* Chat Markdown & Facebook Post Typography Formatting */
@@ -66,6 +102,13 @@
         .chat-markdown p {
             margin-bottom: 0.85rem;
             line-height: 1.7;
+        }
+        .dark .chat-markdown p {
+            color: inherit;
+        }
+        html:not(.dark) .chat-markdown p,
+        html.light .chat-markdown p {
+            color: #1e293b;
         }
         .chat-markdown p:last-child {
             margin-bottom: 0;
@@ -83,20 +126,41 @@
             margin-bottom: 0.35rem;
             line-height: 1.65;
         }
+        .dark .chat-markdown li {
+            color: inherit;
+        }
+        html:not(.dark) .chat-markdown li,
+        html.light .chat-markdown li {
+            color: #1e293b;
+        }
         .chat-markdown h1, .chat-markdown h2, .chat-markdown h3, .chat-markdown h4 {
-            color: #ffffff;
             font-weight: 700;
             margin-top: 0.9rem;
             margin-bottom: 0.5rem;
         }
+        .dark .chat-markdown h1, .dark .chat-markdown h2, .dark .chat-markdown h3, .dark .chat-markdown h4 {
+            color: #ffffff;
+        }
+        html:not(.dark) .chat-markdown h1, html:not(.dark) .chat-markdown h2, html:not(.dark) .chat-markdown h3, html:not(.dark) .chat-markdown h4,
+        html.light .chat-markdown h1, html.light .chat-markdown h2, html.light .chat-markdown h3, html.light .chat-markdown h4 {
+            color: #0f172a;
+        }
         .chat-markdown h1 { font-size: 1.25rem; }
         .chat-markdown h2 { font-size: 1.1rem; }
         .chat-markdown h3 { font-size: 0.95rem; }
-        .chat-markdown blockquote {
+        .dark .chat-markdown blockquote {
             border-left: 3px solid #a855f7;
             padding-left: 0.75rem;
             margin: 0.75rem 0;
             color: #d8b4fe;
+            font-style: italic;
+        }
+        html:not(.dark) .chat-markdown blockquote,
+        html.light .chat-markdown blockquote {
+            border-left: 3px solid #6d28d9;
+            padding-left: 0.75rem;
+            margin: 0.75rem 0;
+            color: #4b5563;
             font-style: italic;
         }
 
@@ -117,18 +181,66 @@
             text-decoration: underline;
         }
 
-        .glass-panel {
-            background: rgba(16, 19, 26, 0.82);
+        /* Glass Panel */
+        .dark .glass-panel {
+            background: rgba(16, 19, 26, 0.85);
             backdrop-filter: blur(14px);
             border: 1px solid rgba(255, 255, 255, 0.12);
         }
 
-        .glow-active {
-            box-shadow: 0 0 20px rgba(211, 187, 255, 0.4);
+        html:not(.dark) .glass-panel,
+        html.light .glass-panel {
+            background: rgba(255, 255, 255, 0.90);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(0, 0, 0, 0.10);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
         }
 
-        .text-glow {
+        .dark .glow-active {
+            box-shadow: 0 0 20px rgba(211, 187, 255, 0.4);
+        }
+        html:not(.dark) .glow-active, html.light .glow-active {
+            box-shadow: 0 0 15px rgba(109, 40, 217, 0.25);
+        }
+
+        .dark .text-glow {
             text-shadow: 0 0 8px rgba(211, 187, 255, 0.6);
+        }
+        html:not(.dark) .text-glow, html.light .text-glow {
+            text-shadow: none;
+        }
+
+        /* High-Contrast Light Mode Brand and Utility Tokens */
+        html:not(.dark) .text-primary,
+        html.light .text-primary {
+            color: #6d28d9 !important;
+        }
+
+        html:not(.dark) .bg-primary\/20,
+        html.light .bg-primary\/20 {
+            background-color: rgba(109, 40, 217, 0.12) !important;
+        }
+
+        html:not(.dark) .border-primary\/30,
+        html.light .border-primary\/30,
+        html:not(.dark) .border-primary\/40,
+        html.light .border-primary\/40 {
+            border-color: rgba(109, 40, 217, 0.35) !important;
+        }
+
+        html:not(.dark) .text-on-surface,
+        html.light .text-on-surface {
+            color: #0f172a !important;
+        }
+
+        html:not(.dark) .text-on-surface-variant,
+        html.light .text-on-surface-variant {
+            color: #475569 !important;
+        }
+
+        html:not(.dark) .bg-surface-container-high,
+        html.light .bg-surface-container-high {
+            background-color: #f1f5f9 !important;
         }
 
         .animate-fadeIn {
@@ -147,9 +259,17 @@
             }
         }
 
-        .bg-stars {
+        /* Canvas Background */
+        .dark .bg-stars {
             background-color: #181818 !important;
             background-image: none !important;
+        }
+
+        html:not(.dark) .bg-stars,
+        html.light .bg-stars {
+            background-color: #f8fafc !important;
+            background-image: radial-gradient(#e2e8f0 1px, transparent 1px) !important;
+            background-size: 24px 24px !important;
         }
 
         /* Authentic Obsidian Node Styling */
@@ -158,7 +278,7 @@
             transition: r 0.15s ease, fill 0.15s ease, stroke 0.15s ease;
         }
 
-        .node-text {
+        .dark .node-text {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'JetBrains Mono', sans-serif;
             font-size: 11px;
             font-weight: 500;
@@ -172,21 +292,47 @@
             transition: opacity 0.2s ease, fill 0.2s ease;
         }
 
+        html:not(.dark) .node-text,
+        html.light .node-text {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'JetBrains Mono', sans-serif;
+            font-size: 11px;
+            font-weight: 600;
+            pointer-events: none;
+            fill: #0f172a;
+            stroke: #f8fafc;
+            stroke-width: 2.5px;
+            stroke-linejoin: round;
+            stroke-linecap: round;
+            paint-order: stroke fill;
+            transition: opacity 0.2s ease, fill 0.2s ease;
+        }
+
         .graph-link {
             transition: stroke-opacity 0.2s ease, stroke-width 0.2s ease, stroke 0.2s ease;
-        }/* Custom Obsidian Scrollbar */
+        }
+
+        /* Custom Obsidian Scrollbar */
         .custom-obsidian-scrollbar::-webkit-scrollbar {
-            width: 4px;
+            width: 5px;
         }
         .custom-obsidian-scrollbar::-webkit-scrollbar-track {
             background: transparent;
         }
-        .custom-obsidian-scrollbar::-webkit-scrollbar-thumb {
+        .dark .custom-obsidian-scrollbar::-webkit-scrollbar-thumb {
             background: rgba(255, 255, 255, 0.15);
             border-radius: 4px;
         }
-        .custom-obsidian-scrollbar::-webkit-scrollbar-thumb:hover {
+        .dark .custom-obsidian-scrollbar::-webkit-scrollbar-thumb:hover {
             background: rgba(211, 187, 255, 0.4);
+        }
+        html:not(.dark) .custom-obsidian-scrollbar::-webkit-scrollbar-thumb,
+        html.light .custom-obsidian-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+        }
+        html:not(.dark) .custom-obsidian-scrollbar::-webkit-scrollbar-thumb:hover,
+        html.light .custom-obsidian-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(109, 40, 217, 0.4);
         }
 
         .animate-spin-slow {
@@ -199,13 +345,20 @@
 
         /* Enhanced Markdown Reader Typography & Highlighting */
         .markdown-body {
-            color: #f8fafc !important;
             font-size: 0.95rem;
             line-height: 1.75;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         }
 
-        .markdown-body h1 {
+        .dark .markdown-body {
+            color: #f8fafc !important;
+        }
+        html:not(.dark) .markdown-body,
+        html.light .markdown-body {
+            color: #0f172a !important;
+        }
+
+        .dark .markdown-body h1 {
             font-size: 1.75rem;
             font-weight: 800;
             color: #d3bbff;
@@ -216,8 +369,19 @@
             padding-bottom: 0.5rem;
             letter-spacing: -0.01em;
         }
+        html:not(.dark) .markdown-body h1,
+        html.light .markdown-body h1 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: #6d28d9;
+            margin-top: 1.25rem;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid rgba(109, 40, 217, 0.25);
+            padding-bottom: 0.5rem;
+            letter-spacing: -0.01em;
+        }
 
-        .markdown-body h2 {
+        .dark .markdown-body h2 {
             font-size: 1.4rem;
             font-weight: 700;
             color: #5de6ff;
@@ -227,8 +391,18 @@
             border-bottom: 1px solid rgba(93, 230, 255, 0.15);
             padding-bottom: 0.35rem;
         }
+        html:not(.dark) .markdown-body h2,
+        html.light .markdown-body h2 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #0284c7;
+            margin-top: 1.25rem;
+            margin-bottom: 0.75rem;
+            border-bottom: 1px solid rgba(2, 132, 199, 0.2);
+            padding-bottom: 0.35rem;
+        }
 
-        .markdown-body h3 {
+        .dark .markdown-body h3 {
             font-size: 1.2rem;
             font-weight: 700;
             color: #34d399;
@@ -236,33 +410,64 @@
             margin-top: 1rem;
             margin-bottom: 0.5rem;
         }
+        html:not(.dark) .markdown-body h3,
+        html.light .markdown-body h3 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #059669;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+        }
 
-        .markdown-body h4,
-        .markdown-body h5,
-        .markdown-body h6 {
+        .dark .markdown-body h4,
+        .dark .markdown-body h5,
+        .dark .markdown-body h6 {
             font-weight: 600;
             color: #fbbf24;
             margin-top: 0.75rem;
             margin-bottom: 0.5rem;
         }
+        html:not(.dark) .markdown-body h4, html:not(.dark) .markdown-body h5, html:not(.dark) .markdown-body h6,
+        html.light .markdown-body h4, html.light .markdown-body h5, html.light .markdown-body h6 {
+            font-weight: 600;
+            color: #d97706;
+            margin-top: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
 
-        .markdown-body p {
+        .dark .markdown-body p {
             margin-bottom: 1rem;
             color: #ffffff !important;
             font-weight: 450;
             line-height: 1.75;
         }
+        html:not(.dark) .markdown-body p,
+        html.light .markdown-body p {
+            margin-bottom: 1rem;
+            color: #1e293b !important;
+            font-weight: 450;
+            line-height: 1.75;
+        }
 
-        .markdown-body strong,
-        .markdown-body b {
+        .dark .markdown-body strong,
+        .dark .markdown-body b {
             color: #fbbf24;
             font-weight: 700;
             text-shadow: 0 0 5px rgba(251, 191, 36, 0.3);
         }
+        html:not(.dark) .markdown-body strong, html:not(.dark) .markdown-body b,
+        html.light .markdown-body strong, html.light .markdown-body b {
+            color: #b45309;
+            font-weight: 700;
+        }
 
-        .markdown-body em,
-        .markdown-body i {
+        .dark .markdown-body em, .dark .markdown-body i {
             color: #e2e8f0;
+            font-style: italic;
+        }
+        html:not(.dark) .markdown-body em, html:not(.dark) .markdown-body i,
+        html.light .markdown-body em, html.light .markdown-body i {
+            color: #475569;
             font-style: italic;
         }
 
@@ -278,13 +483,19 @@
             margin-bottom: 1rem;
         }
 
-        .markdown-body li {
+        .dark .markdown-body li {
             margin-bottom: 0.4rem;
             color: #ffffff !important;
             font-weight: 500;
         }
+        html:not(.dark) .markdown-body li,
+        html.light .markdown-body li {
+            margin-bottom: 0.4rem;
+            color: #1e293b !important;
+            font-weight: 500;
+        }
 
-        .markdown-body blockquote {
+        .dark .markdown-body blockquote {
             border-left: 4px solid #5de6ff;
             background: rgba(93, 230, 255, 0.1);
             padding: 0.75rem 1.25rem;
@@ -293,8 +504,18 @@
             margin-bottom: 1rem;
             font-style: italic;
         }
+        html:not(.dark) .markdown-body blockquote,
+        html.light .markdown-body blockquote {
+            border-left: 4px solid #0284c7;
+            background: rgba(2, 132, 199, 0.08);
+            padding: 0.75rem 1.25rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            color: #334155;
+            margin-bottom: 1rem;
+            font-style: italic;
+        }
 
-        .markdown-body code {
+        .dark .markdown-body code {
             background: rgba(109, 40, 217, 0.4);
             color: #a7f3d0;
             border: 1px solid rgba(167, 243, 208, 0.35);
@@ -304,8 +525,19 @@
             font-size: 0.85em;
             font-weight: 600;
         }
+        html:not(.dark) .markdown-body code,
+        html.light .markdown-body code {
+            background: rgba(109, 40, 217, 0.1);
+            color: #6d28d9;
+            border: 1px solid rgba(109, 40, 217, 0.25);
+            padding: 0.2rem 0.5rem;
+            border-radius: 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
 
-        .markdown-body pre {
+        .dark .markdown-body pre {
             background: #11141c;
             border: 1px solid rgba(255, 255, 255, 0.18);
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
@@ -315,31 +547,118 @@
             font-family: 'JetBrains Mono', monospace;
             margin-bottom: 1rem;
         }
+        html:not(.dark) .markdown-body pre,
+        html.light .markdown-body pre {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            padding: 1rem;
+            border-radius: 12px;
+            overflow-x: auto;
+            font-family: 'JetBrains Mono', monospace;
+            margin-bottom: 1rem;
+        }
 
-        .markdown-body pre code {
+        .dark .markdown-body pre code {
             background: transparent !important;
             border: none !important;
             padding: 0 !important;
             color: #f1f5f9;
         }
+        html:not(.dark) .markdown-body pre code,
+        html.light .markdown-body pre code {
+            background: transparent !important;
+            border: none !important;
+            padding: 0 !important;
+            color: #0f172a;
+        }
 
-        .markdown-body a {
+        .dark .markdown-body a {
             color: #5de6ff;
             font-weight: 600;
             text-decoration: underline;
             text-underline-offset: 3px;
             transition: color 0.2s;
         }
-
-        .markdown-body a:hover {
+        .dark .markdown-body a:hover {
             color: #99f6e4;
         }
+        html:not(.dark) .markdown-body a,
+        html.light .markdown-body a {
+            color: #0284c7;
+            font-weight: 600;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+            transition: color 0.2s;
+        }
+        html:not(.dark) .markdown-body a:hover,
+        html.light .markdown-body a:hover {
+            color: #0369a1;
+        }
 
-        .markdown-body hr {
+        .dark .markdown-body hr {
             border: 0;
             height: 1px;
             background: linear-gradient(to right, transparent, rgba(211, 187, 255, 0.4), transparent);
             margin: 1.5rem 0;
+        }
+        html:not(.dark) .markdown-body hr,
+        html.light .markdown-body hr {
+            border: 0;
+            height: 1px;
+            background: linear-gradient(to right, transparent, rgba(109, 40, 217, 0.3), transparent);
+            margin: 1.5rem 0;
+        }
+
+        /* Light Mode Specific Overrides for Note Drawer & Cards */
+        html:not(.dark) #noteDrawer,
+        html.light #noteDrawer {
+            background: rgba(255, 255, 255, 0.96) !important;
+            border-left: 1px solid rgba(0, 0, 0, 0.12) !important;
+            color: #0f172a !important;
+        }
+
+        html:not(.dark) #noteDrawer > div:first-child,
+        html.light #noteDrawer > div:first-child {
+            background: #f8fafc !important;
+            border-bottom: 1px solid #e2e8f0 !important;
+        }
+
+        html:not(.dark) #noteTokenStatsBar,
+        html.light #noteTokenStatsBar {
+            background: #ffffff !important;
+            border: 1px solid #e2e8f0 !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+
+        html:not(.dark) #noteTokenStatsBar .bg-surface-container-high\/60,
+        html.light #noteTokenStatsBar .bg-surface-container-high\/60 {
+            background: #f8fafc !important;
+            border: 1px solid #e2e8f0 !important;
+        }
+
+        html:not(.dark) #obsidianToolbar,
+        html.light #obsidianToolbar {
+            background: #f1f5f9 !important;
+            border: 1px solid #e2e8f0 !important;
+        }
+
+        html:not(.dark) #obsidianToolbar button,
+        html.light #obsidianToolbar button {
+            background: #ffffff !important;
+            color: #334155 !important;
+            border: 1px solid #cbd5e1 !important;
+        }
+        html:not(.dark) #obsidianToolbar button:hover,
+        html.light #obsidianToolbar button:hover {
+            background: #e2e8f0 !important;
+        }
+
+        html:not(.dark) #noteContentTextarea,
+        html.light #noteContentTextarea {
+            background: #ffffff !important;
+            color: #0f172a !important;
+            border: 2px solid rgba(109, 40, 217, 0.3) !important;
         }
     </style>
 </head>
@@ -360,19 +679,19 @@
 
     <!-- Drawer / Modal: Markdown Reader & Editor -->
     <div id="noteDrawer"
-        class="fixed inset-y-0 right-0 z-50 w-full max-w-2xl glass-panel border-l border-white/10 shadow-2xl flex flex-col transform translate-x-full transition-transform duration-300">
+        class="fixed inset-y-0 right-0 z-50 w-full max-w-2xl glass-panel border-l border-slate-300 dark:border-white/10 shadow-2xl flex flex-col transform translate-x-full transition-transform duration-300">
         <!-- Drawer Header -->
-        <div class="h-16 px-6 border-b border-white/10 flex items-center justify-between bg-surface-container-low/80">
+        <div class="h-16 px-6 border-b border-slate-200 dark:border-white/10 flex items-center justify-between bg-slate-100/90 dark:bg-surface-container-low/80">
             <div class="flex items-center gap-2 overflow-hidden">
-                <span class="material-symbols-outlined text-secondary text-xl">description</span>
+                <span class="material-symbols-outlined text-purple-700 dark:text-secondary text-xl">description</span>
                 <div>
-                    <h2 id="drawerTitle" class="font-headline-md text-sm font-semibold text-on-surface truncate">
+                    <h2 id="drawerTitle" class="font-headline-md text-sm font-bold text-slate-900 dark:text-on-surface truncate">
                         Path/To/Note.md</h2>
                     <div class="flex items-center gap-2">
-                        <span id="drawerShaBadge" class="text-[10px] font-label-caps text-on-surface-variant/70">SHA:
+                        <span id="drawerShaBadge" class="text-[10px] font-label-caps text-slate-600 dark:text-on-surface-variant/70 font-semibold">SHA:
                             synced</span>
                         <span id="headerDrawerTokenBadge"
-                            class="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20 flex items-center gap-1">
+                            class="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-100 dark:bg-amber-500/10 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-500/20 flex items-center gap-1 font-semibold">
                             <span class="material-symbols-outlined text-[11px]">token</span>
                             <span id="drawerHeaderTokens">0 tok</span>
                         </span>
@@ -382,31 +701,31 @@
 
             <div class="flex items-center gap-2">
                 <!-- Obsidian Mode Switcher -->
-                <div class="flex items-center bg-white/5 p-1 rounded-lg border border-white/10">
+                <div class="flex items-center bg-slate-200/80 dark:bg-white/5 p-1 rounded-lg border border-slate-300 dark:border-white/10">
                     <button id="btnTabRead" title="Chế độ đọc (Double click để sửa)"
-                        class="px-2.5 py-1 text-xs font-semibold rounded-md bg-primary/20 text-primary border border-primary/30 flex items-center gap-1">
+                        class="px-2.5 py-1 text-xs font-bold rounded-md bg-purple-100 dark:bg-primary/20 text-purple-900 dark:text-primary border border-purple-300 dark:border-primary/30 flex items-center gap-1">
                         <span class="material-symbols-outlined text-xs">visibility</span> Reader
                     </button>
                     <button id="btnTabEdit" title="Chế độ sửa Markdown (Ctrl+E)"
-                        class="px-2.5 py-1 text-xs font-semibold rounded-md text-on-surface-variant hover:bg-white/10 flex items-center gap-1">
+                        class="px-2.5 py-1 text-xs font-semibold rounded-md text-slate-700 dark:text-on-surface-variant hover:bg-slate-100 dark:hover:bg-white/10 flex items-center gap-1">
                         <span class="material-symbols-outlined text-xs">edit_note</span> Live Edit
                     </button>
                     <button id="btnTabSplit" title="Chế độ Live Split View"
-                        class="px-2.5 py-1 text-xs font-semibold rounded-md text-on-surface-variant hover:bg-white/10 flex items-center gap-1">
+                        class="px-2.5 py-1 text-xs font-semibold rounded-md text-slate-700 dark:text-on-surface-variant hover:bg-slate-100 dark:hover:bg-white/10 flex items-center gap-1">
                         <span class="material-symbols-outlined text-xs">vertical_split</span> Split View
                     </button>
                 </div>
 
                 <!-- Save Button (Ctrl+S) -->
                 <button id="btnSaveNote" title="Lưu về GitHub (Ctrl+S)"
-                    class="bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1 transition-all ml-2">
+                    class="bg-emerald-600 hover:bg-emerald-700 text-white dark:bg-emerald-500/20 dark:hover:bg-emerald-500/30 dark:text-emerald-300 border border-emerald-600 dark:border-emerald-500/40 px-3.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm ml-2 cursor-pointer">
                     <span class="material-symbols-outlined text-sm">cloud_upload</span>
                     <span>Lưu GitHub (Ctrl+S)</span>
                 </button>
 
                 <!-- Close Button -->
                 <button id="btnCloseDrawer"
-                    class="text-on-surface-variant hover:text-on-surface p-1 rounded-lg hover:bg-white/10 ml-2">
+                    class="text-slate-500 hover:text-slate-800 dark:text-on-surface-variant dark:hover:text-on-surface p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-white/10 ml-1">
                     <span class="material-symbols-outlined text-xl">close</span>
                 </button>
             </div>
@@ -416,57 +735,57 @@
         <div class="flex-1 overflow-y-auto p-6 flex flex-col min-h-0">
             <!-- Token Usage & Cost Consumption Banner (Phần hiển thị độ tiêu thụ token) -->
             <div id="noteTokenStatsBar"
-                class="mb-3.5 p-3.5 bg-surface-container-low/95 rounded-xl border border-white/10 hover:border-amber-500/30 transition-all shadow-lg flex flex-col gap-2.5">
-                <div class="flex items-center justify-between border-b border-white/10 pb-2">
+                class="mb-3.5 p-3.5 bg-slate-50 dark:bg-surface-container-low/95 rounded-xl border border-slate-200 dark:border-white/10 hover:border-amber-500/40 transition-all shadow-md flex flex-col gap-2.5">
+                <div class="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-2">
                     <div class="flex items-center gap-2">
-                        <span class="material-symbols-outlined text-amber-400 text-base">token</span>
-                        <span class="font-headline-md text-xs font-semibold text-amber-300 tracking-wide">Độ tiêu thụ
+                        <span class="material-symbols-outlined text-amber-600 dark:text-amber-400 text-base">token</span>
+                        <span class="font-headline-md text-xs font-bold text-amber-800 dark:text-amber-300 tracking-wide">Độ tiêu thụ
                             Token & Chi phí ghi chú</span>
                     </div>
                     <span id="tokenModelBadge"
-                        class="text-[10px] font-label-caps px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20 flex items-center gap-1">
-                        <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span> Gemini 3.5 Flash (~4
+                        class="text-[10px] font-label-caps px-2 py-0.5 rounded bg-amber-100 dark:bg-amber-500/10 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-500/20 flex items-center gap-1 font-semibold">
+                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span> Gemini 3.5 Flash (~4
                         chars/token)
                     </span>
                 </div>
 
                 <div class="grid grid-cols-4 gap-2 text-xs">
                     <!-- Note Tokens -->
-                    <div class="bg-surface-container-high/60 p-2 rounded-lg border border-white/5 flex flex-col">
-                        <span class="text-[10px] text-on-surface-variant/70 font-medium">Token Ghi chú</span>
+                    <div class="bg-white dark:bg-surface-container-high/60 p-2.5 rounded-xl border border-slate-200 dark:border-white/5 flex flex-col shadow-2xs">
+                        <span class="text-[10px] text-slate-600 dark:text-on-surface-variant/70 font-semibold">Token Ghi chú</span>
                         <div class="flex items-baseline gap-1 mt-0.5">
-                            <span id="statNoteTokens" class="font-mono text-sm font-bold text-amber-300">0</span>
-                            <span class="text-[9px] text-amber-400/80">tok</span>
+                            <span id="statNoteTokens" class="font-mono text-sm font-bold text-amber-700 dark:text-amber-300">0</span>
+                            <span class="text-[9px] text-amber-800 dark:text-amber-400/80 font-bold">tok</span>
                         </div>
                     </div>
 
                     <!-- Estimated Cost -->
-                    <div class="bg-surface-container-high/60 p-2 rounded-lg border border-white/5 flex flex-col">
-                        <span class="text-[10px] text-on-surface-variant/70 font-medium">Chi phí AI ước tính</span>
+                    <div class="bg-white dark:bg-surface-container-high/60 p-2.5 rounded-xl border border-slate-200 dark:border-white/5 flex flex-col shadow-2xs">
+                        <span class="text-[10px] text-slate-600 dark:text-on-surface-variant/70 font-semibold">Chi phí AI ước tính</span>
                         <div class="flex items-baseline gap-1 mt-0.5">
                             <span id="statEstimatedCost"
-                                class="font-mono text-xs font-bold text-emerald-400">$0.000000</span>
-                            <span id="statCostVnd" class="text-[9px] text-emerald-400/80 font-mono">(~0 VNĐ)</span>
+                                class="font-mono text-xs font-bold text-emerald-700 dark:text-emerald-400">$0.000000</span>
+                            <span id="statCostVnd" class="text-[9px] text-emerald-800 dark:text-emerald-400/80 font-mono font-medium">(~0 VNĐ)</span>
                         </div>
                     </div>
 
                     <!-- Words & Chars -->
-                    <div class="bg-surface-container-high/60 p-2 rounded-lg border border-white/5 flex flex-col">
-                        <span class="text-[10px] text-on-surface-variant/70 font-medium">Ký tự / Số từ</span>
+                    <div class="bg-white dark:bg-surface-container-high/60 p-2.5 rounded-xl border border-slate-200 dark:border-white/5 flex flex-col shadow-2xs">
+                        <span class="text-[10px] text-slate-600 dark:text-on-surface-variant/70 font-semibold">Ký tự / Số từ</span>
                         <div class="flex items-baseline gap-1 mt-0.5">
-                            <span id="statCharCount" class="font-mono text-xs font-bold text-secondary">0</span>
-                            <span class="text-[9px] text-on-surface-variant/70">char</span>
-                            <span id="statWordCount" class="text-[9px] font-mono text-on-surface-variant/80 ml-0.5">(0
+                            <span id="statCharCount" class="font-mono text-xs font-bold text-cyan-800 dark:text-secondary">0</span>
+                            <span class="text-[9px] text-slate-500 dark:text-on-surface-variant/70 font-medium">char</span>
+                            <span id="statWordCount" class="text-[9px] font-mono text-slate-600 dark:text-on-surface-variant/80 ml-0.5">(0
                                 từ)</span>
                         </div>
                     </div>
 
                     <!-- System Total Tokens -->
-                    <div class="bg-surface-container-high/60 p-2 rounded-lg border border-white/5 flex flex-col">
-                        <span class="text-[10px] text-on-surface-variant/70 font-medium">Tổng hệ thống</span>
+                    <div class="bg-white dark:bg-surface-container-high/60 p-2.5 rounded-xl border border-slate-200 dark:border-white/5 flex flex-col shadow-2xs">
+                        <span class="text-[10px] text-slate-600 dark:text-on-surface-variant/70 font-semibold">Tổng hệ thống</span>
                         <div class="flex items-baseline gap-1 mt-0.5">
-                            <span id="statSystemTokens" class="font-mono text-xs font-bold text-primary">0</span>
-                            <span class="text-[9px] text-primary/80">tok</span>
+                            <span id="statSystemTokens" class="font-mono text-xs font-bold text-purple-800 dark:text-primary">0</span>
+                            <span class="text-[9px] text-purple-700 dark:text-primary/80 font-bold">tok</span>
                         </div>
                     </div>
                 </div>
@@ -474,12 +793,12 @@
 
             <!-- Obsidian Formatting Toolbar -->
             <div id="obsidianToolbar"
-                class="flex items-center gap-1.5 p-2 bg-surface-container-high/90 rounded-xl border border-white/10 mb-3 flex-wrap text-xs">
+                class="flex items-center gap-1.5 p-2 bg-slate-100 dark:bg-surface-container-high/90 rounded-xl border border-slate-200 dark:border-white/10 mb-3 flex-wrap text-xs">
                 <button onclick="window.insertFormatting('**', '**')"
-                    class="px-2 py-1 bg-white/5 hover:bg-white/15 rounded text-white font-bold"
+                    class="px-2 py-1 bg-white hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/15 rounded text-slate-800 dark:text-white font-bold border border-slate-300 dark:border-transparent"
                     title="In đậm">B</button>
                 <button onclick="window.insertFormatting('*', '*')"
-                    class="px-2 py-1 bg-white/5 hover:bg-white/15 rounded text-white italic"
+                    class="px-2 py-1 bg-white hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/15 rounded text-slate-800 dark:text-white italic border border-slate-300 dark:border-transparent"
                     title="In nghiêng">I</button>
                 <button onclick="window.insertFormatting('# ', '')"
                     class="px-2 py-1 bg-white/5 hover:bg-white/15 rounded text-primary font-bold"

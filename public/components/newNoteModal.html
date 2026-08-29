@@ -1,4 +1,29 @@
 <!-- Modal Component: Create New Note -->
+<style>
+    html:not(.dark) #newNoteModal > div,
+    html.light #newNoteModal > div {
+        background: #ffffff !important;
+        color: #0f172a !important;
+        border-color: rgba(109, 40, 217, 0.25) !important;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12) !important;
+    }
+    html:not(.dark) #newNoteModal h3,
+    html.light #newNoteModal h3 {
+        color: #6d28d9 !important;
+    }
+    html:not(.dark) #newNoteModal label,
+    html.light #newNoteModal label {
+        color: #334155 !important;
+    }
+    html:not(.dark) #newNotePathInput,
+    html:not(.dark) #newNoteContentInput,
+    html.light #newNotePathInput,
+    html.light #newNoteContentInput {
+        background-color: #f8fafc !important;
+        color: #0f172a !important;
+        border-color: #cbd5e1 !important;
+    }
+</style>
 <div id="newNoteModal"
     class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden items-center justify-center p-4">
     <div class="glass-panel w-full max-w-lg rounded-2xl border border-white/15 p-6 shadow-2xl flex flex-col gap-4">
