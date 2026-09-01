@@ -54,53 +54,80 @@ npm test
 
 ## Cấu hình API Key AI
 
-Hệ thống hỗ trợ nhiều nhà cung cấp AI khác nhau. Bạn có thể cấu hình API Key thông qua file `.env` ở thư mục gốc của dự án.
+Hệ thống quản lý toàn bộ API Key thông qua **file cấu hình môi trường `.env`** đặt tại **thư mục gốc dự án** (`ai-brain/.env`). Khi ứng dụng khởi chạy, file [src/config/env.js](Karik-ai-brain/src/config/env.js) sẽ tự động nạp các API Key từ file này.
 
-### 1. Tạo file cấu hình `.env`
+### 1. Nơi điền API Key (File & Thư mục)
 
-Sao chép từ file mẫu `.env.example` hoặc tạo mới file `.env`:
+- **Đường dẫn file**: `ai-brain/.env` (Nằm ngay tại thư mục gốc của dự án, cùng cấp với `package.json` và `server.js`).
+- **Cách tạo file**: Nếu chưa có file `.env`, hãy tạo mới hoặc sao chép từ mẫu `.env.example`:
 
 ```bash
-# Trên Linux/macOS
+# Trên Linux / macOS
 cp .env.example .env
 
 # Trên Windows PowerShell
 copy .env.example .env
 ```
 
-### 2. Danh sách biến môi trường AI API Keys
+---
 
-Mở file `.env` và điền các API Key tương ứng với nhà cung cấp bạn muốn sử dụng:
+### 2. Vị trí cụ thể từng mục trong file `.env`
 
-| Biến môi trường | Nhà cung cấp AI | Mô tả & Nơi lấy API Key |
+Mở file `.env` bằng trình biên soạn mã (VS Code / Antigravity IDE / Notepad), bạn sẽ thấy các mục được phân chia rõ ràng để điền API Key:
+
+#### 📍 Mục 1: `# AI Providers API Keys` (Cấu hình các AI Model chính)
+Điền API Key của bạn ngay sau dấu `=` cho từng biến:
+```env
+# AI Providers API Keys
+GEMINI_API_KEY=your_gemini_api_key_here
+GEMINI_IMAGE_API_KEY=your_gemini_image_api_key_here
+OPENAI_API_KEY=your_openai_api_key_here
+GROQ_API_KEY=your_groq_api_key_here
+CLAUDE_API_KEY=your_claude_api_key_here
+OPENROUTER_API_KEY=your_openrouter_api_key_here
+```
+
+#### 📍 Mục 2: `# Cloudflare Workers AI Config` (Cấu hình tạo ảnh Flux 2)
+```env
+# Cloudflare Workers AI Config
+CLOUDFLARE_ACCOUNT_ID=your_cloudflare_account_id_here
+CLOUDFLARE_API_TOKEN=your_cloudflare_api_token_here
+CLOUDFLARE_IMAGE_MODEL=@cf/black-forest-labs/flux-2-klein-9b
+```
+
+#### 📍 Mục 3: `# TokenRouter Config (DeepSeek / Reasoning)` (Model suy luận)
+```env
+# TokenRouter Config (DeepSeek / Reasoning)
+TOKENROUTER_API_KEY=your_tokenrouter_api_key_here
+TOKENROUTER_BASE_URL=https://api.tokenrouter.com/v1
+```
+
+---
+
+### 3. Bảng chi tiết biến môi trường & Nơi lấy API Key
+
+| Biến môi trường trong `.env` | Tên nhà cung cấp AI | Nơi đăng ký & Lấy API Key |
 |---|---|---|
-| `GEMINI_API_KEY` | Google Gemini | API Key chính cho Gemini Chat & Embeddings. Lấy tại: [Google AI Studio](https://aistudio.google.com/) |
-| `GEMINI_IMAGE_API_KEY` | Gemini Image | API Key dùng riêng cho sinh ảnh với Gemini (Tùy chọn, mặc định dùng `GEMINI_API_KEY`) |
-| `OPENAI_API_KEY` | OpenAI | Dùng cho GPT-4o, GPT-3.5 và coding execution. Lấy tại: [OpenAI Platform](https://platform.openai.com/) |
-| `CLAUDE_API_KEY` | Anthropic Claude | Dùng cho Claude 3.5 Sonnet / Opus. Lấy tại: [Anthropic Console](https://console.anthropic.com/) |
-| `GROQ_API_KEY` | Groq | Phân luồng cho suy luận siêu tốc (Llama 3, Mixtral). Lấy tại: [Groq Cloud Console](https://console.groq.com/) |
-| `OPENROUTER_API_KEY` | OpenRouter | Truy cập hàng trăm model open-source và proprietary. Lấy tại: [OpenRouter](https://openrouter.ai/) |
-| `TOKENROUTER_API_KEY` | TokenRouter | Hỗ trợ các dòng model suy luận chuyên sâu (DeepSeek/Reasoning). Lấy tại: [TokenRouter](https://tokenrouter.ai/) |
-| `CLOUDFLARE_API_TOKEN` | Cloudflare AI | API Token sinh ảnh Flux 2 qua Cloudflare Workers AI. Lấy tại: [Cloudflare Dashboard](https://dash.cloudflare.com/) |
-| `CLOUDFLARE_ACCOUNT_ID` | Cloudflare AI | Account ID tài khoản Cloudflare |
+| `GEMINI_API_KEY` | Google Gemini | [Google AI Studio](https://aistudio.google.com/) |
+| `GEMINI_IMAGE_API_KEY` | Gemini Image | [Google AI Studio](https://aistudio.google.com/) (Tùy chọn, mặc định dùng `GEMINI_API_KEY`) |
+| `OPENAI_API_KEY` | OpenAI (ChatGPT) | [OpenAI Platform](https://platform.openai.com/api-keys) |
+| `CLAUDE_API_KEY` | Anthropic Claude | [Anthropic Console](https://console.anthropic.com/) |
+| `GROQ_API_KEY` | Groq (Llama 3 / Mixtral) | [Groq Cloud Console](https://console.groq.com/keys) |
+| `OPENROUTER_API_KEY` | OpenRouter | [OpenRouter](https://openrouter.ai/keys) |
+| `TOKENROUTER_API_KEY` | TokenRouter (DeepSeek) | [TokenRouter](https://tokenrouter.ai/) |
+| `CLOUDFLARE_API_TOKEN` | Cloudflare Workers AI | [Cloudflare Dashboard](https://dash.cloudflare.com/profile/api-tokens) |
+| `CLOUDFLARE_ACCOUNT_ID` | Cloudflare Account | Lấy tại trang chủ Dashboard Cloudflare |
 
-### 3. Hướng dẫn chi tiết từng bước
+---
 
-1. **Google Gemini (Khuyên dùng)**:
-   - Truy cập [Google AI Studio](https://aistudio.google.com/).
-   - Tạo **API Key** mới và dán vào `GEMINI_API_KEY=your_gemini_key_here`.
-2. **OpenAI / ChatGPT**:
-   - Truy cập [OpenAI API Keys](https://platform.openai.com/api-keys).
-   - Nạp credit và tạo key mới, dán vào `OPENAI_API_KEY=sk-...`.
-3. **Groq (Miễn phí & Siêu nhanh)**:
-   - Truy cập [Groq Cloud](https://console.groq.com/keys).
-   - Tạo key miễn phí và dán vào `GROQ_API_KEY=gsk_...`.
-4. **Anthropic Claude**:
-   - Truy cập [Anthropic Console](https://console.anthropic.com/settings/keys).
-   - Tạo key và dán vào `CLAUDE_API_KEY=sk-ant-...`.
-5. **Cloudflare Workers AI (Flux 2 Image)**:
-   - Tạo **API Token** có quyền read/write Workers AI trong Cloudflare Dashboard.
-   - Điền `CLOUDFLARE_ACCOUNT_ID` và `CLOUDFLARE_API_TOKEN`.
+### 4. Hướng dẫn các bước thực hiện chi tiết
 
-> **Lưu ý**: Bạn không bắt buộc phải điền tất cả các API Key. Hệ thống **AI Multi-Model Router** sẽ tự động nhận biết provider nào có API Key khả dụng để điều hướng yêu cầu tương ứng.
+1. **Mở file `.env`** đặt ở thư mục gốc của dự án.
+2. **Tìm đến nhóm cấu hình tương ứng** (Ví dụ: nhóm `# AI Providers API Keys`).
+3. **Thay thế giá trị mẫu** (ví dụ: `your_gemini_api_key_here`) bằng **API Key thật** thu được từ nhà cung cấp dịch vụ.
+4. **Lưu file `.env`** (`Ctrl + S`).
+5. **Khởi chạy ứng dụng** (`npm run dev`) - Hệ thống sẽ tự động nạp các API Key từ file `.env` qua [src/config/env.js](file:///c:/Users/boomh/OneDrive/Documents/Karik-ai-brain/src/config/env.js).
+
+> 💡 **Lưu ý**: Bạn không cần điền tất cả các API Key. Hệ thống **AI Multi-Model Router** sẽ tự động kiểm tra key nào khả dụng trong file `.env` để phân luồng yêu cầu tới AI provider tương ứng.
+
 
