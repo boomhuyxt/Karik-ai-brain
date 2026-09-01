@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html class="dark" data-bs-theme="dark" lang="vi">
+
+<head>
+    <script>
+        // Anti-FOUC immediate theme applicator
+        (function() {
+            try {
+                const savedTheme = localStorage.getItem('theme') || 'dark';
+                document.documentElement.setAttribute('data-bs-theme', savedTheme);
+                if (savedTheme === 'light') {
+                    document.documentElement.classList.remove('dark');
+                    document.documentElement.classList.add('light');
+                } else {
+                    document.documentElement.classList.remove('light');
+                    document.documentElement.classList.add('dark');
+                }
+            } catch (e) {
+                document.documentElement.setAttribute('data-bs-theme', 'dark');
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>AI Brain Karik - Danh Sách Mô Hình AI</title>
+    <link rel="icon" type="image/png" href="/Logo/logo-removebg.png">
+
+    <!-- Bootstrap 5.3 CSS & Bootstrap Icons CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    
+    <!-- Google Fonts & Material Symbols -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700&family=Plus+Jakarta+Sans:ital,wght@0,500;0,600;0,700;0,800;1,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --font-sans: 'Inter', sans-serif;
+            --font-sora: 'Plus Jakarta Sans', 'Be Vietnam Pro', sans-serif;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: #0c0f17;
+            color: #e2e8f0;
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        [data-bs-theme="light"] body {
+            background-color: #f8fafc !important;
+            color: #1e293b !important;
+        }
+
+        .font-sora { font-family: var(--font-sora); }
+
+        /* Icon Rendering & Alignment Fix */
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined' !important;
+            font-weight: normal;
+            font-style: normal;
+            font-size: 20px;
+            line-height: 1 !important;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
+            -moz-osx-font-smoothing: grayscale;
+            font-feature-settings: 'liga';
+            vertical-align: middle;
+            user-select: none;
+        }
+
+        .bi {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            vertical-align: middle;
+            line-height: 1 !important;
+        }
+
+        .glass-panel {
+            background: rgba(22, 25, 34, 0.82);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid rgba(211, 187, 255, 0.14) !important;
+        }
+        [data-bs-theme="light"] .glass-panel {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid rgba(109, 40, 217, 0.15) !important;
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08);
+        }
+
+        .glass-nav {
+            background: rgba(12, 15, 23, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        [data-bs-theme="light"] .glass-nav {
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+        }
+
+        /* Ambient Glowing Orbs */
+        .orb-purple {
+            position: fixed;
+            top: -10rem;
+            left: -10rem;
+            width: 30rem;
+            height: 30rem;
+            background: rgba(109, 40, 217, 0.25);
+            border-radius: 50%;
+            filter: blur(80px);
+            pointer-events: none;
+            z-index: -10;
+        }
+        .orb-cyan {
+            position: fixed;
+            top: 30%;
+            right: -8rem;
+            width: 28rem;
+            height: 28rem;
+            background: rgba(6, 182, 212, 0.20);
+            border-radius: 50%;
+            filter: blur(80px);
+            pointer-events: none;
+            z-index: -10;
+        }
+
+        /* Category Filter Pills */
+        .filter-pill .btn {
+            color: #94a3b8;
+            font-weight: 600;
+            border-radius: 0.75rem;
+            padding: 0.55rem 1.1rem;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+        .filter-pill .btn.active {
+            background-color: #7c3aed !important;
+            color: #ffffff !important;
+            box-shadow: 0 4px 15px rgba(124, 58, 237, 0.4);
+        }
+
+        /* Model Cards Hover */
+        .model-card-box {
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+        .model-card-box:hover {
+            transform: translateY(-3px);
+            border-color: rgba(168, 85, 247, 0.5) !important;
+        }
+
+        .btn-gradient-purple {
+            background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
+            color: #ffffff;
+            border: none;
+            box-shadow: 0 4px 20px -2px rgba(124, 58, 237, 0.4);
+            transition: all 0.2s ease;
+        }
+        .btn-gradient-purple:hover {
+            background: linear-gradient(135deg, #6d28d9 0%, #4338ca 100%);
+            color: #ffffff;
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Background Orbs -->
+    <div class="orb-purple"></div>
+    <div class="orb-cyan"></div>
+
+    <!-- ==================== TOP NAVIGATION BAR ==================== -->
+    <header class="navbar navbar-expand-lg glass-nav sticky-top py-2 py-sm-3">
+        <div class="container">
+            
+            <a href="/login" class="navbar-brand d-flex align-items-center gap-2 m-0">
+                <div class="rounded-3 bg-purple-950 p-1.5 d-flex align-items-center justify-content-center border border-purple-500-subtle" style="width: 40px; height: 40px;">
+                    <img src="/Logo/logo-removebg.png" alt="AI Brain Logo" style="max-height: 100%; max-width: 100%;">
+                </div>
+                <div class="d-flex flex-column">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="font-sora fw-bold fs-6 text-body tracking-tight">AI Brain Karik</span>
+                        <span class="badge bg-purple-subtle text-purple border border-purple-subtle font-mono d-none d-md-inline" style="font-size: 10px;">Models Matrix</span>
+                    </div>
+                    <span class="text-secondary small d-none d-lg-block" style="font-size: 11px;">Knowledge & Multi-Agent OS</span>
+                </div>
+            </a>
+
+            <button class="navbar-toggler border-0 p-2 text-body" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
+                <i class="bi bi-list fs-2"></i>
+            </button>
+
+            <div class="collapse navbar-collapse mt-3 mt-lg-0 justify-content-between" id="navbarMain">
+                <ul class="navbar-nav mx-auto gap-2">
+                    <li class="nav-item">
+                        <a href="/login" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2 px-3 py-2 rounded-3 fw-semibold text-start">
+                            <i class="bi bi-box-arrow-in-right text-purple fs-6"></i>
+                            <span>Đăng nhập</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/models" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2 px-3 py-2 rounded-3 active fw-semibold text-start">
+                            <i class="bi bi-cpu text-purple fs-6"></i>
+                            <span>Models</span>
+                            <span class="badge bg-purple-subtle text-purple font-mono ms-1">10+</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/docs" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2 px-3 py-2 rounded-3 fw-semibold text-start">
+                            <i class="bi bi-journal-text text-info fs-6"></i>
+                            <span>Docs</span>
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="d-flex align-items-center pt-2 pt-lg-0">
+                    <button id="btnThemeToggle" onclick="toggleTheme()" class="btn btn-sm glass-panel border d-flex align-items-center gap-2 px-3 py-2 rounded-3 fw-semibold text-body w-100 justify-content-center">
+                        <i id="themeIcon" class="bi bi-sun-fill text-warning fs-6"></i>
+                        <span id="themeText" class="font-mono small">Sáng/Tối</span>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </header>
+
+    <!-- ==================== MAIN CONTENT ==================== -->
+    <main class="container py-4 py-md-5 my-auto">
+        
+        <!-- Header Banner -->
+        <div class="glass-panel p-4 p-md-5 rounded-4 mb-4 border shadow-sm">
+            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-4">
+                <div>
+                    <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill bg-purple-subtle border border-purple-subtle text-purple small fw-semibold mb-2">
+                        <i class="bi bi-cpu fs-6"></i>
+                        <span>AI ARCHITECTURE MATRIX</span>
+                    </div>
+                    <h1 class="font-sora fs-2 fw-bold text-body tracking-tight m-0">
+                        Danh Sách Mô Hình AI Dự Án Đã Sử Dụng
+                    </h1>
+                    <p class="text-secondary small mt-2 mb-0" style="max-width: 650px;">
+                        Hệ thống tích hợp đa mô hình từ Google Gemini, OpenAI, Claude, Groq LPU & Cloudflare Workers AI với cơ chế tự động phân nhiệm qua Orchestrator.
+                    </p>
+                </div>
+
+                <div>
+                    <a href="/login" class="btn btn-sm btn-gradient-purple px-4 py-2.5 rounded-3 fw-bold d-inline-flex align-items-center gap-2 text-nowrap">
+                        <i class="bi bi-box-arrow-in-right fs-5"></i>
+                        <span>Đăng Nhập Ngay</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Category Tabs -->
+        <div class="d-flex align-items-center gap-2 filter-pill pb-3 mb-3 overflow-x-auto">
+            <button type="button" onclick="filterModelsCategory('all')" id="filter-btn-all" class="btn btn-sm btn-outline-secondary active d-flex align-items-center gap-2">
+                <i class="bi bi-grid-fill fs-6"></i>
+                <span>Tất cả (10)</span>
+            </button>
+            <button type="button" onclick="filterModelsCategory('agent')" id="filter-btn-agent" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2">
+                <i class="bi bi-diagram-3-fill fs-6"></i>
+                <span>Multi-Agent Karik (4)</span>
+            </button>
+            <button type="button" onclick="filterModelsCategory('llm')" id="filter-btn-llm" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2">
+                <i class="bi bi-cpu-fill fs-6"></i>
+                <span>LLM & Reasoning (4)</span>
+            </button>
+            <button type="button" onclick="filterModelsCategory('vision')" id="filter-btn-vision" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2">
+                <i class="bi bi-image-fill fs-6"></i>
+                <span>Sinh Ảnh & Vision (2)</span>
+            </button>
+        </div>
+
+        <!-- Models Grid -->
+        <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3 g-md-4">
+            
+            <!-- Model 1 -->
+            <div class="col model-card" data-category="agent">
+                <div class="glass-panel p-4 rounded-4 h-100 border model-card-box d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <span class="badge bg-primary-subtle text-primary border font-mono">Google</span>
+                            <span class="badge bg-purple-subtle text-purple border font-semibold">Orchestrator Chính</span>
+                        </div>
+                        <h3 class="font-sora fs-6 fw-bold text-body mb-2">gemini-3.5-flash-lite</h3>
+                        <p class="text-secondary small mb-3 leading-relaxed">
+                            <strong>Vai trò:</strong> AI Karik Orchestrator điều phối đa tác nhân, tiếp nhận câu hỏi của người dùng, phân loại nhiệm vụ và quản lý rủi ro tiến độ.
+                        </p>
+                    </div>
+                    <div class="pt-3 border-top d-flex align-items-center justify-content-between text-secondary font-mono" style="font-size: 11px;">
+                        <span>TPM: 4,000,000</span>
+                        <span class="text-success font-semibold">&lt; 400ms</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Model 2 -->
+            <div class="col model-card" data-category="agent vision">
+                <div class="glass-panel p-4 rounded-4 h-100 border model-card-box d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <span class="badge bg-primary-subtle text-primary border font-mono">Google</span>
+                            <span class="badge bg-danger-subtle text-danger border font-semibold">Agent Studio Ảnh</span>
+                        </div>
+                        <h3 class="font-sora fs-6 fw-bold text-body mb-2">gemini-3.6-flash</h3>
+                        <p class="text-secondary small mb-3 leading-relaxed">
+                            <strong>Vai trò:</strong> Chuyên gia thiết kế và biên tập hình ảnh poster, banner qua AI Studio. Phân tích bố cục, typography và xử lý xóa nền.
+                        </p>
+                    </div>
+                    <div class="pt-3 border-top d-flex align-items-center justify-content-between text-secondary font-mono" style="font-size: 11px;">
+                        <span>Feature: Image Engine</span>
+                        <span>Multi-modal</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Model 3 -->
+            <div class="col model-card" data-category="agent">
+                <div class="glass-panel p-4 rounded-4 h-100 border model-card-box d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <span class="badge bg-primary-subtle text-primary border font-mono">Google</span>
+                            <span class="badge bg-info-subtle text-info border font-semibold">Agent Đăng Bài MXH</span>
+                        </div>
+                        <h3 class="font-sora fs-6 fw-bold text-body mb-2">gemini-3.1-flash-lite</h3>
+                        <p class="text-secondary small mb-3 leading-relaxed">
+                            <strong>Vai trò:</strong> Tự động sáng tạo nội dung Caption, Viral Hook và phân phối đăng bài tự động lên Facebook & TikTok qua API.
+                        </p>
+                    </div>
+                    <div class="pt-3 border-top d-flex align-items-center justify-content-between text-secondary font-mono" style="font-size: 11px;">
+                        <span>API: Facebook & TikTok</span>
+                        <span>Auto Post</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Model 4 -->
+            <div class="col model-card" data-category="agent llm">
+                <div class="glass-panel p-4 rounded-4 h-100 border model-card-box d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <span class="badge bg-primary-subtle text-primary border font-mono">Google</span>
+                            <span class="badge bg-success-subtle text-success border font-semibold">Vector Embeddings</span>
+                        </div>
+                        <h3 class="font-sora fs-6 fw-bold text-body mb-2">text-embedding-004</h3>
+                        <p class="text-secondary small mb-3 leading-relaxed">
+                            <strong>Vai trò:</strong> Chuyển đổi toàn bộ tài liệu Markdown trong kho tri thức Obsidian thành vector 768 chiều cho Supabase pgvector.
+                        </p>
+                    </div>
+                    <div class="pt-3 border-top d-flex align-items-center justify-content-between text-secondary font-mono" style="font-size: 11px;">
+                        <span>DB: Supabase pgvector</span>
+                        <span>768 Dim</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Model 5 -->
+            <div class="col model-card" data-category="llm">
+                <div class="glass-panel p-4 rounded-4 h-100 border model-card-box d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <span class="badge bg-success-subtle text-success border font-mono">OpenAI</span>
+                            <span class="badge bg-purple-subtle text-purple border font-semibold">Logic & Coding AI</span>
+                        </div>
+                        <h3 class="font-sora fs-6 fw-bold text-body mb-2">gpt-4o & gpt-4o-mini</h3>
+                        <p class="text-secondary small mb-3 leading-relaxed">
+                            <strong>Vai trò:</strong> Xử lý các bài toán lập trình chuyên sâu, phân tích cấu trúc mã nguồn phức tạp và kiểm tra tính hợp lệ của dữ liệu hệ thống.
+                        </p>
+                    </div>
+                    <div class="pt-3 border-top d-flex align-items-center justify-content-between text-secondary font-mono" style="font-size: 11px;">
+                        <span>Context: 128k</span>
+                        <span>Code Analysis</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Model 6 -->
+            <div class="col model-card" data-category="llm">
+                <div class="glass-panel p-4 rounded-4 h-100 border model-card-box d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <span class="badge bg-warning-subtle text-warning border font-mono">Groq LPU</span>
+                            <span class="badge bg-warning-subtle text-warning border font-semibold">Siêu Tốc Độ</span>
+                        </div>
+                        <h3 class="font-sora fs-6 fw-bold text-body mb-2">llama-3.3-70b-versatile</h3>
+                        <p class="text-secondary small mb-3 leading-relaxed">
+                            <strong>Vai trò:</strong> Đảm nhiệm phản hồi câu hỏi tức thì (Instant Quick Chat) và xử lý luồng stream với tốc độ kỷ lục.
+                        </p>
+                    </div>
+                    <div class="pt-3 border-top d-flex align-items-center justify-content-between text-secondary font-mono" style="font-size: 11px;">
+                        <span>Hardware: LPU Chip</span>
+                        <span class="text-warning font-semibold">&gt; 250 tokens/s</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Model 7 -->
+            <div class="col model-card" data-category="llm">
+                <div class="glass-panel p-4 rounded-4 h-100 border model-card-box d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <span class="badge bg-purple-subtle text-purple border font-mono">Anthropic</span>
+                            <span class="badge bg-indigo-subtle text-indigo border font-semibold">Deep Reasoning</span>
+                        </div>
+                        <h3 class="font-sora fs-6 fw-bold text-body mb-2">claude-3-5-sonnet</h3>
+                        <p class="text-secondary small mb-3 leading-relaxed">
+                            <strong>Vai trò:</strong> Tối ưu hóa phân tích văn bản dài, viết tài liệu kỹ thuật, phân tích logic chuyên sâu và phản biện kết quả.
+                        </p>
+                    </div>
+                    <div class="pt-3 border-top d-flex align-items-center justify-content-between text-secondary font-mono" style="font-size: 11px;">
+                        <span>Strength: Reasoning</span>
+                        <span>Long Context</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Model 8 -->
+            <div class="col model-card" data-category="llm">
+                <div class="glass-panel p-4 rounded-4 h-100 border model-card-box d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <span class="badge bg-info-subtle text-info border font-mono">TokenRouter</span>
+                            <span class="badge bg-info-subtle text-info border font-semibold">Cost Optimizer</span>
+                        </div>
+                        <h3 class="font-sora fs-6 fw-bold text-body mb-2">deepseek-v4-pro-free</h3>
+                        <p class="text-secondary small mb-3 leading-relaxed">
+                            <strong>Vai trò:</strong> Cổng định tuyến phụ tải thông minh, giảm chi phí và cung cấp cơ chế dự phòng ổn định khi API chính bận.
+                        </p>
+                    </div>
+                    <div class="pt-3 border-top d-flex align-items-center justify-content-between text-secondary font-mono" style="font-size: 11px;">
+                        <span>Type: Smart Fallback</span>
+                        <span>Free Tier</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Model 9 -->
+            <div class="col model-card" data-category="vision">
+                <div class="glass-panel p-4 rounded-4 h-100 border model-card-box d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <span class="badge bg-warning-subtle text-warning border font-mono">Cloudflare AI</span>
+                            <span class="badge bg-danger-subtle text-danger border font-semibold">Text-to-Image</span>
+                        </div>
+                        <h3 class="font-sora fs-6 fw-bold text-body mb-2">flux-2-klein-9b</h3>
+                        <p class="text-secondary small mb-3 leading-relaxed">
+                            <strong>Vai trò:</strong> Sinh hình ảnh nghệ thuật chất lượng cao trực tiếp trên mạng lưới Cloudflare Workers AI với tốc độ vượt trội.
+                        </p>
+                    </div>
+                    <div class="pt-3 border-top d-flex align-items-center justify-content-between text-secondary font-mono" style="font-size: 11px;">
+                        <span>Network: Cloudflare Edge</span>
+                        <span>HD Image</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Model 10 -->
+            <div class="col model-card" data-category="vision">
+                <div class="glass-panel p-4 rounded-4 h-100 border model-card-box d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <span class="badge bg-purple-subtle text-purple border font-mono">Local SD</span>
+                            <span class="badge bg-purple-subtle text-purple border font-semibold">Local GPU</span>
+                        </div>
+                        <h3 class="font-sora fs-6 fw-bold text-body mb-2">Stable Diffusion WebUI</h3>
+                        <p class="text-secondary small mb-3 leading-relaxed">
+                            <strong>Vai trò:</strong> Kết nối trực tiếp máy chủ GPU nội bộ để xuất bản hình ảnh thiết kế độ phân giải cao không phụ thuộc Cloud.
+                        </p>
+                    </div>
+                    <div class="pt-3 border-top d-flex align-items-center justify-content-between text-secondary font-mono" style="font-size: 11px;">
+                        <span>Server: GPU Local</span>
+                        <span>CFG 7.0</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- ==================== FOOTER ==================== -->
+    <footer class="py-3 text-center small text-secondary border-top mt-4">
+        <div class="container">
+            <p class="m-0">© 2026 AI Brain Karik &bull; Nền tảng nghiên cứu & thực nghiệm AI bởi các học viên</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5.3 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Theme Controller & Filtering Scripts -->
+    <script>
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-bs-theme') || 'dark';
+            const next = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-bs-theme', next);
+            if (next === 'dark') {
+                document.documentElement.classList.add('dark');
+                document.documentElement.classList.remove('light');
+            } else {
+                document.documentElement.classList.remove('dark');
+                document.documentElement.classList.add('light');
+            }
+            localStorage.setItem('theme', next);
+            updateThemeUI();
+        }
+
+        function updateThemeUI() {
+            const current = document.documentElement.getAttribute('data-bs-theme') || 'dark';
+            const isDark = current === 'dark';
+            const icon = document.getElementById('themeIcon');
+            const text = document.getElementById('themeText');
+            if (icon) {
+                icon.className = `bi ${isDark ? 'bi-sun-fill text-warning' : 'bi-moon-stars-fill text-purple'} fs-6`;
+            }
+            if (text) {
+                text.textContent = isDark ? 'Sáng' : 'Tối';
+            }
+        }
+
+        function filterModelsCategory(category) {
+            const container = document.querySelector('.filter-pill');
+            const buttons = container.querySelectorAll('.btn');
+            buttons.forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            const activeBtn = document.getElementById(`filter-btn-${category}`);
+            if (activeBtn) {
+                activeBtn.classList.add('active');
+            }
+
+            const cards = document.querySelectorAll('.model-card');
+            cards.forEach(card => {
+                const cardCat = card.getAttribute('data-category') || '';
+                if (category === 'all' || cardCat.includes(category)) {
+                    card.classList.remove('d-none');
+                } else {
+                    card.classList.add('d-none');
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', updateThemeUI);
+    </script>
+</body>
+
+</html>

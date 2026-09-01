@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html class="dark" data-bs-theme="dark" lang="vi">
+
+<head>
+    <script>
+        // Anti-FOUC immediate theme applicator
+        (function() {
+            try {
+                const savedTheme = localStorage.getItem('theme') || 'dark';
+                document.documentElement.setAttribute('data-bs-theme', savedTheme);
+                if (savedTheme === 'light') {
+                    document.documentElement.classList.remove('dark');
+                    document.documentElement.classList.add('light');
+                } else {
+                    document.documentElement.classList.remove('light');
+                    document.documentElement.classList.add('dark');
+                }
+            } catch (e) {
+                document.documentElement.setAttribute('data-bs-theme', 'dark');
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>AI Brain Karik - Tài Liệu & Kiến Trúc System</title>
+    <link rel="icon" type="image/png" href="/Logo/logo-removebg.png">
+
+    <!-- Bootstrap 5.3 CSS & Bootstrap Icons CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    
+    <!-- Google Fonts & Material Symbols -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700&family=Plus+Jakarta+Sans:ital,wght@0,500;0,600;0,700;0,800;1,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --font-sans: 'Inter', sans-serif;
+            --font-sora: 'Plus Jakarta Sans', 'Be Vietnam Pro', sans-serif;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: #0c0f17;
+            color: #e2e8f0;
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        [data-bs-theme="light"] body {
+            background-color: #f8fafc !important;
+            color: #1e293b !important;
+        }
+
+        .font-sora { font-family: var(--font-sora); }
+
+        /* Icon Rendering & Alignment Fix */
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined' !important;
+            font-weight: normal;
+            font-style: normal;
+            font-size: 20px;
+            line-height: 1 !important;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
+            -moz-osx-font-smoothing: grayscale;
+            font-feature-settings: 'liga';
+            vertical-align: middle;
+            user-select: none;
+        }
+
+        .bi {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            vertical-align: middle;
+            line-height: 1 !important;
+        }
+
+        .glass-panel {
+            background: rgba(22, 25, 34, 0.82);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid rgba(93, 230, 255, 0.14) !important;
+        }
+        [data-bs-theme="light"] .glass-panel {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid rgba(2, 132, 199, 0.15) !important;
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08);
+        }
+
+        .glass-nav {
+            background: rgba(12, 15, 23, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        [data-bs-theme="light"] .glass-nav {
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+        }
+
+        /* Ambient Glowing Orbs */
+        .orb-cyan {
+            position: fixed;
+            top: -10rem;
+            left: -10rem;
+            width: 30rem;
+            height: 30rem;
+            background: rgba(6, 182, 212, 0.25);
+            border-radius: 50%;
+            filter: blur(80px);
+            pointer-events: none;
+            z-index: -10;
+        }
+        .orb-purple {
+            position: fixed;
+            top: 30%;
+            right: -8rem;
+            width: 28rem;
+            height: 28rem;
+            background: rgba(109, 40, 217, 0.20);
+            border-radius: 50%;
+            filter: blur(80px);
+            pointer-events: none;
+            z-index: -10;
+        }
+
+        .btn-gradient-cyan {
+            background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
+            color: #ffffff;
+            border: none;
+            box-shadow: 0 4px 20px -2px rgba(2, 132, 199, 0.4);
+            transition: all 0.2s ease;
+        }
+        .btn-gradient-cyan:hover {
+            background: linear-gradient(135deg, #0369a1 0%, #1d4ed8 100%);
+            color: #ffffff;
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Background Orbs -->
+    <div class="orb-cyan"></div>
+    <div class="orb-purple"></div>
+
+    <!-- ==================== TOP NAVIGATION BAR ==================== -->
+    <header class="navbar navbar-expand-lg glass-nav sticky-top py-2 py-sm-3">
+        <div class="container">
+            
+            <a href="/login" class="navbar-brand d-flex align-items-center gap-2 m-0">
+                <div class="rounded-3 bg-cyan-950 p-1.5 d-flex align-items-center justify-content-center border border-cyan-500-subtle" style="width: 40px; height: 40px;">
+                    <img src="/Logo/logo-removebg.png" alt="AI Brain Logo" style="max-height: 100%; max-width: 100%;">
+                </div>
+                <div class="d-flex flex-column">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="font-sora fw-bold fs-6 text-body tracking-tight">AI Brain Karik</span>
+                        <span class="badge bg-info-subtle text-info border border-info-subtle font-mono d-none d-md-inline" style="font-size: 10px;">Documentation</span>
+                    </div>
+                    <span class="text-secondary small d-none d-lg-block" style="font-size: 11px;">Knowledge & Multi-Agent OS</span>
+                </div>
+            </a>
+
+            <button class="navbar-toggler border-0 p-2 text-body" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
+                <i class="bi bi-list fs-2"></i>
+            </button>
+
+            <div class="collapse navbar-collapse mt-3 mt-lg-0 justify-content-between" id="navbarMain">
+                <ul class="navbar-nav mx-auto gap-2">
+                    <li class="nav-item">
+                        <a href="/login" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2 px-3 py-2 rounded-3 fw-semibold text-start">
+                            <i class="bi bi-box-arrow-in-right text-purple fs-6"></i>
+                            <span>Đăng nhập</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/models" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2 px-3 py-2 rounded-3 fw-semibold text-start">
+                            <i class="bi bi-cpu text-purple fs-6"></i>
+                            <span>Models</span>
+                            <span class="badge bg-purple-subtle text-purple font-mono ms-1">10+</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/docs" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2 px-3 py-2 rounded-3 active fw-semibold text-start">
+                            <i class="bi bi-journal-text text-info fs-6"></i>
+                            <span>Docs</span>
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="d-flex align-items-center pt-2 pt-lg-0">
+                    <button id="btnThemeToggle" onclick="toggleTheme()" class="btn btn-sm glass-panel border d-flex align-items-center gap-2 px-3 py-2 rounded-3 fw-semibold text-body w-100 justify-content-center">
+                        <i id="themeIcon" class="bi bi-sun-fill text-warning fs-6"></i>
+                        <span id="themeText" class="font-mono small">Sáng/Tối</span>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </header>
+
+    <!-- ==================== MAIN CONTENT ==================== -->
+    <main class="container py-4 py-md-5 my-auto">
+        
+        <!-- Header Banner -->
+        <div class="glass-panel p-4 p-md-5 rounded-4 mb-4 border shadow-sm">
+            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-4">
+                <div>
+                    <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill bg-info-subtle border border-info-subtle text-info small fw-semibold mb-2">
+                        <i class="bi bi-diagram-2 fs-6"></i>
+                        <span>CLEAN ARCHITECTURE & SPECIFICATIONS</span>
+                    </div>
+                    <h1 class="font-sora fs-2 fw-bold text-body tracking-tight m-0">
+                        Tài Liệu Hướng Dẫn & Kiến Trúc Dự Án
+                    </h1>
+                    <p class="text-secondary small mt-2 mb-0" style="max-width: 650px;">
+                        AI Brain Karik System &bull; Nền tảng điều phối Đa Tác Nhân kết hợp Kho Tri Thức RAG Obsidian, Supabase pgvector và Clean Architecture trong Node.js.
+                    </p>
+                </div>
+
+                <div>
+                    <a href="/login" class="btn btn-sm btn-gradient-cyan px-4 py-2.5 rounded-3 fw-bold d-inline-flex align-items-center gap-2 text-nowrap">
+                        <i class="bi bi-box-arrow-in-right fs-5"></i>
+                        <span>Bắt Đầu Trải Nghiệm</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Documentation Sections Grid -->
+        <div class="row g-4">
+            
+            <!-- Section 1 -->
+            <div class="col-12">
+                <div class="glass-panel p-4 rounded-4 border">
+                    <h2 class="font-sora fs-5 fw-bold text-body d-flex align-items-center gap-2 mb-2">
+                        <i class="bi bi-mortarboard-fill text-purple fs-4"></i>
+                        Thông Điệp Từ Nhóm Học Viên Phát Triển
+                    </h2>
+                    <p class="text-secondary small m-0 leading-relaxed">
+                        Dự án <strong>AI Brain Karik</strong> là sản phẩm nghiên cứu & thực nghiệm chuyên sâu về <strong>Clean Architecture trong Node.js</strong> kết hợp <strong>Hệ thống Trí Tuệ Nhân Tạo Đa Tác Nhân (Multi-Agent System)</strong> và <strong>Obsidian Knowledge Graph</strong>. Nền tảng đang trong giai đoạn kiểm thử, cải tiến và thu thập đóng góp thực tế từ cộng đồng học viên.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Section 2 -->
+            <div class="col-12 col-lg-6">
+                <div class="glass-panel p-4 rounded-4 h-100 border">
+                    <h2 class="font-sora fs-6 fw-bold text-body d-flex align-items-center gap-2 mb-3">
+                        <i class="bi bi-folder-symlink-fill text-info fs-5"></i>
+                        1. Cấu Trúc Mã Nguồn (Clean Architecture)
+                    </h2>
+                    <p class="text-secondary small mb-3">
+                        Mã nguồn được tổ chức theo chuẩn Clean Architecture giúp tách biệt hoàn toàn các tầng ứng dụng:
+                    </p>
+                    <div class="p-3 rounded-3 bg-body-tertiary font-mono small text-body border" style="font-size: 11px;">
+                        src/<br>
+                        ├── config/ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Gemini, OpenAI, Claude, Groq, Supabase config<br>
+                        ├── providers/ &nbsp;&nbsp;&nbsp;&nbsp;# Adapter SDK các nhà cung cấp AI<br>
+                        ├── services/ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# AI Router, Multi-Agent System, RAG Pipeline<br>
+                        ├── controllers/ &nbsp;&nbsp;# REST API Controllers & Handlers<br>
+                        ├── routes/ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Express Routes (/api/chat, /api/auth...)<br>
+                        └── storage/ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Uploads & temporary caches
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 3 -->
+            <div class="col-12 col-lg-6">
+                <div class="glass-panel p-4 rounded-4 h-100 border">
+                    <h2 class="font-sora fs-6 fw-bold text-body d-flex align-items-center gap-2 mb-3">
+                        <i class="bi bi-diagram-3-fill text-purple fs-5"></i>
+                        2. Cơ Chế Phân Phối Tác Vụ (Multi-Agent Routing)
+                    </h2>
+                    <p class="text-secondary small mb-3">
+                        Hệ thống tự động phân loại prompt của người dùng và điều phối tới tác nhân chuyên biệt:
+                    </p>
+                    <ul class="list-unstyled small text-secondary space-y-2 m-0">
+                        <li class="d-flex align-items-start gap-2 mb-2">
+                            <i class="bi bi-robot text-purple fs-6 mt-1"></i>
+                            <div><strong>AI Karik (Orchestrator):</strong> Tiếp nhận yêu cầu, phân tích và tổng hợp kết quả phản hồi chuyên nghiệp.</div>
+                        </li>
+                        <li class="d-flex align-items-start gap-2 mb-2">
+                            <i class="bi bi-palette-fill text-danger fs-6 mt-1"></i>
+                            <div><strong>Agent Studio Ảnh:</strong> Biên tập hình ảnh, phân tích typography, xử lý layer banner và xóa nền AI.</div>
+                        </li>
+                        <li class="d-flex align-items-start gap-2 mb-2">
+                            <i class="bi bi-share-fill text-info fs-6 mt-1"></i>
+                            <div><strong>Agent Đăng Bài MXH:</strong> Sáng tạo nội dung viral hook và đăng tự động lên Facebook & TikTok qua API.</div>
+                        </li>
+                        <li class="d-flex align-items-start gap-2">
+                            <i class="bi bi-shield-lock-fill text-warning fs-6 mt-1"></i>
+                            <div><strong>Agent Quản Lý Rủi Ro:</strong> Giám sát hạn mức TPM/RPD, kiểm soát lỗi và tối ưu hóa token.</div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Section 4 -->
+            <div class="col-12 col-lg-6">
+                <div class="glass-panel p-4 rounded-4 h-100 border">
+                    <h2 class="font-sora fs-6 fw-bold text-body d-flex align-items-center gap-2 mb-2">
+                        <i class="bi bi-database-fill-check text-success fs-5"></i>
+                        3. RAG Pipeline & Supabase pgvector
+                    </h2>
+                    <p class="text-secondary small m-0 leading-relaxed">
+                        Hệ thống tự động đọc và phân đoạn (chunking) kho tri thức Obsidian Vault cá nhân. Mô hình <code class="bg-success-subtle text-success px-1.5 py-0.5 rounded font-mono" style="font-size: 11px;">text-embedding-004</code> chuyển đổi văn bản thành vector 768 chiều và lưu trữ trên cơ sở dữ liệu Supabase pgvector.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Section 5 -->
+            <div class="col-12 col-lg-6">
+                <div class="glass-panel p-4 rounded-4 h-100 border">
+                    <h2 class="font-sora fs-6 fw-bold text-body d-flex align-items-center gap-2 mb-2">
+                        <i class="bi bi-shield-check text-warning fs-5"></i>
+                        4. Bảo Mật Auth & Khôi Phục Mật Khẩu OTP
+                    </h2>
+                    <p class="text-secondary small m-0 leading-relaxed">
+                        Hệ thống đăng ký và đăng nhập được mã hóa an toàn. Trong trường hợp quên mật khẩu, hệ thống sinh ngẫu nhiên mã OTP 6 chữ số có thời hạn và tự động gửi tới email người dùng thông qua Gmail API service.
+                    </p>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- ==================== FOOTER ==================== -->
+    <footer class="py-3 text-center small text-secondary border-top mt-4">
+        <div class="container">
+            <p class="m-0">© 2026 AI Brain Karik &bull; Nền tảng nghiên cứu & thực nghiệm AI bởi các học viên</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5.3 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Theme Controller Script -->
+    <script>
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-bs-theme') || 'dark';
+            const next = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-bs-theme', next);
+            if (next === 'dark') {
+                document.documentElement.classList.add('dark');
+                document.documentElement.classList.remove('light');
+            } else {
+                document.documentElement.classList.remove('dark');
+                document.documentElement.classList.add('light');
+            }
+            localStorage.setItem('theme', next);
+            updateThemeUI();
+        }
+
+        function updateThemeUI() {
+            const current = document.documentElement.getAttribute('data-bs-theme') || 'dark';
+            const isDark = current === 'dark';
+            const icon = document.getElementById('themeIcon');
+            const text = document.getElementById('themeText');
+            if (icon) {
+                icon.className = `bi ${isDark ? 'bi-sun-fill text-warning' : 'bi-moon-stars-fill text-info'} fs-6`;
+            }
+            if (text) {
+                text.textContent = isDark ? 'Sáng' : 'Tối';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', updateThemeUI);
+    </script>
+</body>
+
+</html>

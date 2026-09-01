@@ -36,6 +36,16 @@ app.get('/login', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
+// Models viewer shortcut endpoint
+app.get('/models', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'models.html'));
+});
+
+// Documentation & Architecture shortcut endpoint
+app.get('/docs', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'docs.html'));
+});
+
 // Primary REST API Router
 app.use('/api', apiRoutes);
 
