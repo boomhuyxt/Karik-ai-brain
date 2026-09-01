@@ -4,7 +4,7 @@
 <head>
     <script>
         // Anti-FOUC immediate theme applicator
-        (function() {
+        (function () {
             try {
                 const savedTheme = localStorage.getItem('theme') || 'dark';
                 document.documentElement.setAttribute('data-bs-theme', savedTheme);
@@ -29,12 +29,15 @@
     <!-- Bootstrap 5.3 CSS & Bootstrap Icons CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    
+
     <!-- Google Fonts & Material Symbols -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700&family=Plus+Jakarta+Sans:ital,wght@0,500;0,600;0,700;0,800;1,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700&family=Plus+Jakarta+Sans:ital,wght@0,500;0,600;0,700;0,800;1,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap"
+        rel="stylesheet">
 
     <style>
         :root {
@@ -60,8 +63,13 @@
             color: #1e293b !important;
         }
 
-        .font-sora { font-family: var(--font-sora); }
-        .font-headline { font-family: var(--font-headline); }
+        .font-sora {
+            font-family: var(--font-sora);
+        }
+
+        .font-headline {
+            font-family: var(--font-headline);
+        }
 
         /* Icon Rendering & Precise Alignment */
         .material-symbols-outlined {
@@ -101,6 +109,7 @@
             -webkit-backdrop-filter: blur(18px);
             border: 1px solid rgba(211, 187, 255, 0.14) !important;
         }
+
         [data-bs-theme="light"] .glass-panel {
             background: rgba(255, 255, 255, 0.92);
             backdrop-filter: blur(18px);
@@ -115,6 +124,7 @@
             -webkit-backdrop-filter: blur(16px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
+
         [data-bs-theme="light"] .glass-nav {
             background: rgba(255, 255, 255, 0.88);
             backdrop-filter: blur(16px);
@@ -146,6 +156,7 @@
             pointer-events: none;
             z-index: -10;
         }
+
         .orb-cyan {
             position: fixed;
             top: 30%;
@@ -166,6 +177,7 @@
             background-clip: text;
             -webkit-text-fill-color: transparent;
         }
+
         [data-bs-theme="light"] .text-gradient {
             background: linear-gradient(135deg, #7c3aed 0%, #9333ea 45%, #0284c7 100%);
             -webkit-background-clip: text;
@@ -213,6 +225,7 @@
             line-height: 1 !important;
             transition: color 0.2s ease, transform 0.15s ease;
         }
+
         .icon-input-wrapper .input-toggle:hover {
             color: #a855f7;
             transform: translateY(-50%) scale(1.1);
@@ -228,11 +241,13 @@
             transition: all 0.2s ease;
             width: 100%;
         }
+
         [data-bs-theme="light"] .form-control-custom {
             background-color: #ffffff !important;
             border: 1px solid #cbd5e1 !important;
             color: #0f172a !important;
         }
+
         .form-control-custom:focus {
             border-color: #a855f7 !important;
             box-shadow: 0 0 0 0.25rem rgba(168, 85, 247, 0.25) !important;
@@ -246,11 +261,13 @@
             padding: 0.65rem;
             transition: all 0.2s ease;
         }
+
         .auth-nav-pills .nav-link.active {
             background-color: rgba(109, 40, 217, 0.25);
             color: #d3bbff;
             border: 1px solid rgba(168, 85, 247, 0.4);
         }
+
         [data-bs-theme="light"] .auth-nav-pills .nav-link.active {
             background-color: rgba(109, 40, 217, 0.12);
             color: #6d28d9;
@@ -265,13 +282,14 @@
             box-shadow: 0 4px 20px -2px rgba(124, 58, 237, 0.4);
             transition: all 0.2s ease;
         }
+
         .btn-gradient-purple:hover {
             background: linear-gradient(135deg, #6d28d9 0%, #4338ca 100%);
             color: #ffffff;
             transform: translateY(-1px);
             box-shadow: 0 6px 24px 0px rgba(124, 58, 237, 0.55);
         }
-        
+
         .btn-gradient-emerald {
             background: linear-gradient(135deg, #059669 0%, #0d9488 100%);
             color: #ffffff;
@@ -279,6 +297,7 @@
             box-shadow: 0 4px 20px -2px rgba(5, 150, 105, 0.4);
             transition: all 0.2s ease;
         }
+
         .btn-gradient-emerald:hover {
             background: linear-gradient(135deg, #047857 0%, #0f766e 100%);
             color: #ffffff;
@@ -289,8 +308,27 @@
         .hover-arrow i {
             transition: transform 0.2s ease;
         }
+
         .hover-arrow:hover i {
             transform: translateX(4px);
+        }
+
+        /* Developer Link Buttons */
+        .btn-dev-link {
+            color: #94a3b8;
+            padding: 0.25rem 0.45rem;
+            border-radius: 0.5rem;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+        }
+
+        .btn-dev-link:hover {
+            color: #c084fc;
+            background-color: rgba(168, 85, 247, 0.15);
+            transform: translateY(-1px);
         }
     </style>
 </head>
@@ -304,23 +342,29 @@
     <!-- ==================== TOP NAVIGATION BAR ==================== -->
     <header class="navbar navbar-expand-lg glass-nav sticky-top py-2 py-sm-3">
         <div class="container">
-            
+
             <!-- Brand Logo -->
             <a href="/login" class="navbar-brand d-flex align-items-center gap-2 m-0">
-                <div class="rounded-3 bg-purple-950 p-1.5 d-flex align-items-center justify-content-center border border-purple-500-subtle" style="width: 40px; height: 40px;">
+                <div class="rounded-3 bg-purple-950 p-1.5 d-flex align-items-center justify-content-center border border-purple-500-subtle"
+                    style="width: 40px; height: 40px;">
                     <img src="/Logo/logo-removebg.png" alt="AI Brain Logo" style="max-height: 100%; max-width: 100%;">
                 </div>
                 <div class="d-flex flex-column">
                     <div class="d-flex align-items-center gap-2">
                         <span class="font-sora fw-bold fs-6 text-body tracking-tight">AI Brain Karik</span>
-                        <span class="badge bg-purple-subtle text-purple border border-purple-subtle font-mono d-none d-md-inline" style="font-size: 10px;">v2.0 Core</span>
+                        <span
+                            class="badge bg-purple-subtle text-purple border border-purple-subtle font-mono d-none d-md-inline"
+                            style="font-size: 10px;">v2.0 Core</span>
                     </div>
-                    <span class="text-secondary small d-none d-lg-block" style="font-size: 11px;">Knowledge & Multi-Agent OS</span>
+                    <span class="text-secondary small d-none d-lg-block" style="font-size: 11px;">Knowledge &
+                        Multi-Agent OS</span>
                 </div>
             </a>
 
             <!-- Mobile Navbar Toggler -->
-            <button class="navbar-toggler border-0 p-2 text-body" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler border-0 p-2 text-body" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false"
+                aria-label="Toggle navigation">
                 <i class="bi bi-list fs-2"></i>
             </button>
 
@@ -328,20 +372,23 @@
             <div class="collapse navbar-collapse mt-3 mt-lg-0 justify-content-between" id="navbarMain">
                 <ul class="navbar-nav mx-auto gap-2">
                     <li class="nav-item">
-                        <a href="/login" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2 px-3 py-2 rounded-3 active fw-semibold text-start">
+                        <a href="/login"
+                            class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2 px-3 py-2 rounded-3 active fw-semibold text-start">
                             <i class="bi bi-box-arrow-in-right text-purple fs-6"></i>
                             <span>Đăng nhập</span>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="/models" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2 px-3 py-2 rounded-3 fw-semibold text-start">
+                        <a href="/models"
+                            class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2 px-3 py-2 rounded-3 fw-semibold text-start">
                             <i class="bi bi-cpu text-purple fs-6"></i>
                             <span>Models</span>
                             <span class="badge bg-purple-subtle text-purple font-mono ms-1">10+</span>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="/docs" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2 px-3 py-2 rounded-3 fw-semibold text-start">
+                        <a href="/docs"
+                            class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2 px-3 py-2 rounded-3 fw-semibold text-start">
                             <i class="bi bi-journal-text text-info fs-6"></i>
                             <span>Docs</span>
                         </a>
@@ -350,7 +397,8 @@
 
                 <!-- Dark / Light Theme Toggle -->
                 <div class="d-flex align-items-center pt-2 pt-lg-0">
-                    <button id="btnThemeToggle" onclick="toggleTheme()" class="btn btn-sm glass-panel border d-flex align-items-center gap-2 px-3 py-2 rounded-3 fw-semibold text-body w-100 justify-content-center">
+                    <button id="btnThemeToggle" onclick="toggleTheme()"
+                        class="btn btn-sm glass-panel border d-flex align-items-center gap-2 px-3 py-2 rounded-3 fw-semibold text-body w-100 justify-content-center">
                         <i id="themeIcon" class="bi bi-sun-fill text-warning fs-6"></i>
                         <span id="themeText" class="font-mono small">Sáng/Tối</span>
                     </button>
@@ -366,33 +414,37 @@
 
             <!-- ================= LEFT COLUMN: HERO INFORMATION ================= -->
             <div class="col-12 col-lg-7 space-y-4">
-                
+
                 <!-- Status Badge -->
-                <div class="d-inline-flex align-items-center gap-2 px-3 py-1.5 rounded-pill bg-purple-subtle border border-purple-subtle text-purple small fw-semibold">
-                    <span class="spinner-grow spinner-grow-sm text-purple" role="status" style="width: 8px; height: 8px;"></span>
+                <div
+                    class="d-inline-flex align-items-center gap-2 px-3 py-1.5 rounded-pill bg-purple-subtle border border-purple-subtle text-purple small fw-semibold">
+                    <span class="spinner-grow spinner-grow-sm text-purple" role="status"
+                        style="width: 8px; height: 8px;"></span>
                     <span class="text-uppercase tracking-wider" style="font-size: 11px;">BETA TESTING & RESEARCH</span>
                     <span class="text-muted">•</span>
-                    <span>Dự Án Học Viên Thực Nghiệm</span>
+                    <span>Dự Án sinh viên Thực Nghiệm</span>
                 </div>
 
                 <!-- Main Hero Headline -->
                 <div class="mt-3">
                     <h1 class="font-headline tracking-tight lh-base">
                         <span class="d-block font-extrabold text-body fs-2 fs-md-1 fw-extrabold mb-1">
-                            AI được xây dựng bởi các học viên
+                            AI được xây dựng bởi các sinh viên
                         </span>
                         <span class="d-block font-bold text-gradient fs-3 fs-md-2 fw-bold">
                             Còn đang trong quá trình kiểm thử và phát triển
                         </span>
                     </h1>
                     <p class="text-secondary fs-6 mt-3 leading-relaxed" style="max-width: 600px;">
-                        Hệ thống Trí Tuệ Nhân Tạo điều phối Đa Tác Nhân (Multi-Agent) kết hợp Kho Tri Thức RAG Obsidian & Supabase pgvector. Toàn bộ kiến trúc và các mô hình AI đang được liên tục tinh chỉnh và kiểm thử thực tế.
+                        Hệ thống Trí Tuệ Nhân Tạo điều phối Đa Tác Nhân (Multi-Agent) kết hợp Kho Tri Thức RAG Obsidian
+                        & Supabase pgvector. Toàn bộ kiến trúc và các mô hình AI đang được liên tục tinh chỉnh và kiểm
+                        thử thực tế.
                     </p>
                 </div>
 
                 <!-- Feature Highlights Cards Grid -->
                 <div class="row row-cols-1 row-cols-sm-2 g-3 mt-3">
-                    
+
                     <!-- Card 1 -->
                     <div class="col">
                         <div class="glass-panel p-3.5 p-sm-4 rounded-4 h-100 border">
@@ -401,7 +453,8 @@
                             </div>
                             <h2 class="font-sora fw-bold fs-6 text-body mb-1.5">Kiến Trúc Đa Tác Nhân</h2>
                             <p class="text-secondary small m-0 leading-relaxed" style="font-size: 12.5px;">
-                                Phân rã tác vụ thông minh giữa AI Karik Orchestrator, Agent Studio Ảnh, Agent MXH và Risk Manager.
+                                Phân rã tác vụ thông minh giữa AI Karik Orchestrator, Agent Studio Ảnh, Agent MXH và
+                                Risk Manager.
                             </p>
                         </div>
                     </div>
@@ -425,9 +478,10 @@
                             <div class="feature-icon-box bg-success-subtle text-success mb-3">
                                 <i class="bi bi-database-fill-check fs-4"></i>
                             </div>
-                            <h2 class="font-sora fw-bold fs-6 text-body mb-1.5">Kho Tri Thức RAG</h2>
+                            <h2 class="font-sora fw-bold fs-6 text-body mb-1.5">Kho Tri Thức RAG/Obsidian </h2>
                             <p class="text-secondary small m-0 leading-relaxed" style="font-size: 12.5px;">
-                                Vector hóa tự động kho ghi chú Obsidian Vault qua Supabase pgvector với độ chính xác cao.
+                                Vector hóa tự động kho ghi chú Obsidian Vault qua Supabase pgvector với độ chính xác
+                                cao.
                             </p>
                         </div>
                     </div>
@@ -454,10 +508,86 @@
                         <span>Trạng thái: <strong class="text-body">Development Active</strong></span>
                     </span>
                     <span class="text-muted d-none d-sm-inline">•</span>
-                    <a href="/models" class="text-purple text-decoration-none fw-semibold d-inline-flex align-items-center gap-1.5 hover-arrow">
+                    <a href="/models"
+                        class="text-purple text-decoration-none fw-semibold d-inline-flex align-items-center gap-1.5 hover-arrow">
                         <span>Xem chi tiết các mô hình AI</span>
                         <i class="bi bi-arrow-right fs-6"></i>
                     </a>
+                </div>
+
+                <!-- ================= DEVELOPER TEAM SHOWCASE SECTION ================= -->
+                <div class="mt-4 pt-2">
+                    <div class="d-flex align-items-center justify-content-between mb-2.5">
+                        <span
+                            class="font-sora fw-bold small text-uppercase tracking-wider text-secondary d-flex align-items-center gap-2"
+                            style="font-size: 11.5px;">
+                            <i class="bi bi-code-slash text-purple fs-6"></i>
+                            <span>Đội Ngũ Phát Triển / Research Devs</span>
+                        </span>
+                    </div>
+
+                    <div class="row row-cols-1 row-cols-sm-3 g-2.5">
+                        <!-- Dev 1: Lead Architect -->
+                        <div class="col">
+                            <div
+                                class="glass-panel p-2.5 rounded-3 border h-100 d-flex align-items-center justify-content-between gap-2">
+                                <div class="d-flex align-items-center gap-2 min-w-0">
+                                    <div class="rounded-circle bg-purple-subtle text-purple fw-bold d-flex align-items-center justify-content-center flex-shrink-0"
+                                        style="width: 36px; height: 36px; font-size: 12px;">
+                                        LD
+                                    </div>
+                                    <div class="truncate">
+                                        <div class="fw-bold text-body small truncate" style="font-size: 12px;">Gia Huy
+                                        </div>
+                                        <div class="text-secondary small truncate" style="font-size: 10px;">Lead
+                                            Architect & BE</div>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center gap-1 flex-shrink-0">
+                                    <!-- Thay href bên dưới thành link GitHub / Social của Dev 1 -->
+                                    <a href="https://github.com/boomhuyxt" target="_blank" rel="noopener"
+                                        class="btn-dev-link" title="GitHub Profile">
+                                        <i class="bi bi-github fs-6"></i>
+                                    </a>
+                                    <a href="https://gia-huy-portfolio.vercel.app" target="_blank" rel="noopener"
+                                        class="btn-dev-link" title="Website / Portfolio">
+                                        <i class="bi bi-globe fs-6"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Dev 2: Frontend & Agent Specialist -->
+                        <div class="col">
+                            <div
+                                class="glass-panel p-2.5 rounded-3 border h-100 d-flex align-items-center justify-content-between gap-2">
+                                <div class="d-flex align-items-center gap-2 min-w-0">
+                                    <div class="rounded-circle bg-info-subtle text-info fw-bold d-flex align-items-center justify-content-center flex-shrink-0"
+                                        style="width: 36px; height: 36px; font-size: 12px;">
+                                        FE
+                                    </div>
+                                    <div class="truncate">
+                                        <div class="fw-bold text-body small truncate" style="font-size: 12px;">Thái Toản
+                                        </div>
+                                        <div class="text-secondary small truncate" style="font-size: 10px;">UI &
+                                            Multi-Agent</div>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center gap-1 flex-shrink-0">
+                                    <!-- Thay href bên dưới thành link Facebook / GitHub của Dev 2 -->
+                                    <a href="https://github.com/CaoThaiToan" target="_blank" rel="noopener"
+                                        class="btn-dev-link" title="GitHub Profile">
+                                        <i class="bi bi-github fs-6"></i>
+                                    </a>
+                                    <a href="https://www.facebook.com/cao.thai.toan.237078" target="_blank"
+                                        rel="noopener" class="btn-dev-link" title="Facebook Profile">
+                                        <i class="bi bi-facebook fs-6"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
 
             </div>
@@ -468,7 +598,8 @@
 
                     <!-- Auth Header -->
                     <div class="text-center mb-4">
-                        <div class="rounded-4 bg-purple-950 p-2 d-inline-flex mb-2 border border-purple-subtle shadow-sm" style="width: 56px; height: 56px;">
+                        <div class="rounded-4 bg-purple-950 p-2 d-inline-flex mb-2 border border-purple-subtle shadow-sm"
+                            style="width: 56px; height: 56px;">
                             <img src="/Logo/logo-removebg.png" alt="AI Brain Karik" class="img-fluid">
                         </div>
                         <h2 class="font-sora fs-5 fw-bold text-body m-0">Cổng Đăng Nhập Hệ Thống</h2>
@@ -476,7 +607,8 @@
                     </div>
 
                     <!-- Toast Alert -->
-                    <div id="toast" class="d-none alert alert-info py-2 px-3 small d-flex align-items-center gap-2 mb-3" role="alert">
+                    <div id="toast" class="d-none alert alert-info py-2 px-3 small d-flex align-items-center gap-2 mb-3"
+                        role="alert">
                         <i id="toast-icon" class="bi bi-info-circle-fill fs-5"></i>
                         <span id="toast-message" class="flex-grow-1"></span>
                     </div>
@@ -484,12 +616,14 @@
                     <!-- Tabs Navigation -->
                     <ul class="nav nav-pills nav-justified auth-nav-pills mb-4 bg-body-tertiary p-1 rounded-3">
                         <li class="nav-item">
-                            <button id="tab-login" onclick="switchTab('login')" class="nav-link active d-flex align-items-center justify-content-center gap-2">
+                            <button id="tab-login" onclick="switchTab('login')"
+                                class="nav-link active d-flex align-items-center justify-content-center gap-2">
                                 <i class="bi bi-box-arrow-in-right fs-5"></i> Đăng nhập
                             </button>
                         </li>
                         <li class="nav-item">
-                            <button id="tab-register" onclick="switchTab('register')" class="nav-link d-flex align-items-center justify-content-center gap-2">
+                            <button id="tab-register" onclick="switchTab('register')"
+                                class="nav-link d-flex align-items-center justify-content-center gap-2">
                                 <i class="bi bi-person-plus fs-5"></i> Đăng ký
                             </button>
                         </li>
@@ -498,19 +632,24 @@
                     <!-- LOGIN FORM -->
                     <form id="form-login" onsubmit="handleLogin(event)">
                         <div class="mb-3">
-                            <label class="form-label text-uppercase small text-secondary fw-semibold mb-1.5" for="login-email">Email hệ thống</label>
+                            <label class="form-label text-uppercase small text-secondary fw-semibold mb-1.5"
+                                for="login-email">Email hệ thống</label>
                             <div class="icon-input-wrapper">
                                 <i class="bi bi-envelope-fill input-icon"></i>
-                                <input type="email" id="login-email" required placeholder="name@example.com" class="form-control form-control-custom">
+                                <input type="email" id="login-email" required placeholder="name@example.com"
+                                    class="form-control form-control-custom">
                             </div>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label text-uppercase small text-secondary fw-semibold mb-1.5" for="login-password">Mật khẩu</label>
+                            <label class="form-label text-uppercase small text-secondary fw-semibold mb-1.5"
+                                for="login-password">Mật khẩu</label>
                             <div class="icon-input-wrapper">
                                 <i class="bi bi-lock-fill input-icon"></i>
-                                <input type="password" id="login-password" required placeholder="••••••••" class="form-control form-control-custom">
-                                <button type="button" onclick="togglePasswordVisibility('login-password', this)" class="input-toggle" title="Hiện/Ẩn mật khẩu">
+                                <input type="password" id="login-password" required placeholder="••••••••"
+                                    class="form-control form-control-custom">
+                                <button type="button" onclick="togglePasswordVisibility('login-password', this)"
+                                    class="input-toggle" title="Hiện/Ẩn mật khẩu">
                                     <i class="bi bi-eye-fill fs-6"></i>
                                 </button>
                             </div>
@@ -521,10 +660,13 @@
                                 <input class="form-check-input" type="checkbox" checked id="rememberMe">
                                 <label class="form-check-label" for="rememberMe">Ghi nhớ đăng nhập</label>
                             </div>
-                            <button type="button" onclick="openForgotModal()" class="btn btn-link btn-sm text-purple p-0 text-decoration-none fw-semibold">Quên mật khẩu?</button>
+                            <button type="button" onclick="openForgotModal()"
+                                class="btn btn-link btn-sm text-purple p-0 text-decoration-none fw-semibold">Quên mật
+                                khẩu?</button>
                         </div>
 
-                        <button type="submit" id="btn-login-submit" class="btn btn-gradient-purple w-100 py-2.5 rounded-3 fw-bold d-flex align-items-center justify-content-center gap-2">
+                        <button type="submit" id="btn-login-submit"
+                            class="btn btn-gradient-purple w-100 py-2.5 rounded-3 fw-bold d-flex align-items-center justify-content-center gap-2">
                             <span>Đăng nhập</span>
                             <i class="bi bi-arrow-right fs-5"></i>
                         </button>
@@ -533,51 +675,63 @@
                     <!-- REGISTER FORM -->
                     <form id="form-register" onsubmit="handleRegister(event)" class="d-none">
                         <div class="mb-2.5">
-                            <label class="form-label text-uppercase small text-secondary fw-semibold mb-1" for="reg-fullname">Họ và tên</label>
+                            <label class="form-label text-uppercase small text-secondary fw-semibold mb-1"
+                                for="reg-fullname">Họ và tên</label>
                             <div class="icon-input-wrapper">
                                 <i class="bi bi-person-vcard-fill input-icon"></i>
-                                <input type="text" id="reg-fullname" required placeholder="Nguyễn Văn A" class="form-control form-control-custom">
+                                <input type="text" id="reg-fullname" required placeholder="Nguyễn Văn A"
+                                    class="form-control form-control-custom">
                             </div>
                         </div>
 
                         <div class="mb-2.5">
-                            <label class="form-label text-uppercase small text-secondary fw-semibold mb-1" for="reg-email">Email</label>
+                            <label class="form-label text-uppercase small text-secondary fw-semibold mb-1"
+                                for="reg-email">Email</label>
                             <div class="icon-input-wrapper">
                                 <i class="bi bi-envelope-fill input-icon"></i>
-                                <input type="email" id="reg-email" required placeholder="name@example.com" class="form-control form-control-custom">
+                                <input type="email" id="reg-email" required placeholder="name@example.com"
+                                    class="form-control form-control-custom">
                             </div>
                         </div>
 
                         <div class="mb-2.5">
-                            <label class="form-label text-uppercase small text-secondary fw-semibold mb-1" for="reg-password">Mật khẩu</label>
+                            <label class="form-label text-uppercase small text-secondary fw-semibold mb-1"
+                                for="reg-password">Mật khẩu</label>
                             <div class="icon-input-wrapper">
                                 <i class="bi bi-lock-fill input-icon"></i>
-                                <input type="password" id="reg-password" required minlength="6" placeholder="Tối thiểu 6 ký tự" class="form-control form-control-custom">
-                                <button type="button" onclick="togglePasswordVisibility('reg-password', this)" class="input-toggle" title="Hiện/Ẩn mật khẩu">
+                                <input type="password" id="reg-password" required minlength="6"
+                                    placeholder="Tối thiểu 6 ký tự" class="form-control form-control-custom">
+                                <button type="button" onclick="togglePasswordVisibility('reg-password', this)"
+                                    class="input-toggle" title="Hiện/Ẩn mật khẩu">
                                     <i class="bi bi-eye-fill fs-6"></i>
                                 </button>
                             </div>
                         </div>
 
                         <div class="mb-3.5">
-                            <label class="form-label text-uppercase small text-secondary fw-semibold mb-1" for="reg-confirm-password">Xác nhận mật khẩu</label>
+                            <label class="form-label text-uppercase small text-secondary fw-semibold mb-1"
+                                for="reg-confirm-password">Xác nhận mật khẩu</label>
                             <div class="icon-input-wrapper">
                                 <i class="bi bi-shield-lock-fill input-icon"></i>
-                                <input type="password" id="reg-confirm-password" required minlength="6" placeholder="Nhập lại mật khẩu" class="form-control form-control-custom">
-                                <button type="button" onclick="togglePasswordVisibility('reg-confirm-password', this)" class="input-toggle" title="Hiện/Ẩn mật khẩu">
+                                <input type="password" id="reg-confirm-password" required minlength="6"
+                                    placeholder="Nhập lại mật khẩu" class="form-control form-control-custom">
+                                <button type="button" onclick="togglePasswordVisibility('reg-confirm-password', this)"
+                                    class="input-toggle" title="Hiện/Ẩn mật khẩu">
                                     <i class="bi bi-eye-fill fs-6"></i>
                                 </button>
                             </div>
                         </div>
 
-                        <button type="submit" id="btn-register-submit" class="btn btn-gradient-emerald w-100 py-2.5 rounded-3 fw-bold d-flex align-items-center justify-content-center gap-2">
+                        <button type="submit" id="btn-register-submit"
+                            class="btn btn-gradient-emerald w-100 py-2.5 rounded-3 fw-bold d-flex align-items-center justify-content-center gap-2">
                             <span>Tạo tài khoản</span>
                             <i class="bi bi-check-circle-fill fs-5"></i>
                         </button>
                     </form>
 
                     <!-- Footer Info -->
-                    <div class="mt-4 pt-3 border-top text-center small text-secondary d-flex align-items-center justify-content-center gap-2" style="font-size: 11px;">
+                    <div class="mt-4 pt-3 border-top text-center small text-secondary d-flex align-items-center justify-content-center gap-2"
+                        style="font-size: 11px;">
                         <span class="bg-success rounded-circle d-inline-block" style="width: 8px; height: 8px;"></span>
                         <span>AI Brain Karik System &bull; Supabase Connected</span>
                     </div>
@@ -606,40 +760,52 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body py-3">
-                    
+
                     <!-- Step 1: Send OTP -->
                     <div id="forgotStep1">
-                        <p class="small text-secondary mb-3">Nhập email tài khoản của bạn. Hệ thống sẽ gửi mã xác nhận OTP 6 chữ số qua Gmail.</p>
+                        <p class="small text-secondary mb-3">Nhập email tài khoản của bạn. Hệ thống sẽ gửi mã xác nhận
+                            OTP 6 chữ số qua Gmail.</p>
                         <div class="mb-3">
-                            <label class="form-label small text-secondary fw-semibold mb-1" for="forgot-email">Email tài khoản</label>
+                            <label class="form-label small text-secondary fw-semibold mb-1" for="forgot-email">Email tài
+                                khoản</label>
                             <div class="icon-input-wrapper">
                                 <i class="bi bi-envelope-fill input-icon"></i>
-                                <input type="email" id="forgot-email" placeholder="name@example.com" class="form-control form-control-custom">
+                                <input type="email" id="forgot-email" placeholder="name@example.com"
+                                    class="form-control form-control-custom">
                             </div>
                         </div>
-                        <button type="button" id="btnSendOtp" onclick="handleSendOtp()" class="btn btn-gradient-purple w-100 py-2 rounded-3 fw-semibold">Gửi mã OTP qua Gmail</button>
+                        <button type="button" id="btnSendOtp" onclick="handleSendOtp()"
+                            class="btn btn-gradient-purple w-100 py-2 rounded-3 fw-semibold">Gửi mã OTP qua
+                            Gmail</button>
                     </div>
 
                     <!-- Step 2: Input OTP & New Password -->
                     <div id="forgotStep2" class="d-none">
                         <div id="devOtpNotice" class="d-none alert alert-warning py-2 px-3 small mb-3">
-                            🔑 <strong>Mã OTP Dev:</strong> <span id="devOtpValue" class="font-mono text-info fw-bold"></span>
+                            🔑 <strong>Mã OTP Dev:</strong> <span id="devOtpValue"
+                                class="font-mono text-info fw-bold"></span>
                         </div>
 
                         <div class="mb-2.5">
-                            <label class="form-label small text-secondary fw-semibold mb-1" for="reset-otp">Mã OTP (6 chữ số)</label>
-                            <input type="text" id="reset-otp" placeholder="123456" maxlength="6" class="form-control form-control-custom text-center font-mono tracking-widest px-3">
+                            <label class="form-label small text-secondary fw-semibold mb-1" for="reset-otp">Mã OTP (6
+                                chữ số)</label>
+                            <input type="text" id="reset-otp" placeholder="123456" maxlength="6"
+                                class="form-control form-control-custom text-center font-mono tracking-widest px-3">
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label small text-secondary fw-semibold mb-1" for="reset-password">Mật khẩu mới</label>
+                            <label class="form-label small text-secondary fw-semibold mb-1" for="reset-password">Mật
+                                khẩu mới</label>
                             <div class="icon-input-wrapper">
                                 <i class="bi bi-lock-fill input-icon"></i>
-                                <input type="password" id="reset-password" placeholder="••••••••" minlength="6" class="form-control form-control-custom">
+                                <input type="password" id="reset-password" placeholder="••••••••" minlength="6"
+                                    class="form-control form-control-custom">
                             </div>
                         </div>
 
-                        <button type="button" id="btnResetPassword" onclick="handleResetPasswordSubmit()" class="btn btn-gradient-emerald w-100 py-2 rounded-3 fw-semibold">Xác nhận đặt lại mật khẩu</button>
+                        <button type="button" id="btnResetPassword" onclick="handleResetPasswordSubmit()"
+                            class="btn btn-gradient-emerald w-100 py-2 rounded-3 fw-semibold">Xác nhận đặt lại mật
+                            khẩu</button>
                     </div>
 
                 </div>
