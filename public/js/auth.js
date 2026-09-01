@@ -18,31 +18,43 @@ function switchTab(tab) {
     hideToast();
 
     if (tab === 'login') {
-        formLogin.classList.remove('hidden');
-        formRegister.classList.add('hidden');
-        tabLogin.classList.add('active');
-        tabLogin.classList.remove('text-gray-400');
-        tabRegister.classList.remove('active');
-        tabRegister.classList.add('text-gray-400');
+        if (formLogin) formLogin.classList.remove('d-none');
+        if (formRegister) formRegister.classList.add('d-none');
+        if (tabLogin) tabLogin.classList.add('active');
+        if (tabRegister) tabRegister.classList.remove('active');
     } else {
-        formLogin.classList.add('hidden');
-        formRegister.classList.remove('hidden');
-        tabRegister.classList.add('active');
-        tabRegister.classList.remove('text-gray-400');
-        tabLogin.classList.remove('active');
-        tabLogin.classList.add('text-gray-400');
+        if (formLogin) formLogin.classList.add('d-none');
+        if (formRegister) formRegister.classList.remove('d-none');
+        if (tabRegister) tabRegister.classList.add('active');
+        if (tabLogin) tabLogin.classList.remove('active');
     }
 }
 
 function togglePasswordVisibility(inputId, btn) {
     const input = document.getElementById(inputId);
-    const icon = btn.querySelector('.material-symbols-outlined');
+    if (!input) return;
+    const icon = btn ? (btn.querySelector('.bi') || btn.querySelector('.material-symbols-outlined')) : null;
+    
     if (input.type === 'password') {
         input.type = 'text';
-        icon.textContent = 'visibility_off';
+        if (icon) {
+            if (icon.classList.contains('bi')) {
+                icon.classList.remove('bi-eye-fill');
+                icon.classList.add('bi-eye-slash-fill');
+            } else {
+                icon.textContent = 'visibility_off';
+            }
+        }
     } else {
         input.type = 'password';
-        icon.textContent = 'visibility';
+        if (icon) {
+            if (icon.classList.contains('bi')) {
+                icon.classList.remove('bi-eye-slash-fill');
+                icon.classList.add('bi-eye-fill');
+            } else {
+                icon.textContent = 'visibility';
+            }
+        }
     }
 }
 
@@ -50,22 +62,29 @@ function showToast(message, isError = false) {
     const toast = document.getElementById('toast');
     const toastIcon = document.getElementById('toast-icon');
     const toastMsg = document.getElementById('toast-message');
+    if (!toast || !toastMsg) return;
 
     toastMsg.textContent = message;
-    toast.classList.remove('hidden', 'bg-red-900/50', 'border-red-700', 'text-red-200', 'bg-emerald-900/50', 'border-emerald-700', 'text-emerald-200');
+    toast.classList.remove('d-none', 'alert-info', 'alert-danger', 'alert-success');
 
     if (isError) {
-        toast.classList.add('bg-red-900/50', 'border', 'border-red-700', 'text-red-200');
-        toastIcon.textContent = 'error';
+        toast.classList.add('alert-danger');
+        if (toastIcon) {
+            toastIcon.className = 'bi bi-exclamation-triangle-fill fs-5 me-1';
+        }
     } else {
-        toast.classList.add('bg-emerald-900/50', 'border', 'border-emerald-700', 'text-emerald-200');
-        toastIcon.textContent = 'check_circle';
+        toast.classList.add('alert-success');
+        if (toastIcon) {
+            toastIcon.className = 'bi bi-check-circle-fill fs-5 me-1';
+        }
     }
 }
 
 function hideToast() {
     const toast = document.getElementById('toast');
-    toast.classList.add('hidden');
+    if (toast) {
+        toast.classList.add('d-none');
+    }
 }
 
 async function handleLogin(event) {
@@ -81,8 +100,10 @@ async function handleLogin(event) {
         return;
     }
 
-    btnSubmit.disabled = true;
-    btnSubmit.innerHTML = `<span class="material-symbols-outlined animate-spin">progress_activity</span> Đang xử lý...`;
+    if (btnSubmit) {
+        btnSubmit.disabled = true;
+        btnSubmit.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Đang xử lý...`;
+    }
 
     try {
         const response = await fetch('/api/auth/login', {
@@ -112,8 +133,10 @@ async function handleLogin(event) {
     } catch (err) {
         showToast(err.message || 'Lỗi kết nối máy chủ.', true);
     } finally {
-        btnSubmit.disabled = false;
-        btnSubmit.innerHTML = `<span>Đăng nhập</span><span class="material-symbols-outlined text-lg">arrow_forward</span>`;
+        if (btnSubmit) {
+            btnSubmit.disabled = false;
+            btnSubmit.innerHTML = `<span>Đăng nhập</span><i class="bi bi-arrow-right fs-5"></i>`;
+        }
     }
 }
 
@@ -132,8 +155,10 @@ async function handleRegister(event) {
         return;
     }
 
-    btnSubmit.disabled = true;
-    btnSubmit.innerHTML = `<span class="material-symbols-outlined animate-spin">progress_activity</span> Đang tạo tài khoản...`;
+    if (btnSubmit) {
+        btnSubmit.disabled = true;
+        btnSubmit.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Đang tạo tài khoản...`;
+    }
 
     try {
         const response = await fetch('/api/auth/register', {
@@ -163,8 +188,10 @@ async function handleRegister(event) {
     } catch (err) {
         showToast(err.message || 'Lỗi kết nối máy chủ.', true);
     } finally {
-        btnSubmit.disabled = false;
-        btnSubmit.innerHTML = `<span>Tạo tài khoản</span><span class="material-symbols-outlined text-lg">check_circle</span>`;
+        if (btnSubmit) {
+            btnSubmit.disabled = false;
+            btnSubmit.innerHTML = `<span>Tạo tài khoản</span><i class="bi bi-check-circle-fill fs-5"></i>`;
+        }
     }
 }
 
@@ -176,9 +203,9 @@ function openForgotModal() {
     const emailInput = document.getElementById('forgot-email');
     
     if (modal) {
-        modal.classList.remove('hidden');
-        if (step1) step1.classList.remove('hidden');
-        if (step2) step2.classList.add('hidden');
+        modal.classList.remove('d-none');
+        if (step1) step1.classList.remove('d-none');
+        if (step2) step2.classList.add('d-none');
         if (emailInput) {
             const loginEmail = document.getElementById('login-email');
             if (loginEmail && loginEmail.value) emailInput.value = loginEmail.value;
@@ -188,11 +215,12 @@ function openForgotModal() {
 
 function closeForgotModal() {
     const modal = document.getElementById('forgotModal');
-    if (modal) modal.classList.add('hidden');
+    if (modal) modal.classList.add('d-none');
 }
 
 async function handleSendOtp() {
-    const email = document.getElementById('forgot-email').value.trim();
+    const emailInput = document.getElementById('forgot-email');
+    const email = emailInput ? emailInput.value.trim() : '';
     const btnSend = document.getElementById('btnSendOtp');
     const step1 = document.getElementById('forgotStep1');
     const step2 = document.getElementById('forgotStep2');
@@ -204,8 +232,10 @@ async function handleSendOtp() {
         return;
     }
 
-    btnSend.disabled = true;
-    btnSend.textContent = 'Đang gửi mã OTP...';
+    if (btnSend) {
+        btnSend.disabled = true;
+        btnSend.textContent = 'Đang gửi mã OTP...';
+    }
 
     try {
         const response = await fetch('/api/auth/forgot-password', {
@@ -222,26 +252,31 @@ async function handleSendOtp() {
 
         alert(data.message || 'Đã gửi mã OTP xác nhận!');
 
-        if (step1) step1.classList.add('hidden');
-        if (step2) step2.classList.remove('hidden');
+        if (step1) step1.classList.add('d-none');
+        if (step2) step2.classList.remove('d-none');
 
         if (data.devOtp) {
-            if (devNotice) devNotice.classList.remove('hidden');
+            if (devNotice) devNotice.classList.remove('d-none');
             if (devValue) devValue.textContent = data.devOtp;
         }
 
     } catch (err) {
         alert(err.message || 'Lỗi gửi OTP.');
     } finally {
-        btnSend.disabled = false;
-        btnSend.textContent = 'Gửi mã OTP qua Gmail';
+        if (btnSend) {
+            btnSend.disabled = false;
+            btnSend.textContent = 'Gửi mã OTP qua Gmail';
+        }
     }
 }
 
 async function handleResetPasswordSubmit() {
-    const email = document.getElementById('forgot-email').value.trim();
-    const otp = document.getElementById('reset-otp').value.trim();
-    const newPassword = document.getElementById('reset-password').value;
+    const emailInput = document.getElementById('forgot-email');
+    const email = emailInput ? emailInput.value.trim() : '';
+    const otpInput = document.getElementById('reset-otp');
+    const otp = otpInput ? otpInput.value.trim() : '';
+    const passwordInput = document.getElementById('reset-password');
+    const newPassword = passwordInput ? passwordInput.value : '';
     const btnReset = document.getElementById('btnResetPassword');
 
     if (!email || !otp || !newPassword) {
@@ -249,8 +284,10 @@ async function handleResetPasswordSubmit() {
         return;
     }
 
-    btnReset.disabled = true;
-    btnReset.textContent = 'Đang cập nhật mật khẩu...';
+    if (btnReset) {
+        btnReset.disabled = true;
+        btnReset.textContent = 'Đang cập nhật mật khẩu...';
+    }
 
     try {
         const response = await fetch('/api/auth/reset-password', {
@@ -276,7 +313,10 @@ async function handleResetPasswordSubmit() {
     } catch (err) {
         alert(err.message || 'Lỗi đặt lại mật khẩu.');
     } finally {
-        btnReset.disabled = false;
-        btnReset.textContent = 'Xác nhận đặt lại mật khẩu';
+        if (btnReset) {
+            btnReset.disabled = false;
+            btnReset.textContent = 'Xác nhận đặt lại mật khẩu';
+        }
     }
 }
+

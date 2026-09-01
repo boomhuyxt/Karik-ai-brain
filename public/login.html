@@ -397,7 +397,7 @@
 
                 <!-- Dark / Light Theme Toggle -->
                 <div class="d-flex align-items-center pt-2 pt-lg-0">
-                    <button id="btnThemeToggle" onclick="toggleTheme()"
+                    <button id="btnLoginThemeToggle" onclick="toggleLoginTheme()"
                         class="btn btn-sm glass-panel border d-flex align-items-center gap-2 px-3 py-2 rounded-3 fw-semibold text-body w-100 justify-content-center">
                         <i id="themeIcon" class="bi bi-sun-fill text-warning fs-6"></i>
                         <span id="themeText" class="font-mono small">Sáng/Tối</span>
@@ -820,7 +820,7 @@
     <script src="/js/auth.js"></script>
     <script>
         // Theme Controller
-        function toggleTheme() {
+        function toggleLoginTheme() {
             const current = document.documentElement.getAttribute('data-bs-theme') || 'dark';
             const next = current === 'dark' ? 'light' : 'dark';
             document.documentElement.setAttribute('data-bs-theme', next);
@@ -833,6 +833,10 @@
             }
             localStorage.setItem('theme', next);
             updateThemeUI();
+        }
+
+        function toggleTheme() {
+            toggleLoginTheme();
         }
 
         function updateThemeUI() {
