@@ -24,8 +24,10 @@
     <title>AI Brain Karik - Đăng nhập / Đăng ký</title>
     <link rel="icon" type="image/png" href="/Logo/logo-removebg.png">
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Sora:wght@600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700&family=Plus+Jakarta+Sans:ital,wght@0,500;0,600;0,700;0,800;1,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 
     <script id="tailwind-config">
         tailwind.config = {
@@ -33,49 +35,111 @@
             theme: {
                 extend: {
                     colors: {
-                        "surface-dim": "#10131a",
+                        "surface-dim": "#0c0f17",
                         "surface": "#10131a",
-                        "surface-container": "#1d2026",
-                        "surface-container-high": "#272a31",
+                        "surface-container": "#161922",
+                        "surface-container-high": "#1f232e",
+                        "surface-container-highest": "#282d3b",
                         "primary": "#d3bbff",
                         "primary-container": "#6d28d9",
                         "secondary": "#5de6ff",
                         "mint": "#34d399",
-                        "background": "#10131a"
+                        "background": "#0c0f17"
                     },
                     fontFamily: {
                         sans: ["Inter", "sans-serif"],
-                        sora: ["Sora", "sans-serif"]
+                        vietnam: ["'Be Vietnam Pro'", "sans-serif"],
+                        jakarta: ["'Plus Jakarta Sans'", "sans-serif"],
+                        sora: ["'Plus Jakarta Sans'", "'Be Vietnam Pro'", "sans-serif"],
+                        mono: ["JetBrains Mono", "monospace"]
                     }
                 }
             }
         }
     </script>
     <style>
+        /* Native Vietnamese Typography: Be Vietnam Pro (ExtraBold 800) */
+        @font-face {
+            font-family: 'Be Vietnam Pro';
+            font-style: normal;
+            font-weight: 800;
+            font-display: swap;
+            src: url('/fonts/bevietnam-extrabold-vn.woff2') format('woff2');
+            unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+        }
+        @font-face {
+            font-family: 'Be Vietnam Pro';
+            font-style: normal;
+            font-weight: 800;
+            font-display: swap;
+            src: url('/fonts/bevietnam-extrabold-latin.woff2') format('woff2');
+            unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+        }
+
+        /* Native Vietnamese Typography: Be Vietnam Pro (Bold 700) */
+        @font-face {
+            font-family: 'Be Vietnam Pro';
+            font-style: normal;
+            font-weight: 700;
+            font-display: swap;
+            src: url('/fonts/bevietnam-bold-vn.woff2') format('woff2');
+            unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+        }
+        @font-face {
+            font-family: 'Be Vietnam Pro';
+            font-style: normal;
+            font-weight: 700;
+            font-display: swap;
+            src: url('/fonts/bevietnam-bold-latin.woff2') format('woff2');
+            unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+        }
+
+        .font-headline {
+            font-family: 'Be Vietnam Pro', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+            letter-spacing: -0.015em;
+        }
+
+        /* Glassmorphism Styles */
         .dark .glass-panel {
-            background: rgba(29, 32, 38, 0.85);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
+            background: rgba(22, 25, 34, 0.82);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
             border: 1px solid rgba(211, 187, 255, 0.12);
         }
         html:not(.dark) .glass-panel,
         html.light .glass-panel {
-            background: rgba(255, 255, 255, 0.92);
+            background: rgba(255, 255, 255, 0.90);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid rgba(109, 40, 217, 0.12);
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.07);
+        }
+
+        .dark .glass-nav {
+            background: rgba(12, 15, 23, 0.8);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(109, 40, 217, 0.15);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
+        html:not(.dark) .glass-nav,
+        html.light .glass-nav {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+        }
+
         .glow-effect {
-            box-shadow: 0 0 25px -5px rgba(109, 40, 217, 0.4);
+            box-shadow: 0 0 25px -5px rgba(109, 40, 217, 0.35);
         }
         .glow-effect:hover {
-            box-shadow: 0 0 35px 0px rgba(109, 40, 217, 0.6);
+            box-shadow: 0 0 35px 0px rgba(109, 40, 217, 0.55);
         }
+
         .dark .tab-btn.active {
             color: #d3bbff;
             border-bottom: 2px solid #d3bbff;
-            background-color: rgba(109, 40, 217, 0.15);
+            background-color: rgba(109, 40, 217, 0.18);
         }
         html:not(.dark) .tab-btn.active,
         html.light .tab-btn.active {
@@ -84,7 +148,22 @@
             background-color: rgba(109, 40, 217, 0.08);
         }
 
-        /* Light Mode Form Adjustments */
+        /* Gradient Text */
+        .text-gradient {
+            background: linear-gradient(135deg, #e9d5ff 0%, #c084fc 35%, #67e8f9 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        html:not(.dark) .text-gradient,
+        html.light .text-gradient {
+            background: linear-gradient(135deg, #7c3aed 0%, #9333ea 45%, #0284c7 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Light Mode Body & Forms */
         html:not(.dark) body, html.light body {
             background-color: #f8fafc !important;
             color: #1e293b !important;
@@ -100,188 +179,692 @@
         html:not(.dark) label, html.light label {
             color: #334155 !important;
         }
-        html:not(.dark) h1, html.light h1 {
-            color: #0f172a !important;
+
+        /* Prevent horizontal scroll on mobile */
+        html, body {
+            overflow-x: hidden !important;
+            max-width: 100vw !important;
+            width: 100% !important;
+        }
+
+        /* Custom Scrollbar for Modal */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(109, 40, 217, 0.35);
+            border-radius: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(109, 40, 217, 0.6);
         }
     </style>
 </head>
 
-<body class="bg-background text-gray-200 font-sans min-h-screen flex items-center justify-center p-4 relative overflow-hidden selection:bg-purple-500 selection:text-white transition-colors duration-200">
+<body class="bg-background text-slate-800 dark:text-gray-200 font-sans min-h-screen relative overflow-x-hidden selection:bg-purple-500 selection:text-white transition-colors duration-200 flex flex-col justify-between max-w-full">
 
-    <!-- Top Floating Dark/Light Toggle Button -->
-    <div class="fixed top-4 right-4 z-50">
-        <button id="btnLoginThemeToggle" onclick="toggleLoginTheme()" title="Chuyển đổi giao diện Sáng / Tối"
-            class="p-2.5 rounded-2xl glass-panel border flex items-center gap-2 text-xs font-semibold text-slate-300 hover:text-purple-400 transition-all shadow-md active:scale-95 cursor-pointer">
-            <span id="loginThemeIcon" class="material-symbols-outlined text-base text-amber-400">light_mode</span>
-            <span id="loginThemeText" class="text-xs font-mono">Sáng/Tối</span>
-        </button>
+    <!-- Background glowing ambient Orbs -->
+    <div class="fixed -top-40 -left-40 w-[30rem] h-[30rem] bg-purple-900/25 dark:bg-purple-900/35 rounded-full blur-3xl pointer-events-none -z-10"></div>
+    <div class="fixed top-1/3 -right-32 w-[28rem] h-[28rem] bg-cyan-900/20 dark:bg-cyan-900/25 rounded-full blur-3xl pointer-events-none -z-10"></div>
+    <div class="fixed -bottom-40 left-1/4 w-[32rem] h-[32rem] bg-indigo-950/20 dark:bg-indigo-950/30 rounded-full blur-3xl pointer-events-none -z-10"></div>
+
+    <!-- ==================== TOP NAVIGATION BAR ==================== -->
+    <header class="sticky top-0 z-40 w-full glass-nav transition-all duration-200 overflow-hidden">
+        <div class="max-w-7xl mx-auto px-2.5 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between gap-1.5 sm:gap-4">
+            
+            <!-- Left Side: Web Logo + Brand Name + Models & Docs Buttons -->
+            <div class="flex items-center gap-1.5 sm:gap-4 min-w-0">
+                <!-- Logo with click to reset/go to login -->
+                <button type="button" onclick="resetToAuth()" title="Quay về trang Đăng nhập / Đăng ký"
+                    class="group flex items-center gap-1.5 sm:gap-3 text-left focus:outline-none focus:ring-2 focus:ring-purple-400 rounded-2xl p-0.5 sm:p-1 transition-all flex-shrink-0">
+                    <div class="w-8 h-8 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-purple-950/40 p-1 sm:p-1.5 flex items-center justify-center border border-purple-500/30 shadow-md group-hover:scale-105 transition-transform flex-shrink-0">
+                        <img src="/Logo/logo-removebg.png" alt="AI Brain Karik Logo" class="w-full h-full object-contain filter drop-shadow">
+                    </div>
+                    <div class="flex flex-col">
+                        <div class="flex items-center gap-1 sm:gap-2">
+                            <span class="font-sora font-bold text-xs sm:text-base lg:text-lg text-slate-900 dark:text-white tracking-tight group-hover:text-purple-500 dark:group-hover:text-purple-300 transition-colors whitespace-nowrap">
+                                AI Brain Karik
+                            </span>
+                            <span class="hidden md:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-purple-500/15 text-purple-600 dark:text-purple-300 border border-purple-500/20">
+                                v2.0 Core
+                            </span>
+                        </div>
+                        <span class="text-[11px] text-slate-500 dark:text-gray-400 hidden lg:block">Knowledge & Multi-Agent OS</span>
+                    </div>
+                </button>
+
+                <!-- Navigation Divider -->
+                <div class="hidden sm:block h-6 w-px bg-slate-300 dark:bg-gray-700/60"></div>
+
+                <!-- Action Buttons: Models & Docs -->
+                <nav class="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+                    <!-- Models Button -->
+                    <button type="button" onclick="openModelsModal()" id="btnNavModels" title="Xem danh sách Models"
+                        class="inline-flex items-center gap-1 px-2 py-1 sm:px-3.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 dark:text-gray-200 bg-slate-200/60 dark:bg-surface-container-high/80 hover:bg-purple-500/15 hover:text-purple-600 dark:hover:text-purple-300 border border-slate-300/60 dark:border-gray-700/60 transition-all shadow-sm active:scale-95 cursor-pointer whitespace-nowrap">
+                        <span class="material-symbols-outlined text-sm sm:text-lg text-purple-500 dark:text-purple-400">neurology</span>
+                        <span>Models</span>
+                        <span class="px-1.5 py-0.2 rounded-md bg-purple-500/20 text-[10px] font-mono text-purple-600 dark:text-purple-300 hidden md:inline">10+</span>
+                    </button>
+
+                    <!-- Docs Button -->
+                    <button type="button" onclick="openDocsModal()" id="btnNavDocs" title="Xem tài liệu Docs"
+                        class="inline-flex items-center gap-1 px-2 py-1 sm:px-3.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 dark:text-gray-200 bg-slate-200/60 dark:bg-surface-container-high/80 hover:bg-cyan-500/15 hover:text-cyan-600 dark:hover:text-cyan-300 border border-slate-300/60 dark:border-gray-700/60 transition-all shadow-sm active:scale-95 cursor-pointer whitespace-nowrap">
+                        <span class="material-symbols-outlined text-sm sm:text-lg text-cyan-500 dark:text-cyan-400">menu_book</span>
+                        <span>Docs</span>
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Right Side: Dark / Light Mode Toggle Button -->
+            <div class="flex items-center gap-1.5 flex-shrink-0">
+                <button id="btnLoginThemeToggle" onclick="toggleLoginTheme()" title="Chuyển đổi giao diện Sáng / Tối"
+                    class="p-1.5 sm:px-3 sm:py-2 rounded-xl glass-panel border border-slate-300/70 dark:border-gray-700/60 flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-purple-600 dark:hover:text-purple-400 transition-all shadow-sm active:scale-95 cursor-pointer">
+                    <span id="loginThemeIcon" class="material-symbols-outlined text-base text-amber-400">light_mode</span>
+                    <span id="loginThemeText" class="text-xs font-mono hidden md:inline">Sáng/Tối</span>
+                </button>
+            </div>
+
+        </div>
+    </header>
+
+    <!-- ==================== MAIN CONTENT (SPLIT SCREEN LAYOUT) ==================== -->
+    <main class="max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-12 my-auto overflow-x-hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 xl:gap-16 items-center">
+
+            <!-- ================= LEFT COLUMN: HERO INFORMATION & STUDENT INTRO ================= -->
+            <div class="lg:col-span-7 xl:col-span-7 space-y-6 sm:space-y-8">
+                
+                <!-- Status Badge -->
+                <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-purple-500/10 dark:bg-purple-500/15 border border-purple-500/25 text-purple-600 dark:text-purple-300 text-xs font-medium backdrop-blur-sm">
+                    <span class="flex h-2 w-2 relative">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-purple-500"></span>
+                    </span>
+                    <span class="font-semibold tracking-wide uppercase text-[11px]">BETA TESTING & RESEARCH</span>
+                    <span class="text-slate-400 dark:text-gray-500">•</span>
+                    <span>Dự Án Học Viên Thực Nghiệm</span>
+                </div>
+
+                <!-- Main Hero Headline (Harmonious Vietnamese Typography with Be Vietnam Pro) -->
+                <div class="space-y-4">
+                    <h1 class="font-headline tracking-tight">
+                        <!-- Phrase 1a -->
+                        <span class="block font-extrabold text-slate-900 dark:text-white"
+                              style="font-size: clamp(1.5rem, 4vw, 2.75rem); line-height: 1.25; padding-bottom: 0.1em;">
+                            AI được xây dựng
+                        </span>
+                        <!-- Phrase 1b — 0.55em padding below creates visual break between two sentences -->
+                        <span class="block font-extrabold text-slate-900 dark:text-white"
+                              style="font-size: clamp(1.5rem, 4vw, 2.75rem); line-height: 1.25; padding-bottom: 0.55em;">
+                            bởi các học viên
+                        </span>
+                        <!-- Phrase 2a -->
+                        <span class="block font-bold text-gradient"
+                              style="font-size: clamp(1.2rem, 3.2vw, 2.15rem); line-height: 1.25; padding-bottom: 0.1em;">
+                            Còn đang trong quá trình
+                        </span>
+                        <!-- Phrase 2b -->
+                        <span class="block font-bold text-gradient"
+                              style="font-size: clamp(1.2rem, 3.2vw, 2.15rem); line-height: 1.25;">
+                            kiểm thử và phát triển
+                        </span>
+                    </h1>
+                    <p class="text-base sm:text-lg text-slate-600 dark:text-gray-300 font-normal leading-relaxed max-w-2xl">
+                        Hệ thống Trí Tuệ Nhân Tạo điều phối Đa Tác Nhân (Multi-Agent) kết hợp Kho Tri Thức RAG Obsidian & Supabase pgvector. Toàn bộ kiến trúc và các mô hình AI đang được liên tục tinh chỉnh, đo lường và kiểm thử thực tế.
+                    </p>
+                </div>
+
+                <!-- Feature Highlights Cards Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                    
+                    <!-- Card 1: Multi-Agent Architecture -->
+                    <div class="p-4 sm:p-5 rounded-2xl glass-panel border border-slate-200/80 dark:border-gray-800/80 hover:border-purple-500/40 transition-all group">
+                        <div class="w-10 h-10 rounded-xl bg-purple-500/15 text-purple-600 dark:text-purple-400 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                            <span class="material-symbols-outlined text-2xl">account_tree</span>
+                        </div>
+                        <h2 class="font-sora font-semibold text-slate-900 dark:text-white text-sm sm:text-base">Kiến Trúc Đa Tác Nhân</h2>
+                        <p class="text-xs text-slate-500 dark:text-gray-400 mt-1 leading-relaxed">
+                            Phân rã tác vụ thông minh giữa AI Karik Orchestrator, Agent Studio Ảnh, Agent Đăng Bài MXH và Agent Quản Lý Rủi Ro.
+                        </p>
+                    </div>
+
+                    <!-- Card 2: Multi-Model Integration -->
+                    <div class="p-4 sm:p-5 rounded-2xl glass-panel border border-slate-200/80 dark:border-gray-800/80 hover:border-cyan-500/40 transition-all group">
+                        <div class="w-10 h-10 rounded-xl bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                            <span class="material-symbols-outlined text-2xl">psychology</span>
+                        </div>
+                        <h2 class="font-sora font-semibold text-slate-900 dark:text-white text-sm sm:text-base">Tích Hợp Đa Mô Hình AI</h2>
+                        <p class="text-xs text-slate-500 dark:text-gray-400 mt-1 leading-relaxed">
+                            Kết hợp song song Google Gemini 3.5/3.6, OpenAI GPT-4o, Anthropic Claude 3.5, Groq LPU siêu tốc và Cloudflare Flux.
+                        </p>
+                    </div>
+
+                    <!-- Card 3: RAG Knowledge Base -->
+                    <div class="p-4 sm:p-5 rounded-2xl glass-panel border border-slate-200/80 dark:border-gray-800/80 hover:border-emerald-500/40 transition-all group">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                            <span class="material-symbols-outlined text-2xl">database</span>
+                        </div>
+                        <h2 class="font-sora font-semibold text-slate-900 dark:text-white text-sm sm:text-base">Kho Tri Thức RAG & pgvector</h2>
+                        <p class="text-xs text-slate-500 dark:text-gray-400 mt-1 leading-relaxed">
+                            Vector hóa tự động kho ghi chú cá nhân Obsidian Vault qua Supabase pgvector với độ chính xác và bảo mật tối đa.
+                        </p>
+                    </div>
+
+                    <!-- Card 4: Open Testing Environment -->
+                    <div class="p-4 sm:p-5 rounded-2xl glass-panel border border-slate-200/80 dark:border-gray-800/80 hover:border-amber-500/40 transition-all group">
+                        <div class="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                            <span class="material-symbols-outlined text-2xl">science</span>
+                        </div>
+                        <h2 class="font-sora font-semibold text-slate-900 dark:text-white text-sm sm:text-base">Thực Nghiệm & Tối Ưu</h2>
+                        <p class="text-xs text-slate-500 dark:text-gray-400 mt-1 leading-relaxed">
+                            Môi trường nghiên cứu giúp học viên thực hành Clean Architecture, tối ưu hóa Prompt Engineering và phân bổ TPM/RPD.
+                        </p>
+                    </div>
+
+                </div>
+
+                <!-- Quick Model Discovery Action -->
+                <div class="pt-2 flex flex-wrap items-center gap-4 text-xs text-slate-500 dark:text-gray-400">
+                    <span class="flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-emerald-500 text-sm">verified</span>
+                        <span>Trạng thái: <strong>Development & Testing Active</strong></span>
+                    </span>
+                    <span>•</span>
+                    <button type="button" onclick="openModelsModal()" class="text-purple-600 dark:text-purple-400 hover:underline font-semibold inline-flex items-center gap-1">
+                        Xem chi tiết các mô hình AI dự án đã sử dụng
+                        <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- ================= RIGHT COLUMN: AUTH CARD (LOGIN / REGISTER) ================= -->
+            <div class="lg:col-span-5 xl:col-span-5 flex justify-center lg:justify-end">
+                
+                <div class="w-full max-w-md glass-panel rounded-3xl shadow-2xl p-6 sm:p-8 z-10 relative border border-purple-500/20">
+
+                    <!-- Auth Header -->
+                    <div class="text-center mb-6">
+                        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-purple-950/40 p-2 mb-3 shadow-md glow-effect border border-purple-500/30">
+                            <img src="/Logo/logo-removebg.png" alt="AI Brain Karik" class="w-full h-full object-contain filter drop-shadow">
+                        </div>
+                        <h2 class="font-sora text-xl font-bold text-slate-900 dark:text-white tracking-tight">Cổng Đăng Nhập Hệ Thống</h2>
+                        <p class="text-xs text-slate-500 dark:text-gray-400 mt-1">Truy cập không gian làm việc AI Brain Karik</p>
+                    </div>
+
+                    <!-- Toast Alert Banner -->
+                    <div id="toast" class="hidden mb-5 p-3.5 rounded-xl text-xs sm:text-sm flex items-center gap-3 transition-all duration-300">
+                        <span id="toast-icon" class="material-symbols-outlined text-xl">info</span>
+                        <span id="toast-message" class="flex-1 font-medium"></span>
+                    </div>
+
+                    <!-- Tabs Navigation -->
+                    <div class="flex border-b border-slate-200 dark:border-gray-700/60 mb-6 text-sm font-semibold rounded-t-xl overflow-hidden bg-slate-100 dark:bg-surface-container/50">
+                        <button id="tab-login" onclick="switchTab('login')" class="tab-btn active flex-1 py-3 text-center transition-all duration-200 flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined text-lg">login</span> Đăng nhập
+                        </button>
+                        <button id="tab-register" onclick="switchTab('register')" class="tab-btn flex-1 py-3 text-center text-slate-400 dark:text-gray-400 transition-all duration-200 flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined text-lg">person_add</span> Đăng ký
+                        </button>
+                    </div>
+
+                    <!-- LOGIN FORM -->
+                    <form id="form-login" onsubmit="handleLogin(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 dark:text-gray-300 uppercase tracking-wider mb-1.5" for="login-email">Email hệ thống</label>
+                            <div class="relative">
+                                <span class="material-symbols-outlined absolute left-3.5 top-3 text-slate-400 dark:text-gray-400 text-xl">mail</span>
+                                <input type="email" id="login-email" required placeholder="name@example.com" class="w-full bg-white dark:bg-surface-container-high/80 border border-slate-200 dark:border-gray-700 rounded-xl py-2.5 pl-11 pr-4 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-purple-500 dark:focus:border-purple-400 focus:ring-1 focus:ring-purple-400 transition-all">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 dark:text-gray-300 uppercase tracking-wider mb-1.5" for="login-password">Mật khẩu</label>
+                            <div class="relative">
+                                <span class="material-symbols-outlined absolute left-3.5 top-3 text-slate-400 dark:text-gray-400 text-xl">lock</span>
+                                <input type="password" id="login-password" required placeholder="••••••••" class="w-full bg-white dark:bg-surface-container-high/80 border border-slate-200 dark:border-gray-700 rounded-xl py-2.5 pl-11 pr-11 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-purple-500 dark:focus:border-purple-400 focus:ring-1 focus:ring-purple-400 transition-all">
+                                <button type="button" onclick="togglePasswordVisibility('login-password', this)" class="absolute right-3.5 top-3 text-slate-400 dark:text-gray-400 hover:text-slate-700 dark:hover:text-white">
+                                    <span class="material-symbols-outlined text-xl">visibility</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between text-xs text-slate-500 dark:text-gray-400 pt-1">
+                            <label class="flex items-center gap-2 cursor-pointer select-none">
+                                <input type="checkbox" checked class="rounded border-gray-700 bg-surface-container-high text-purple-600 focus:ring-0 focus:ring-offset-0">
+                                <span>Ghi nhớ đăng nhập</span>
+                            </label>
+                            <button type="button" onclick="openForgotModal()" class="text-purple-600 dark:text-purple-300 hover:underline hover:text-purple-500 font-medium">Quên mật khẩu?</button>
+                        </div>
+
+                        <button type="submit" id="btn-login-submit" class="w-full py-3 px-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold rounded-xl shadow-lg glow-effect transition-all duration-200 flex items-center justify-center gap-2">
+                            <span>Đăng nhập</span>
+                            <span class="material-symbols-outlined text-lg">arrow_forward</span>
+                        </button>
+                    </form>
+
+                    <!-- REGISTER FORM -->
+                    <form id="form-register" onsubmit="handleRegister(event)" class="space-y-3.5 hidden">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 dark:text-gray-300 uppercase tracking-wider mb-1" for="reg-fullname">Họ và tên</label>
+                            <div class="relative">
+                                <span class="material-symbols-outlined absolute left-3.5 top-2.5 text-slate-400 dark:text-gray-400 text-xl">badge</span>
+                                <input type="text" id="reg-fullname" required placeholder="Nguyễn Văn A" class="w-full bg-white dark:bg-surface-container-high/80 border border-slate-200 dark:border-gray-700 rounded-xl py-2 pl-11 pr-4 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-purple-500 dark:focus:border-purple-400 focus:ring-1 focus:ring-purple-400 transition-all">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 dark:text-gray-300 uppercase tracking-wider mb-1" for="reg-email">Email</label>
+                            <div class="relative">
+                                <span class="material-symbols-outlined absolute left-3.5 top-2.5 text-slate-400 dark:text-gray-400 text-xl">mail</span>
+                                <input type="email" id="reg-email" required placeholder="name@example.com" class="w-full bg-white dark:bg-surface-container-high/80 border border-slate-200 dark:border-gray-700 rounded-xl py-2 pl-11 pr-4 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-purple-500 dark:focus:border-purple-400 focus:ring-1 focus:ring-purple-400 transition-all">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 dark:text-gray-300 uppercase tracking-wider mb-1" for="reg-password">Mật khẩu</label>
+                            <div class="relative">
+                                <span class="material-symbols-outlined absolute left-3.5 top-2.5 text-slate-400 dark:text-gray-400 text-xl">lock</span>
+                                <input type="password" id="reg-password" required minlength="6" placeholder="Tối thiểu 6 ký tự" class="w-full bg-white dark:bg-surface-container-high/80 border border-slate-200 dark:border-gray-700 rounded-xl py-2 pl-11 pr-11 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-purple-500 dark:focus:border-purple-400 focus:ring-1 focus:ring-purple-400 transition-all">
+                                <button type="button" onclick="togglePasswordVisibility('reg-password', this)" class="absolute right-3.5 top-2.5 text-slate-400 dark:text-gray-400 hover:text-slate-700 dark:hover:text-white">
+                                    <span class="material-symbols-outlined text-xl">visibility</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 dark:text-gray-300 uppercase tracking-wider mb-1" for="reg-confirm-password">Xác nhận mật khẩu</label>
+                            <div class="relative">
+                                <span class="material-symbols-outlined absolute left-3.5 top-2.5 text-slate-400 dark:text-gray-400 text-xl">verified_user</span>
+                                <input type="password" id="reg-confirm-password" required minlength="6" placeholder="Nhập lại mật khẩu" class="w-full bg-white dark:bg-surface-container-high/80 border border-slate-200 dark:border-gray-700 rounded-xl py-2 pl-11 pr-11 text-slate-800 dark:text-white text-sm focus:outline-none focus:border-purple-500 dark:focus:border-purple-400 focus:ring-1 focus:ring-purple-400 transition-all">
+                                <button type="button" onclick="togglePasswordVisibility('reg-confirm-password', this)" class="absolute right-3.5 top-2.5 text-slate-400 dark:text-gray-400 hover:text-slate-700 dark:hover:text-white">
+                                    <span class="material-symbols-outlined text-xl">visibility</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <button type="submit" id="btn-register-submit" class="w-full py-3 px-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold rounded-xl shadow-lg glow-effect transition-all duration-200 flex items-center justify-center gap-2 mt-2">
+                            <span>Tạo tài khoản</span>
+                            <span class="material-symbols-outlined text-lg">check_circle</span>
+                        </button>
+                    </form>
+
+                    <!-- Footer Info -->
+                    <div class="mt-6 pt-4 border-t border-slate-200 dark:border-gray-800/80 text-center text-[11px] text-slate-400 dark:text-gray-500 flex items-center justify-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>
+                        <span>AI Brain Karik System &bull; Supabase PostgreSQL Connected</span>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    </main>
+
+    <!-- ==================== FOOTER ==================== -->
+    <footer class="w-full py-4 text-center text-xs text-slate-500 dark:text-gray-500 border-t border-slate-200/50 dark:border-gray-800/50">
+        <p>© 2026 AI Brain Karik &bull; Nền tảng nghiên cứu & thực nghiệm AI bởi các học viên</p>
+    </footer>
+
+    <!-- ==================== MODAL 1: MODELS VIEWER MODAL ==================== -->
+    <div id="modelsModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-fadeIn">
+        <div class="glass-panel w-full max-w-4xl max-h-[90vh] rounded-3xl p-5 sm:p-7 relative flex flex-col shadow-2xl border border-purple-500/30">
+            
+            <!-- Modal Header -->
+            <div class="flex items-start justify-between border-b border-slate-200 dark:border-gray-700/80 pb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-purple-500/15 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-2xl sm:text-3xl">neurology</span>
+                    </div>
+                    <div>
+                        <h2 class="font-sora text-lg sm:text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                            Danh Sách Mô Hình AI Dự Án Đã Sử Dụng
+                        </h2>
+                        <p class="text-xs text-slate-500 dark:text-gray-400 mt-0.5">
+                            Hệ thống tích hợp đa mô hình từ Google Gemini, OpenAI, Claude, Groq & Cloudflare
+                        </p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeModelsModal()" class="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-gray-800 transition-colors">
+                    <span class="material-symbols-outlined text-2xl">close</span>
+                </button>
+            </div>
+
+            <!-- Category Filter Tabs -->
+            <div class="flex items-center gap-2 py-3 overflow-x-auto border-b border-slate-200/60 dark:border-gray-800">
+                <button type="button" onclick="filterModelsCategory('all')" id="filter-btn-all" class="model-filter-btn active px-3 py-1 rounded-lg text-xs font-semibold bg-purple-500 text-white transition-all">
+                    Tất cả (10)
+                </button>
+                <button type="button" onclick="filterModelsCategory('agent')" id="filter-btn-agent" class="model-filter-btn px-3 py-1 rounded-lg text-xs font-semibold text-slate-600 dark:text-gray-300 hover:bg-purple-500/20 transition-all">
+                    Multi-Agent Karik (4)
+                </button>
+                <button type="button" onclick="filterModelsCategory('llm')" id="filter-btn-llm" class="model-filter-btn px-3 py-1 rounded-lg text-xs font-semibold text-slate-600 dark:text-gray-300 hover:bg-purple-500/20 transition-all">
+                    LLM & Reasoning (4)
+                </button>
+                <button type="button" onclick="filterModelsCategory('vision')" id="filter-btn-vision" class="model-filter-btn px-3 py-1 rounded-lg text-xs font-semibold text-slate-600 dark:text-gray-300 hover:bg-purple-500/20 transition-all">
+                    Sinh Ảnh & Vision (2)
+                </button>
+            </div>
+
+            <!-- Models Cards List (Scrollable) -->
+            <div class="overflow-y-auto custom-scrollbar my-4 pr-1 space-y-3.5 max-h-[62vh]">
+                
+                <!-- Model 1: Gemini 3.5 Flash Lite (Orchestrator) -->
+                <div class="model-card p-4 rounded-2xl bg-white/70 dark:bg-surface-container-high/60 border border-slate-200 dark:border-gray-700/60 hover:border-purple-500/50 transition-all" data-category="agent">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div class="flex items-center gap-2.5">
+                            <span class="px-2.5 py-1 rounded-lg bg-blue-500/15 text-blue-600 dark:text-blue-400 font-mono text-xs font-bold">Google</span>
+                            <h3 class="font-sora font-bold text-slate-900 dark:text-white text-sm sm:text-base">gemini-3.5-flash-lite</h3>
+                            <span class="px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-600 dark:text-purple-300 text-[11px] font-semibold border border-purple-500/30">Orchestrator Chính</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-[11px] font-mono text-slate-500 dark:text-gray-400">
+                            <span>TPM: 4,000,000</span>
+                            <span>•</span>
+                            <span class="text-emerald-500 font-semibold">Độ trễ thấp &lt; 400ms</span>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-600 dark:text-gray-300 mt-2">
+                        <strong>Vai trò trong dự án:</strong> AI Karik Orchestrator điều phối đa tác nhân, tiếp nhận câu hỏi của người dùng, phân loại nhiệm vụ, tổng hợp kết quả chuyên nghiệp và quản lý rủi ro/tiến độ dự án.
+                    </p>
+                </div>
+
+                <!-- Model 2: Gemini 3.6 Flash (Studio Ảnh) -->
+                <div class="model-card p-4 rounded-2xl bg-white/70 dark:bg-surface-container-high/60 border border-slate-200 dark:border-gray-700/60 hover:border-purple-500/50 transition-all" data-category="agent vision">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div class="flex items-center gap-2.5">
+                            <span class="px-2.5 py-1 rounded-lg bg-blue-500/15 text-blue-600 dark:text-blue-400 font-mono text-xs font-bold">Google</span>
+                            <h3 class="font-sora font-bold text-slate-900 dark:text-white text-sm sm:text-base">gemini-3.6-flash</h3>
+                            <span class="px-2 py-0.5 rounded-full bg-pink-500/15 text-pink-600 dark:text-pink-300 text-[11px] font-semibold border border-pink-500/30">Agent Studio Ảnh</span>
+                        </div>
+                        <div class="text-[11px] font-mono text-slate-500 dark:text-gray-400">
+                            Multimodal & Typography Engine
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-600 dark:text-gray-300 mt-2">
+                        <strong>Vai trò trong dự án:</strong> Chuyên gia thiết kế và biên tập hình ảnh, poster, banner qua AI Karik Studio. Phân tích bố cục, typography, quản lý layer và xử lý xóa nền thông minh.
+                    </p>
+                </div>
+
+                <!-- Model 3: Gemini 3.1 Flash Lite (Social Media Agent) -->
+                <div class="model-card p-4 rounded-2xl bg-white/70 dark:bg-surface-container-high/60 border border-slate-200 dark:border-gray-700/60 hover:border-purple-500/50 transition-all" data-category="agent">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div class="flex items-center gap-2.5">
+                            <span class="px-2.5 py-1 rounded-lg bg-blue-500/15 text-blue-600 dark:text-blue-400 font-mono text-xs font-bold">Google</span>
+                            <h3 class="font-sora font-bold text-slate-900 dark:text-white text-sm sm:text-base">gemini-3.1-flash-lite</h3>
+                            <span class="px-2 py-0.5 rounded-full bg-teal-500/15 text-teal-600 dark:text-teal-300 text-[11px] font-semibold border border-teal-500/30">Agent Đăng Bài MXH</span>
+                        </div>
+                        <div class="text-[11px] font-mono text-slate-500 dark:text-gray-400">
+                            Auto Caption & Viral Hooks
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-600 dark:text-gray-300 mt-2">
+                        <strong>Vai trò trong dự án:</strong> Tự động sáng tạo nội dung Caption, Viral Hook và phân phối đăng bài tự động lên Facebook & TikTok thông qua API không cần dán thủ công.
+                    </p>
+                </div>
+
+                <!-- Model 4: Google Text-Embedding-004 (RAG Vector) -->
+                <div class="model-card p-4 rounded-2xl bg-white/70 dark:bg-surface-container-high/60 border border-slate-200 dark:border-gray-700/60 hover:border-purple-500/50 transition-all" data-category="agent llm">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div class="flex items-center gap-2.5">
+                            <span class="px-2.5 py-1 rounded-lg bg-blue-500/15 text-blue-600 dark:text-blue-400 font-mono text-xs font-bold">Google</span>
+                            <h3 class="font-sora font-bold text-slate-900 dark:text-white text-sm sm:text-base">text-embedding-004</h3>
+                            <span class="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 text-[11px] font-semibold border border-emerald-500/30">Vector Embeddings</span>
+                        </div>
+                        <div class="text-[11px] font-mono text-slate-500 dark:text-gray-400">
+                            768 Dimensions • Supabase pgvector
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-600 dark:text-gray-300 mt-2">
+                        <strong>Vai trò trong dự án:</strong> Chuyển đổi toàn bộ tài liệu Markdown trong kho tri thức Obsidian Vault thành vector ngữ nghĩa 768 chiều để thực hiện tìm kiếm vector tương đồng trên cơ sở dữ liệu Supabase.
+                    </p>
+                </div>
+
+                <!-- Model 5: OpenAI GPT-4o & GPT-4o-mini -->
+                <div class="model-card p-4 rounded-2xl bg-white/70 dark:bg-surface-container-high/60 border border-slate-200 dark:border-gray-700/60 hover:border-purple-500/50 transition-all" data-category="llm">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div class="flex items-center gap-2.5">
+                            <span class="px-2.5 py-1 rounded-lg bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-mono text-xs font-bold">OpenAI</span>
+                            <h3 class="font-sora font-bold text-slate-900 dark:text-white text-sm sm:text-base">gpt-4o & gpt-4o-mini</h3>
+                            <span class="px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-600 dark:text-purple-300 text-[11px] font-semibold border border-purple-500/30">Logic & Coding AI</span>
+                        </div>
+                        <div class="text-[11px] font-mono text-slate-500 dark:text-gray-400">
+                            128k Context Window
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-600 dark:text-gray-300 mt-2">
+                        <strong>Vai trò trong dự án:</strong> Xử lý các bài toán lập trình chuyên sâu, phân tích cấu trúc mã nguồn phức tạp và kiểm tra tính hợp lệ của dữ liệu hệ thống với khả năng suy luận đa phương thức cao cấp.
+                    </p>
+                </div>
+
+                <!-- Model 6: Groq Llama 3.3 70B & 3.1 8B -->
+                <div class="model-card p-4 rounded-2xl bg-white/70 dark:bg-surface-container-high/60 border border-slate-200 dark:border-gray-700/60 hover:border-purple-500/50 transition-all" data-category="llm">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div class="flex items-center gap-2.5">
+                            <span class="px-2.5 py-1 rounded-lg bg-orange-500/15 text-orange-600 dark:text-orange-400 font-mono text-xs font-bold">Groq LPU</span>
+                            <h3 class="font-sora font-bold text-slate-900 dark:text-white text-sm sm:text-base">llama-3.3-70b-versatile</h3>
+                            <span class="px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-300 text-[11px] font-semibold border border-amber-500/30">Siêu Tốc Độ</span>
+                        </div>
+                        <div class="text-[11px] font-mono text-slate-500 dark:text-gray-400">
+                            &gt; 250 tokens/giây • LPU Chip
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-600 dark:text-gray-300 mt-2">
+                        <strong>Vai trò trong dự án:</strong> Đảm nhiệm phản hồi câu hỏi tức thì (Instant Quick Chat) và xử lý luồng stream với tốc độ kỷ lục, giúp người dùng không phải chờ đợi phản hồi.
+                    </p>
+                </div>
+
+                <!-- Model 7: Anthropic Claude 3.5 Sonnet -->
+                <div class="model-card p-4 rounded-2xl bg-white/70 dark:bg-surface-container-high/60 border border-slate-200 dark:border-gray-700/60 hover:border-purple-500/50 transition-all" data-category="llm">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div class="flex items-center gap-2.5">
+                            <span class="px-2.5 py-1 rounded-lg bg-purple-500/15 text-purple-600 dark:text-purple-400 font-mono text-xs font-bold">Anthropic</span>
+                            <h3 class="font-sora font-bold text-slate-900 dark:text-white text-sm sm:text-base">claude-3-5-sonnet-20241022</h3>
+                            <span class="px-2 py-0.5 rounded-full bg-indigo-500/15 text-indigo-600 dark:text-indigo-300 text-[11px] font-semibold border border-indigo-500/30">Deep Reasoning</span>
+                        </div>
+                        <div class="text-[11px] font-mono text-slate-500 dark:text-gray-400">
+                            Top Code & Text Analysis
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-600 dark:text-gray-300 mt-2">
+                        <strong>Vai trò trong dự án:</strong> Tối ưu hóa phân tích văn bản dài, viết tài liệu kỹ thuật, phân tích logic chuyên sâu và phản biện kết quả của các tác nhân khác.
+                    </p>
+                </div>
+
+                <!-- Model 8: TokenRouter / DeepSeek V4 Pro -->
+                <div class="model-card p-4 rounded-2xl bg-white/70 dark:bg-surface-container-high/60 border border-slate-200 dark:border-gray-700/60 hover:border-purple-500/50 transition-all" data-category="llm">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div class="flex items-center gap-2.5">
+                            <span class="px-2.5 py-1 rounded-lg bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 font-mono text-xs font-bold">TokenRouter</span>
+                            <h3 class="font-sora font-bold text-slate-900 dark:text-white text-sm sm:text-base">deepseek-v4-pro-0813-free</h3>
+                            <span class="px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-600 dark:text-cyan-300 text-[11px] font-semibold border border-cyan-500/30">Cost Optimizer</span>
+                        </div>
+                        <div class="text-[11px] font-mono text-slate-500 dark:text-gray-400">
+                            Smart Fallback & Free Tier
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-600 dark:text-gray-300 mt-2">
+                        <strong>Vai trò trong dự án:</strong> Cổng định tuyến phụ tải thông minh, giảm chi phí và cung cấp cơ chế dự phòng ổn định khi các API chính gặp sự cố kết nối.
+                    </p>
+                </div>
+
+                <!-- Model 9: Cloudflare Flux 2 Klein 9B -->
+                <div class="model-card p-4 rounded-2xl bg-white/70 dark:bg-surface-container-high/60 border border-slate-200 dark:border-gray-700/60 hover:border-purple-500/50 transition-all" data-category="vision">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div class="flex items-center gap-2.5">
+                            <span class="px-2.5 py-1 rounded-lg bg-amber-500/15 text-amber-600 dark:text-amber-400 font-mono text-xs font-bold">Cloudflare AI</span>
+                            <h3 class="font-sora font-bold text-slate-900 dark:text-white text-sm sm:text-base">@cf/black-forest-labs/flux-2-klein-9b</h3>
+                            <span class="px-2 py-0.5 rounded-full bg-pink-500/15 text-pink-600 dark:text-pink-300 text-[11px] font-semibold border border-pink-500/30">Text-to-Image</span>
+                        </div>
+                        <div class="text-[11px] font-mono text-slate-500 dark:text-gray-400">
+                            Edge AI Generation
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-600 dark:text-gray-300 mt-2">
+                        <strong>Vai trò trong dự án:</strong> Sinh hình ảnh nghệ thuật chất lượng cao trực tiếp trên mạng lưới Cloudflare Workers AI với thời gian phản hồi nhanh và độ nét vượt trội.
+                    </p>
+                </div>
+
+                <!-- Model 10: Stable Diffusion Local (txt2img) -->
+                <div class="model-card p-4 rounded-2xl bg-white/70 dark:bg-surface-container-high/60 border border-slate-200 dark:border-gray-700/60 hover:border-purple-500/50 transition-all" data-category="vision">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div class="flex items-center gap-2.5">
+                            <span class="px-2.5 py-1 rounded-lg bg-purple-500/15 text-purple-600 dark:text-purple-400 font-mono text-xs font-bold">Local SD</span>
+                            <h3 class="font-sora font-bold text-slate-900 dark:text-white text-sm sm:text-base">Stable Diffusion WebUI (Euler a)</h3>
+                            <span class="px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-600 dark:text-purple-300 text-[11px] font-semibold border border-purple-500/30">Local GPU Engine</span>
+                        </div>
+                        <div class="text-[11px] font-mono text-slate-500 dark:text-gray-400">
+                            20 Steps • CFG 7.0
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-600 dark:text-gray-300 mt-2">
+                        <strong>Vai trò trong dự án:</strong> Kết nối trực tiếp máy chủ GPU nội bộ để xuất bản hình ảnh thiết kế độ phân giải cao mà không phụ thuộc vào hạn mức cloud.
+                    </p>
+                </div>
+
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="border-t border-slate-200 dark:border-gray-700/80 pt-3 flex items-center justify-between">
+                <span class="text-xs text-slate-500 dark:text-gray-400">Dữ liệu được cập nhật tự động từ cấu hình backend AI Brain</span>
+                <button type="button" onclick="closeModelsModal()" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold rounded-xl transition-all shadow-md">
+                    Đóng cửa sổ
+                </button>
+            </div>
+
+        </div>
     </div>
 
-    <!-- Background glowing Orbs -->
-    <div class="absolute -top-32 -left-32 w-96 h-96 bg-purple-900/30 rounded-full blur-3xl pointer-events-none"></div>
-    <div class="absolute -bottom-32 -right-32 w-96 h-96 bg-cyan-900/20 rounded-full blur-3xl pointer-events-none"></div>
-
-    <!-- Auth Card -->
-    <div class="w-full max-w-md glass-panel rounded-2xl shadow-2xl p-8 z-10 relative">
-
-        <!-- Logo / Header -->
-        <div class="text-center mb-8">
-            <div class="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-purple-950/40 p-2 mb-3 shadow-lg glow-effect border border-purple-500/30">
-                <img src="/Logo/logo-removebg.png" alt="AI Brain Karik Logo" class="w-full h-full object-contain filter drop-shadow">
-            </div>
-            <h1 class="font-sora text-2xl font-bold text-white tracking-tight">AI Brain Karik</h1>
-            <p class="text-sm text-gray-400 mt-1">Hệ thống Quản lý tri thức & Trợ lý AI</p>
-        </div>
-
-        <!-- Toast Alert Banner -->
-        <div id="toast" class="hidden mb-6 p-4 rounded-xl text-sm flex items-center gap-3 transition-all duration-300">
-            <span id="toast-icon" class="material-symbols-outlined text-xl">info</span>
-            <span id="toast-message" class="flex-1 font-medium"></span>
-        </div>
-
-        <!-- Tabs Navigation -->
-        <div class="flex border-b border-gray-700/60 mb-6 text-sm font-semibold rounded-t-xl overflow-hidden bg-surface-container/50">
-            <button id="tab-login" onclick="switchTab('login')" class="tab-btn active flex-1 py-3 text-center transition-all duration-200 flex items-center justify-center gap-2">
-                <span class="material-symbols-outlined text-lg">login</span> Đăng nhập
-            </button>
-            <button id="tab-register" onclick="switchTab('register')" class="tab-btn flex-1 py-3 text-center text-gray-400 transition-all duration-200 flex items-center justify-center gap-2">
-                <span class="material-symbols-outlined text-lg">person_add</span> Đăng ký
-            </button>
-        </div>
-
-        <!-- LOGIN FORM -->
-        <form id="form-login" onsubmit="handleLogin(event)" class="space-y-5">
-            <div>
-                <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2" for="login-email">Email hệ thống</label>
-                <div class="relative">
-                    <span class="material-symbols-outlined absolute left-3.5 top-3 text-gray-400 text-xl">mail</span>
-                    <input type="email" id="login-email" required placeholder="name@example.com" class="w-full bg-surface-container-high/80 border border-gray-700 rounded-xl py-2.5 pl-11 pr-4 text-white text-sm focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400 transition-all">
-                </div>
-            </div>
-
-            <div>
-                <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2" for="login-password">Mật khẩu</label>
-                <div class="relative">
-                    <span class="material-symbols-outlined absolute left-3.5 top-3 text-gray-400 text-xl">lock</span>
-                    <input type="password" id="login-password" required placeholder="••••••••" class="w-full bg-surface-container-high/80 border border-gray-700 rounded-xl py-2.5 pl-11 pr-11 text-white text-sm focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400 transition-all">
-                    <button type="button" onclick="togglePasswordVisibility('login-password', this)" class="absolute right-3.5 top-3 text-gray-400 hover:text-white">
-                        <span class="material-symbols-outlined text-xl">visibility</span>
-                    </button>
-                </div>
-            </div>
-
-            <div class="flex items-center justify-between text-xs text-gray-400">
-                <label class="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" checked class="rounded border-gray-700 bg-surface-container-high text-purple-500 focus:ring-0 focus:ring-offset-0">
-                    <span>Ghi nhớ đăng nhập</span>
-                </label>
-                <button type="button" onclick="openForgotModal()" class="text-purple-300 hover:underline hover:text-purple-200 font-medium">Quên mật khẩu?</button>
-            </div>
-
-            <button type="submit" id="btn-login-submit" class="w-full py-3 px-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold rounded-xl shadow-lg glow-effect transition-all duration-200 flex items-center justify-center gap-2">
-                <span>Đăng nhập</span>
-                <span class="material-symbols-outlined text-lg">arrow_forward</span>
-            </button>
-        </form>
-
-        <!-- REGISTER FORM -->
-        <form id="form-register" onsubmit="handleRegister(event)" class="space-y-4 hidden">
-            <div>
-                <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5" for="reg-fullname">Họ và tên</label>
-                <div class="relative">
-                    <span class="material-symbols-outlined absolute left-3.5 top-3 text-gray-400 text-xl">badge</span>
-                    <input type="text" id="reg-fullname" required placeholder="Nguyễn Văn A" class="w-full bg-surface-container-high/80 border border-gray-700 rounded-xl py-2.5 pl-11 pr-4 text-white text-sm focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400 transition-all">
-                </div>
-            </div>
-
-            <div>
-                <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5" for="reg-email">Email</label>
-                <div class="relative">
-                    <span class="material-symbols-outlined absolute left-3.5 top-3 text-gray-400 text-xl">mail</span>
-                    <input type="email" id="reg-email" required placeholder="name@example.com" class="w-full bg-surface-container-high/80 border border-gray-700 rounded-xl py-2.5 pl-11 pr-4 text-white text-sm focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400 transition-all">
-                </div>
-            </div>
-
-            <div>
-                <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5" for="reg-password">Mật khẩu</label>
-                <div class="relative">
-                    <span class="material-symbols-outlined absolute left-3.5 top-3 text-gray-400 text-xl">lock</span>
-                    <input type="password" id="reg-password" required minlength="6" placeholder="Tối thiểu 6 ký tự" class="w-full bg-surface-container-high/80 border border-gray-700 rounded-xl py-2.5 pl-11 pr-11 text-white text-sm focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400 transition-all">
-                    <button type="button" onclick="togglePasswordVisibility('reg-password', this)" class="absolute right-3.5 top-3 text-gray-400 hover:text-white">
-                        <span class="material-symbols-outlined text-xl">visibility</span>
-                    </button>
-                </div>
-            </div>
-
-            <div>
-                <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5" for="reg-confirm-password">Xác nhận mật khẩu</label>
-                <div class="relative">
-                    <span class="material-symbols-outlined absolute left-3.5 top-3 text-gray-400 text-xl">verified_user</span>
-                    <input type="password" id="reg-confirm-password" required minlength="6" placeholder="Nhập lại mật khẩu" class="w-full bg-surface-container-high/80 border border-gray-700 rounded-xl py-2.5 pl-11 pr-11 text-white text-sm focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400 transition-all">
-                    <button type="button" onclick="togglePasswordVisibility('reg-confirm-password', this)" class="absolute right-3.5 top-3 text-gray-400 hover:text-white">
-                        <span class="material-symbols-outlined text-xl">visibility</span>
-                    </button>
-                </div>
-            </div>
-
-            <button type="submit" id="btn-register-submit" class="w-full py-3 px-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold rounded-xl shadow-lg glow-effect transition-all duration-200 flex items-center justify-center gap-2">
-                <span>Tạo tài khoản</span>
-                <span class="material-symbols-outlined text-lg">check_circle</span>
-            </button>
-        </form>
-
-        <!-- FORGOT PASSWORD MODAL -->
-        <div id="forgotModal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4">
-            <div class="glass-panel w-full max-w-md rounded-2xl p-6 relative space-y-4 animate-fadeIn shadow-2xl border border-purple-500/30">
-                <div class="flex items-center justify-between border-b border-gray-700 pb-3">
-                    <h2 class="font-sora text-lg font-bold text-white flex items-center gap-2">
-                        <span class="material-symbols-outlined text-amber-400">mark_email_unread</span> Quên Mật Khẩu
-                    </h2>
-                    <button type="button" onclick="closeForgotModal()" class="text-gray-400 hover:text-white">
-                        <span class="material-symbols-outlined">close</span>
-                    </button>
-                </div>
-
-                <!-- Step 1: Send OTP -->
-                <div id="forgotStep1" class="space-y-4">
-                    <p class="text-xs text-gray-300">Nhập email tài khoản của bạn. Hệ thống sẽ gửi mã xác nhận OTP 6 chữ số qua Gmail.</p>
+    <!-- ==================== MODAL 2: DOCS VIEWER MODAL ==================== -->
+    <div id="docsModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-fadeIn">
+        <div class="glass-panel w-full max-w-3xl max-h-[90vh] rounded-3xl p-5 sm:p-7 relative flex flex-col shadow-2xl border border-cyan-500/30">
+            
+            <!-- Modal Header -->
+            <div class="flex items-start justify-between border-b border-slate-200 dark:border-gray-700/80 pb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-2xl sm:text-3xl">menu_book</span>
+                    </div>
                     <div>
-                        <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5" for="forgot-email">Email tài khoản</label>
-                        <input type="email" id="forgot-email" placeholder="name@example.com" class="w-full bg-surface-container-high/80 border border-gray-700 rounded-xl py-2.5 px-4 text-white text-sm focus:border-purple-400 outline-none">
+                        <h2 class="font-sora text-lg sm:text-xl font-bold text-slate-900 dark:text-white">
+                            Tài Liệu Hướng Dẫn & Kiến Trúc Dự Án
+                        </h2>
+                        <p class="text-xs text-slate-500 dark:text-gray-400 mt-0.5">
+                            AI Brain Karik System &bull; Clean Architecture & Multi-Agent Guidelines
+                        </p>
                     </div>
-                    <button type="button" id="btnSendOtp" onclick="handleSendOtp()" class="w-full py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold rounded-xl shadow transition-all">Gửi mã OTP qua Gmail</button>
                 </div>
-
-                <!-- Step 2: Input OTP & New Password -->
-                <div id="forgotStep2" class="space-y-3 hidden">
-                    <div id="devOtpNotice" class="hidden p-2.5 bg-amber-900/40 border border-amber-500/40 rounded-xl text-xs text-amber-200">
-                        🔑 <strong>Mã OTP Dev:</strong> <span id="devOtpValue" class="font-mono text-cyan-300 font-bold"></span>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1" for="reset-otp">Mã OTP (6 chữ số)</label>
-                        <input type="text" id="reset-otp" placeholder="123456" maxlength="6" class="w-full bg-surface-container-high/80 border border-gray-700 rounded-xl py-2 px-4 text-white text-sm font-mono tracking-widest text-center focus:border-purple-400 outline-none">
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1" for="reset-password">Mật khẩu mới</label>
-                        <input type="password" id="reset-password" placeholder="••••••••" minlength="6" class="w-full bg-surface-container-high/80 border border-gray-700 rounded-xl py-2 px-4 text-white text-sm focus:border-purple-400 outline-none">
-                    </div>
-
-                    <button type="button" id="btnResetPassword" onclick="handleResetPasswordSubmit()" class="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold rounded-xl shadow transition-all">Xác nhận đặt lại mật khẩu</button>
-                </div>
+                <button type="button" onclick="closeDocsModal()" class="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-gray-800 transition-colors">
+                    <span class="material-symbols-outlined text-2xl">close</span>
+                </button>
             </div>
-        </div>
 
-        <!-- Footer Info -->
-        <div class="mt-8 pt-4 border-t border-gray-800 text-center text-xs text-gray-500">
-            AI Brain Karik System &bull; Supabase PostgreSQL Connected
+            <!-- Docs Content Body (Scrollable) -->
+            <div class="overflow-y-auto custom-scrollbar my-4 pr-2 space-y-4 text-xs sm:text-sm text-slate-600 dark:text-gray-300 leading-relaxed max-h-[62vh]">
+                
+                <div class="p-4 rounded-2xl bg-purple-500/10 border border-purple-500/20">
+                    <h3 class="font-sora font-bold text-slate-900 dark:text-white text-sm flex items-center gap-2 mb-1">
+                        <span class="material-symbols-outlined text-purple-500 text-base">school</span>
+                        Thông Điệp Từ Nhóm Học Viên Phát Triển
+                    </h3>
+                    <p class="text-xs">
+                        Dự án này là sản phẩm nghiên cứu & thực nghiệm chuyên sâu về <strong>Clean Architecture trong Node.js</strong> kết hợp <strong>Hệ thống Trí Tuệ Nhân Tạo Đa Tác Nhân (Multi-Agent System)</strong> và <strong>Obsidian Knowledge Graph</strong>. Nền tảng đang trong giai đoạn kiểm thử, cải tiến và thu thập đóng góp từ cộng đồng học viên.
+                    </p>
+                </div>
+
+                <div class="space-y-2">
+                    <h3 class="font-sora font-semibold text-slate-900 dark:text-white text-sm">1. Cấu Trúc Mã Nguồn (Clean Architecture)</h3>
+                    <div class="p-3 rounded-xl bg-slate-100 dark:bg-surface-container-highest/60 font-mono text-[11px] text-slate-700 dark:text-gray-300">
+                        src/<br>
+                        ├── config/ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Cấu hình Gemini, OpenAI, Claude, Groq, Supabase<br>
+                        ├── providers/ &nbsp;&nbsp;&nbsp;&nbsp;# Bộ chuyển đổi SDK các nhà cung cấp AI<br>
+                        ├── services/ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# AI Router, Agent Ecosystem, RAG Pipeline<br>
+                        ├── controllers/ &nbsp;&nbsp;# Xử lý nghiệp vụ REST API Endpoint<br>
+                        └── storage/ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Bộ nhớ đệm và lưu trữ tệp tin tạm
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <h3 class="font-sora font-semibold text-slate-900 dark:text-white text-sm">2. Cơ Chế Phân Phối Tác Vụ (Multi-Agent Routing)</h3>
+                    <ul class="list-disc pl-5 space-y-1 text-xs">
+                        <li><strong>AI Karik (Orchestrator):</strong> Tiếp nhận prompt, điều phối luồng và tổng hợp câu trả lời qua Gemini 3.5 Flash Lite.</li>
+                        <li><strong>Agent Studio Ảnh:</strong> Biên tập ảnh, phối cảnh banner qua Gemini 3.6 Flash và Cloudflare Flux 2.</li>
+                        <li><strong>Agent Tự Động Đăng Bài MXH:</strong> Tạo nội dung viral và đăng trực tiếp lên Facebook Fanpage & TikTok.</li>
+                        <li><strong>Agent Quản Lý Rủi Ro:</strong> Theo dõi tiến độ công việc, đo lường chi phí token và chỉ số ROI.</li>
+                    </ul>
+                </div>
+
+                <div class="space-y-2">
+                    <h3 class="font-sora font-semibold text-slate-900 dark:text-white text-sm">3. Hướng Dẫn Đăng Ký & Đăng Nhập</h3>
+                    <p class="text-xs">
+                        Mỗi tài khoản được cấp quyền truy cập vào bảng điều khiển (Dashboard), giao diện đồ thị tri thức (Graph View) và AI Chat Studio. Trong trường hợp quên mật khẩu, hệ thống hỗ trợ khôi phục qua mã OTP 6 chữ số gửi trực tiếp vào Gmail cá nhân.
+                    </p>
+                </div>
+
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="border-t border-slate-200 dark:border-gray-700/80 pt-3 flex items-center justify-between">
+                <span class="text-xs text-slate-500 dark:text-gray-400">Phiên bản tài liệu: v2.0 - Core System</span>
+                <button type="button" onclick="closeDocsModal()" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold rounded-xl transition-all shadow-md">
+                    Đã hiểu
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ==================== MODAL 3: FORGOT PASSWORD MODAL ==================== -->
+    <div id="forgotModal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="glass-panel w-full max-w-md rounded-2xl p-6 relative space-y-4 animate-fadeIn shadow-2xl border border-purple-500/30">
+            <div class="flex items-center justify-between border-b border-gray-700 pb-3">
+                <h2 class="font-sora text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <span class="material-symbols-outlined text-amber-400">mark_email_unread</span> Quên Mật Khẩu
+                </h2>
+                <button type="button" onclick="closeForgotModal()" class="text-gray-400 hover:text-white">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+
+            <!-- Step 1: Send OTP -->
+            <div id="forgotStep1" class="space-y-4">
+                <p class="text-xs text-slate-500 dark:text-gray-300">Nhập email tài khoản của bạn. Hệ thống sẽ gửi mã xác nhận OTP 6 chữ số qua Gmail.</p>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-gray-300 uppercase tracking-wider mb-1.5" for="forgot-email">Email tài khoản</label>
+                    <input type="email" id="forgot-email" placeholder="name@example.com" class="w-full bg-white dark:bg-surface-container-high/80 border border-slate-300 dark:border-gray-700 rounded-xl py-2.5 px-4 text-slate-800 dark:text-white text-sm focus:border-purple-400 outline-none">
+                </div>
+                <button type="button" id="btnSendOtp" onclick="handleSendOtp()" class="w-full py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold rounded-xl shadow transition-all">Gửi mã OTP qua Gmail</button>
+            </div>
+
+            <!-- Step 2: Input OTP & New Password -->
+            <div id="forgotStep2" class="space-y-3 hidden">
+                <div id="devOtpNotice" class="hidden p-2.5 bg-amber-900/40 border border-amber-500/40 rounded-xl text-xs text-amber-200">
+                    🔑 <strong>Mã OTP Dev:</strong> <span id="devOtpValue" class="font-mono text-cyan-300 font-bold"></span>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-gray-300 uppercase tracking-wider mb-1" for="reset-otp">Mã OTP (6 chữ số)</label>
+                    <input type="text" id="reset-otp" placeholder="123456" maxlength="6" class="w-full bg-white dark:bg-surface-container-high/80 border border-slate-300 dark:border-gray-700 rounded-xl py-2 px-4 text-slate-800 dark:text-white text-sm font-mono tracking-widest text-center focus:border-purple-400 outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-gray-300 uppercase tracking-wider mb-1" for="reset-password">Mật khẩu mới</label>
+                    <input type="password" id="reset-password" placeholder="••••••••" minlength="6" class="w-full bg-white dark:bg-surface-container-high/80 border border-slate-300 dark:border-gray-700 rounded-xl py-2 px-4 text-slate-800 dark:text-white text-sm focus:border-purple-400 outline-none">
+                </div>
+
+                <button type="button" id="btnResetPassword" onclick="handleResetPasswordSubmit()" class="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold rounded-xl shadow transition-all">Xác nhận đặt lại mật khẩu</button>
+            </div>
         </div>
     </div>
 
     <!-- Frontend Auth JS Script -->
     <script src="/js/auth.js"></script>
     <script>
+        // ==================== THEME CONTROLLER ====================
         function toggleLoginTheme() {
             const isDark = document.documentElement.classList.contains('dark');
             const next = isDark ? 'light' : 'dark';
@@ -308,6 +891,101 @@
                 text.textContent = isDark ? 'Sáng' : 'Tối';
             }
         }
+
+        // ==================== LOGO ACTION (RESET TO AUTH) ====================
+        function resetToAuth() {
+            // Close any open modals
+            closeModelsModal();
+            closeDocsModal();
+            closeForgotModal();
+            // Switch to login tab
+            switchTab('login');
+            // Scroll to top smoothly
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ==================== MODELS MODAL CONTROLLER ====================
+        function openModelsModal() {
+            const modal = document.getElementById('modelsModal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                document.body.classList.add('overflow-hidden');
+            }
+        }
+
+        function closeModelsModal() {
+            const modal = document.getElementById('modelsModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+            }
+        }
+
+        function filterModelsCategory(category) {
+            // Update active state on filter buttons
+            const buttons = document.querySelectorAll('.model-filter-btn');
+            buttons.forEach(btn => {
+                btn.classList.remove('bg-purple-500', 'text-white', 'active');
+                btn.classList.add('text-slate-600', 'dark:text-gray-300');
+            });
+
+            const activeBtn = document.getElementById(`filter-btn-${category}`);
+            if (activeBtn) {
+                activeBtn.classList.add('bg-purple-500', 'text-white', 'active');
+                activeBtn.classList.remove('text-slate-600', 'dark:text-gray-300');
+            }
+
+            // Filter cards
+            const cards = document.querySelectorAll('.model-card');
+            cards.forEach(card => {
+                const cardCat = card.getAttribute('data-category') || '';
+                if (category === 'all' || cardCat.includes(category)) {
+                    card.classList.remove('hidden');
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+        }
+
+        // ==================== DOCS MODAL CONTROLLER ====================
+        function openDocsModal() {
+            const modal = document.getElementById('docsModal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                document.body.classList.add('overflow-hidden');
+            }
+        }
+
+        function closeDocsModal() {
+            const modal = document.getElementById('docsModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+            }
+        }
+
+        // Close modals on Escape key or clicking backdrop
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModelsModal();
+                closeDocsModal();
+                closeForgotModal();
+            }
+        });
+
+        // Click outside to close modals
+        ['modelsModal', 'docsModal', 'forgotModal'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.addEventListener('click', (e) => {
+                    if (e.target === el) {
+                        el.classList.add('hidden');
+                        document.body.classList.remove('overflow-hidden');
+                    }
+                });
+            }
+        });
+
         document.addEventListener('DOMContentLoaded', updateLoginThemeUI);
     </script>
 </body>

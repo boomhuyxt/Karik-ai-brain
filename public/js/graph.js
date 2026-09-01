@@ -245,7 +245,7 @@ function render2DGraph(data) {
 
     // Theme Colors Helper
     const isDarkMode = document.documentElement.classList.contains('dark');
-    const defaultLinkStroke = isDarkMode ? 'rgba(255, 255, 255, 0.16)' : 'rgba(15, 23, 42, 0.18)';
+    const defaultLinkStroke = isDarkMode ? 'rgba(255, 255, 255, 0.16)' : 'rgba(15, 23, 42, 0.55)';
     const arrowColor = isDarkMode ? '#64748b' : '#94a3b8';
     const arrowActiveColor = isDarkMode ? '#ffffff' : '#0f172a';
 
@@ -313,8 +313,8 @@ function render2DGraph(data) {
         .enter().append('line')
         .attr('class', 'graph-link')
         .attr('stroke', defaultLinkStroke)
-        .attr('stroke-width', 0.8 * linkThicknessMultiplier)
-        .attr('stroke-opacity', isDarkMode ? 0.35 : 0.45)
+        .attr('stroke-width', isDarkMode ? 0.8 * linkThicknessMultiplier : 1.0 * linkThicknessMultiplier)
+        .attr('stroke-opacity', isDarkMode ? 0.35 : 0.65)
         .attr('marker-end', stateShowArrows ? 'url(#obsidian-arrow)' : null);
 
     // Nodes Layer (Flat, solid, clean dots)
@@ -362,14 +362,14 @@ function render2DGraph(data) {
         .attr('class', 'node-text')
         .attr('dx', d => (d.radius || 3) + 5)
         .attr('dy', 3.5)
-        .attr('font-size', '10.5px')
-        .attr('font-weight', d => d.degree >= 3 ? '600' : '450')
+        .attr('font-size', isDarkMode ? '10.5px' : '9px')
+        .attr('font-weight', d => d.degree >= 3 ? '600' : '400')
         .attr('font-family', "'Inter', -apple-system, BlinkMacSystemFont, sans-serif")
-        .attr('fill', '#e4e4e7')
+        .attr('fill', isDarkMode ? '#e4e4e7' : '#1e293b')
         .style('pointer-events', 'none')
         .style('paint-order', 'stroke fill')
-        .style('stroke', '#181818')
-        .style('stroke-width', '2.5px')
+        .style('stroke', isDarkMode ? '#181818' : '#f8fafc')
+        .style('stroke-width', isDarkMode ? '2.5px' : '2px')
         .style('stroke-linejoin', 'round')
         .text(d => d.name);
 
@@ -441,13 +441,16 @@ function render2DGraph(data) {
             .attr('r', d => d.radius || 2.5);
 
         nodeItems.selectAll('.node-text')
-            .style('fill', isDark ? '#e4e4e7' : '#0f172a')
-            .style('font-weight', d => d.degree >= 3 ? '600' : '450');
+            .style('fill', isDark ? '#e4e4e7' : '#1e293b')
+            .style('stroke', isDark ? '#181818' : '#f8fafc')
+            .style('stroke-width', isDark ? '2.5px' : '2px')
+            .style('font-size', isDark ? '10.5px' : '9px')
+            .style('font-weight', d => d.degree >= 3 ? '600' : '400');
 
         linkLines
-            .style('stroke-opacity', isDark ? 0.35 : 0.45)
-            .style('stroke-width', 0.8 * linkThicknessMultiplier)
-            .attr('stroke', isDark ? 'rgba(255, 255, 255, 0.16)' : 'rgba(15, 23, 42, 0.18)')
+            .style('stroke-opacity', isDark ? 0.35 : 0.65)
+            .style('stroke-width', isDark ? 0.8 * linkThicknessMultiplier : 1.0 * linkThicknessMultiplier)
+            .attr('stroke', isDark ? 'rgba(255, 255, 255, 0.16)' : 'rgba(15, 23, 42, 0.55)')
             .attr('marker-end', stateShowArrows ? 'url(#obsidian-arrow)' : null);
 
         updateLabelVisibility();
