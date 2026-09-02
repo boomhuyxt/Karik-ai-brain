@@ -4,8 +4,8 @@ require('dotenv').config();
 
 const corsMiddleware = require('./src/middlewares/cors');
 const requestLogger = require('./src/middlewares/logger');
-const rateLimit = require('./src/middlewares/rateLimit');
-const authMiddleware = require('./src/middlewares/auth');
+const { apiLimiter } = require('./src/middlewares/rateLimit');
+const { authMiddleware, adminApiGuard } = require('./src/middlewares/auth');
 const errorHandler = require('./src/middlewares/error');
 const apiRoutes = require('./src/routes');
 
@@ -22,7 +22,6 @@ app.use(corsMiddleware);
 app.use(express.json({ limit: '60mb' }));
 app.use(express.urlencoded({ extended: true, limit: '60mb' }));
 app.use(requestLogger);
-app.use(rateLimit({ windowMs: 60000, max: 200 }));
 app.use(authMiddleware);
 
 // Serve static dashboard files and uploaded files
@@ -49,10 +48,11 @@ app.get('/docs', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'docs.html'));
 });
 
-// Primary REST API Router
-app.use('/api', apiRoutes);
+// Primary REST API Router with Anti-Spam Rate Limit & Admin Guard
+app.use('/api', apiLimiter, adminApiGuard, apiRoutes);
 
 // Global Error Middleware
 app.use(errorHandler);
+
 
 module.exports = app;

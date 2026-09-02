@@ -1,5 +1,5 @@
 const userRepository = require('../../repositories/user.repository');
-const { generateToken, hashPassword, comparePassword } = require('../../utils/crypto');
+const { generateToken, hashPassword, comparePassword, createSignedToken } = require('../../utils/crypto');
 
 class AuthService {
   async register({ email, password, fullName }) {
@@ -12,7 +12,12 @@ class AuthService {
 
     const passwordHash = hashPassword(password);
     const user = await userRepository.createUser({ email, passwordHash, fullName });
-    const token = generateToken(32);
+    const userRole = String(user.role || '0');
+    const token = createSignedToken({
+      id: user.id,
+      email: user.email,
+      role: userRole
+    });
 
     return {
       success: true,
@@ -21,7 +26,7 @@ class AuthService {
         id: user.id,
         email: user.email,
         fullName: user.fullName,
-        role: String(user.role || '0')
+        role: userRole
       },
       token
     };
@@ -48,7 +53,12 @@ class AuthService {
       throw error;
     }
 
-    const token = generateToken(32);
+    const userRole = String(user.role || (user.email.includes('admin') ? '1' : '0'));
+    const token = createSignedToken({
+      id: user.id,
+      email: user.email,
+      role: userRole
+    });
 
     return {
       success: true,
@@ -57,7 +67,7 @@ class AuthService {
         id: user.id,
         email: user.email,
         fullName: user.fullName || user.name || 'User',
-        role: String(user.role || (user.email.includes('admin') ? '1' : '0'))
+        role: userRole
       },
       token
     };
