@@ -60,10 +60,17 @@ async function chat(prompt, options = {}) {
 
     let data = null;
     let successfulModel = candidateModels[0];
+    let lastError = null;
 
     for (const currentModel of candidateModels) {
       try {
-        const url = `${geminiConfig.baseUrl}/models/${currentModel}:generateContent?key=${geminiConfig.apiKey}`;
+        const apiKey = geminiConfig.apiKey;
+        if (!apiKey) {
+          lastError = { message: 'GEMINI_API_KEY chưa được cấu hình trong .env' };
+          break;
+        }
+
+        const url = `${geminiConfig.baseUrl}/models/${currentModel}:generateContent?key=${apiKey}`;
         const response = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -76,6 +83,7 @@ async function chat(prompt, options = {}) {
           successfulModel = currentModel;
           break;
         } else if (resData && resData.error) {
+          lastError = resData.error;
           console.warn(`⚠️ [Gemini ${currentModel} returned error]:`, resData.error.message);
           // If quota exhausted or key invalid, don't waste time on other models
           if (resData.error.code === 429 || (resData.error.message && resData.error.message.includes('API_KEY_INVALID'))) {
@@ -84,12 +92,13 @@ async function chat(prompt, options = {}) {
           }
         }
       } catch (reqErr) {
+        lastError = { message: reqErr.message };
         console.warn(`⚠️ [Gemini ${currentModel} network error]:`, reqErr.message);
       }
     }
 
     if (!data || data.error) {
-      const err = data?.error || { message: 'All model attempts failed' };
+      const err = data?.error || lastError || { message: 'Tất cả các model Gemini đều không phản hồi' };
       console.warn('⚠️ [Gemini API Key Final Error]:', err.message || err);
       
       let reasonText = `⚠️ Lỗi kết nối Gemini API (${err.message || 'API Warning'}).`;

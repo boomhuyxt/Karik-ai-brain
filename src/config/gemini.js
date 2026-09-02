@@ -1,7 +1,9 @@
 const env = require('./env');
 
 module.exports = {
-  apiKey: env.ai.geminiApiKey,
+  get apiKey() {
+    return env.ai.geminiApiKey;
+  },
   defaultModel: 'gemini-3.5-flash-lite',
   fastModel: 'gemini-3.5-flash-lite',
   fallbackModels: ['gemini-flash-lite-latest', 'gemini-3.6-flash', 'gemini-2.5-flash-tts', 'gemini-3.1-flash-tts'],

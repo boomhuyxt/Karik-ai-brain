@@ -5,7 +5,7 @@ require('dotenv').config();
 const corsMiddleware = require('./src/middlewares/cors');
 const requestLogger = require('./src/middlewares/logger');
 const { apiLimiter } = require('./src/middlewares/rateLimit');
-const { authMiddleware, adminApiGuard } = require('./src/middlewares/auth');
+const { authMiddleware } = require('./src/middlewares/auth');
 const errorHandler = require('./src/middlewares/error');
 const apiRoutes = require('./src/routes');
 
@@ -48,8 +48,8 @@ app.get('/docs', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'docs.html'));
 });
 
-// Primary REST API Router with Anti-Spam Rate Limit & Admin Guard
-app.use('/api', apiLimiter, adminApiGuard, apiRoutes);
+// Primary REST API Router with Anti-Spam Rate Limit
+app.use('/api', apiLimiter, apiRoutes);
 
 // Global Error Middleware
 app.use(errorHandler);

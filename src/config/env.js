@@ -35,8 +35,14 @@ module.exports = {
     connectionString: process.env.DATABASE_URL || ''
   },
   ai: {
-    geminiApiKey: process.env.GEMINI_API_KEY || '',
-    geminiImageApiKey: process.env.GEMINI_IMAGE_API_KEY || process.env.GEMINI_API_KEY || '',
+    get geminiApiKey() {
+      require('dotenv').config({ override: true });
+      return process.env.GEMINI_API_KEY || '';
+    },
+    get geminiImageApiKey() {
+      require('dotenv').config({ override: true });
+      return process.env.GEMINI_IMAGE_API_KEY || process.env.GEMINI_API_KEY || '';
+    },
     openaiApiKey: process.env.OPENAI_API_KEY || '',
     groqApiKey: process.env.GROQ_API_KEY || '',
     claudeApiKey: process.env.CLAUDE_API_KEY || '',

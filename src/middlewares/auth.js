@@ -127,63 +127,10 @@ const requireAdmin = async (req, res, next) => {
   }
 };
 
-/**
- * Whitelisted public routes that do not require Admin authentication
- */
-const PUBLIC_AUTH_PATHS = [
-  '/auth/login',
-  '/auth/register',
-  '/auth/forgot-password',
-  '/auth/reset-password'
-];
-
-/**
- * Overarching API Guard:
- * Intercepts all /api routes.
- * - Allows public auth endpoints through without check.
- * - For all other endpoints: Requires authenticated user with Admin role.
- */
-const adminApiGuard = async (req, res, next) => {
-  const reqPath = (req.path || '').toLowerCase();
-
-  const isPublicAuthRoute = PUBLIC_AUTH_PATHS.some((p) => reqPath === p || reqPath.endsWith(p));
-  if (isPublicAuthRoute) {
-    return next();
-  }
-
-  try {
-    req.user = await parseUserToken(req);
-
-    if (!req.user) {
-      return res.status(401).json({
-        error: true,
-        code: 'UNAUTHORIZED',
-        message: 'Vui lòng đăng nhập với quyền Admin để sử dụng API.'
-      });
-    }
-
-    if (!isUserAdmin(req.user)) {
-      return res.status(403).json({
-        error: true,
-        code: 'FORBIDDEN',
-        message: 'Quyền truy cập bị từ chối. Chỉ tài khoản Quản trị viên (Admin) mới có quyền sử dụng API.'
-      });
-    }
-
-    next();
-  } catch (err) {
-    return res.status(err.statusCode || 401).json({
-      error: true,
-      code: err.code || 'UNAUTHORIZED',
-      message: err.message
-    });
-  }
-};
-
 module.exports = authMiddleware;
 module.exports.authMiddleware = authMiddleware;
 module.exports.requireAdmin = requireAdmin;
-module.exports.adminApiGuard = adminApiGuard;
 module.exports.isUserAdmin = isUserAdmin;
 module.exports.parseUserToken = parseUserToken;
+
 
