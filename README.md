@@ -2,6 +2,11 @@
 
 A complete Node.js backend system for **AI Brain Karik**, designed using Clean Architecture & Module Pattern.
 
+## 🌐 Live Domain
+
+- 🔗 **Production URL**: [https://your-domain.com](https://your-domain.com)
+- 🟢 **Status**: Online / Active
+
 ## Directory Structure
 
 ```text
