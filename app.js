@@ -14,6 +14,9 @@ require('./src/storage');
 
 const app = express();
 
+// Trust Cloudflare Tunnel / Reverse Proxy headers (cf-connecting-ip)
+app.set('trust proxy', true);
+
 // Middlewares
 app.use(corsMiddleware);
 app.use(express.json({ limit: '60mb' }));
