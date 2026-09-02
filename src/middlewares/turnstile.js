@@ -51,9 +51,10 @@ const verifyTurnstile = async (req, res, next) => {
   }
 
   // Extract Turnstile response token from body or headers
+  const headers = req.headers || {};
   const token =
     (req.body && (req.body['cf-turnstile-response'] || req.body.turnstileToken)) ||
-    req.headers['x-turnstile-token'];
+    headers['x-turnstile-token'];
 
   if (!token) {
     return res.status(400).json({

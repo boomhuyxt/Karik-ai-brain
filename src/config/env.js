@@ -1,5 +1,9 @@
 require('dotenv').config();
 
+let _customSiteKey = null;
+let _customSecretKey = null;
+let _customEnabled = null;
+
 module.exports = {
   port: process.env.PORT || 3000,
   nodeEnv: process.env.NODE_ENV || 'development',
@@ -20,12 +24,12 @@ module.exports = {
     key: process.env.SUPABASE_KEY || '',
     publishableKey: process.env.SUPABASE_PUBLISHABLE_KEY || '',
     secretKey: process.env.SUPABASE_SECRET_KEY || '',
-    jwksUrl: process.env.SUPABASE_JWKS_URL || ''
+    jwksUrl: process.env.SUPABASE_JWKS_URL || 'https://blrimwahpwfqewfmmtet.supabase.co/auth/v1/.well-known/jwks.json'
   },
   db: {
     host: process.env.DB_HOST || 'aws-0-ap-south-1.pooler.supabase.com',
     port: parseInt(process.env.DB_PORT || '6543', 10),
-    database: process.env.DB_NAME || 'postgres',
+    name: process.env.DB_NAME || 'postgres',
     user: process.env.DB_USER || 'postgres.blrimwahpwfqewfmmtet',
     password: process.env.DB_PASSWORD || 'JarvisAi@123data',
     connectionString: process.env.DATABASE_URL || ''
@@ -44,9 +48,30 @@ module.exports = {
     accountId: process.env.CLOUDFLARE_ACCOUNT_ID || '432a5a828609d79411ce6dda0f3bbfec',
     apiToken: process.env.CLOUDFLARE_API_TOKEN || '',
     imageModel: process.env.CLOUDFLARE_IMAGE_MODEL || '@cf/black-forest-labs/flux-2-klein-9b',
-    turnstileSiteKey: process.env.CLOUDFLARE_TURNSTILE_SITE_KEY || '1x00000000000000000000AA',
-    turnstileSecretKey: process.env.CLOUDFLARE_TURNSTILE_SECRET_KEY || '1x0000000000000000000000000000000AA',
-    turnstileEnabled: process.env.CLOUDFLARE_TURNSTILE_ENABLED === 'true'
+    get turnstileSiteKey() {
+      if (_customSiteKey !== null) return _customSiteKey;
+      require('dotenv').config();
+      return process.env.CLOUDFLARE_TURNSTILE_SITE_KEY || '1x00000000000000000000AA';
+    },
+    set turnstileSiteKey(val) {
+      _customSiteKey = val;
+    },
+    get turnstileSecretKey() {
+      if (_customSecretKey !== null) return _customSecretKey;
+      require('dotenv').config();
+      return process.env.CLOUDFLARE_TURNSTILE_SECRET_KEY || '1x0000000000000000000000000000000AA';
+    },
+    set turnstileSecretKey(val) {
+      _customSecretKey = val;
+    },
+    get turnstileEnabled() {
+      if (_customEnabled !== null) return _customEnabled;
+      require('dotenv').config();
+      return process.env.CLOUDFLARE_TURNSTILE_ENABLED === 'true';
+    },
+    set turnstileEnabled(val) {
+      _customEnabled = val;
+    }
   },
   stableDiffusion: {
     apiUrl: process.env.SD_API_URL || 'http://127.0.0.1:7860/sdapi/v1/txt2img',
