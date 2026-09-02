@@ -4,9 +4,15 @@ module.exports = {
   port: process.env.PORT || 3000,
   nodeEnv: process.env.NODE_ENV || 'development',
   github: {
-    token: process.env.GITHUB_PAT || '',
-    owner: process.env.GITHUB_OWNER || 'boomhuyxt',
-    repo: process.env.GITHUB_REPO || 'Obsidian-Karik-Ai'
+    get token() {
+      return process.env.GITHUB_PAT || '';
+    },
+    get owner() {
+      return process.env.GITHUB_OWNER || 'boomhuyxt';
+    },
+    get repo() {
+      return process.env.GITHUB_REPO || 'Obsidian-Karik-Ai';
+    }
   },
   obsidianVaultPath: process.env.OBSIDIAN_VAULT_PATH || '',
   supabase: {

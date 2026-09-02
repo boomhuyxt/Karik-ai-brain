@@ -67,6 +67,7 @@ class GraphService {
         return this.graphCache;
       }
 
+      require('dotenv').config();
       const owner = process.env.GITHUB_OWNER || env.github.owner || 'boomhuyxt';
       const repo = process.env.GITHUB_REPO || env.github.repo || 'Obsidian-Karik-Ai';
       const repoFullName = `${owner}/${repo}`;
