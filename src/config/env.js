@@ -8,7 +8,7 @@ module.exports = {
     owner: process.env.GITHUB_OWNER || 'boomhuyxt',
     repo: process.env.GITHUB_REPO || 'Obsidian-Karik-Ai'
   },
-  obsidianVaultPath: process.env.OBSIDIAN_VAULT_PATH || 'C:/Users/boomh/OneDrive/Documents/Jarvis Ai',
+  obsidianVaultPath: process.env.OBSIDIAN_VAULT_PATH || '',
   supabase: {
     url: process.env.SUPABASE_URL || 'https://blrimwahpwfqewfmmtet.supabase.co',
     key: process.env.SUPABASE_KEY || '',
@@ -37,7 +37,10 @@ module.exports = {
   cloudflare: {
     accountId: process.env.CLOUDFLARE_ACCOUNT_ID || '432a5a828609d79411ce6dda0f3bbfec',
     apiToken: process.env.CLOUDFLARE_API_TOKEN || '',
-    imageModel: process.env.CLOUDFLARE_IMAGE_MODEL || '@cf/black-forest-labs/flux-2-klein-9b'
+    imageModel: process.env.CLOUDFLARE_IMAGE_MODEL || '@cf/black-forest-labs/flux-2-klein-9b',
+    turnstileSiteKey: process.env.CLOUDFLARE_TURNSTILE_SITE_KEY || '1x00000000000000000000AA',
+    turnstileSecretKey: process.env.CLOUDFLARE_TURNSTILE_SECRET_KEY || '1x0000000000000000000000000000000AA',
+    turnstileEnabled: process.env.CLOUDFLARE_TURNSTILE_ENABLED === 'true'
   },
   stableDiffusion: {
     apiUrl: process.env.SD_API_URL || 'http://127.0.0.1:7860/sdapi/v1/txt2img',

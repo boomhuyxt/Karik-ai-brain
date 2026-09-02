@@ -83,10 +83,45 @@ async function fetchAndRenderGraph() {
 
 window.fetchAndRenderGraph = fetchAndRenderGraph;
 
+function renderFallbackNotice(data) {
+    const container = document.getElementById('graphContainer');
+    if (!container) return;
+
+    let banner = document.getElementById('graphFallbackNotice');
+    if (data && data.isFallback) {
+        if (!banner) {
+            banner = document.createElement('div');
+            banner.id = 'graphFallbackNotice';
+            banner.className = 'absolute bottom-6 left-6 z-30 glass-panel px-4 py-3 rounded-2xl border border-amber-500/50 bg-amber-950/80 text-amber-200 text-xs flex items-start gap-3 shadow-2xl backdrop-blur-xl max-w-lg pointer-events-auto transition-all';
+            container.appendChild(banner);
+        }
+        const errorMsg = data.lastError?.message || 'Không thể kết nối tới GitHub repository.';
+        banner.innerHTML = `
+            <span class="material-symbols-outlined text-amber-400 text-xl flex-shrink-0 mt-0.5">warning</span>
+            <div class="flex-1 space-y-1">
+                <div class="flex items-center justify-between">
+                    <strong class="text-amber-300 text-xs uppercase tracking-wide">⚠️ Mất kết nối kho Obsidian GitHub</strong>
+                    <span class="badge bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] px-1.5 py-0.5 rounded">Fallback 6 mẫu</span>
+                </div>
+                <p class="text-slate-200 text-[11px] leading-relaxed m-0">${errorMsg}</p>
+                <div class="pt-1 text-[11px] text-amber-200/80 border-t border-amber-500/20 mt-1">
+                    💡 <strong>Cách sửa:</strong> Hãy cập nhật token <code class="bg-black/50 text-amber-300 px-1.5 py-0.5 rounded font-mono font-bold">GITHUB_PAT</code> mới trong file <code class="bg-black/50 text-amber-300 px-1.5 py-0.5 rounded font-mono">.env</code> để nạp lại toàn bộ các node Obsidian của bạn!
+                </div>
+            </div>
+            <button onclick="document.getElementById('graphFallbackNotice')?.remove()" class="text-slate-400 hover:text-white p-0.5 rounded transition-colors" title="Đóng thông báo">
+                <span class="material-symbols-outlined text-sm">close</span>
+            </button>
+        `;
+    } else if (banner) {
+        banner.remove();
+    }
+}
+
 function renderGraph(data) {
     if (!data) return;
     renderObsidianGroups(data);
     render2DGraph(data);
+    renderFallbackNotice(data);
     bindGraphSearchSync();
 }
 

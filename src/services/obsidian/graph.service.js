@@ -11,26 +11,20 @@ class GraphService {
   }
 
   findLocalVaultPath() {
-    const candidatePaths = [
-      process.env.OBSIDIAN_VAULT_PATH,
-      env.obsidianVaultPath,
-      'C:/Users/boomh/OneDrive/Documents/Jarvis Ai',
-      'C:\\Users\\boomh\\OneDrive\\Documents\\Jarvis Ai',
-      'C:/Users/boomh/OneDrive/Documents/Obsidian Vault',
-      'C:\\Users\\boomh\\OneDrive\\Documents\\Obsidian Vault'
-    ].filter(Boolean);
-
-    for (const p of candidatePaths) {
-      try {
-        if (fs.existsSync(p) && fs.statSync(p).isDirectory()) {
-          const items = fs.readdirSync(p);
-          // Only use local vault if it has meaningful notes (> 5 items)
-          if (items.length > 5) {
-            return p;
-          }
-        }
-      } catch (e) {}
+    const customVault = process.env.OBSIDIAN_VAULT_PATH || env.obsidianVaultPath;
+    if (!customVault) {
+      return null;
     }
+
+    try {
+      if (fs.existsSync(customVault) && fs.statSync(customVault).isDirectory()) {
+        const items = fs.readdirSync(customVault);
+        if (items.length > 0) {
+          return customVault;
+        }
+      }
+    } catch (e) {}
+
     return null;
   }
 
@@ -115,7 +109,13 @@ class GraphService {
 
       // 3. Fallback to default sample graph if both sources are empty
       if (mdFiles.length === 0) {
-        return this.getDefaultGraph();
+        const fallbackGraph = this.getDefaultGraph();
+        fallbackGraph.isFallback = true;
+        fallbackGraph.lastError = githubRepository.lastError || {
+          status: 400,
+          message: 'Không tìm thấy file markdown nào từ GitHub repository hoặc local vault.'
+        };
+        return fallbackGraph;
       }
 
       const nodesMap = new Map();
@@ -331,7 +331,8 @@ class GraphService {
         totalFiles: nodesList.length,
         categories: Array.from(categoriesMap.values()),
         nodes: nodesList,
-        connections: uniqueConnections
+        connections: uniqueConnections,
+        isFallback: false
       };
 
       this.graphCache = result;
@@ -339,7 +340,10 @@ class GraphService {
       return result;
     } catch (err) {
       console.warn('[GraphService] Failed to load graph data, fallback to default:', err.message);
-      return this.getDefaultGraph();
+      const fallback = this.getDefaultGraph();
+      fallback.isFallback = true;
+      fallback.lastError = { status: 500, message: err.message };
+      return fallback;
     }
   }
 

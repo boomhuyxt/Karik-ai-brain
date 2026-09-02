@@ -8,28 +8,24 @@ class GithubRepository {
     this.treeCache = null;
     this.treeCacheTime = 0;
     this.TREE_CACHE_TTL = 30 * 1000; // 30 seconds cache to optimize GitHub rate limits
+    this.lastError = null;
   }
 
   getLocalVaultPath() {
-    const candidatePaths = [
-      process.env.OBSIDIAN_VAULT_PATH,
-      env.obsidianVaultPath,
-      'C:/Users/boomh/OneDrive/Documents/Jarvis Ai',
-      'C:\\Users\\boomh\\OneDrive\\Documents\\Jarvis Ai',
-      'C:/Users/boomh/OneDrive/Documents/Obsidian Vault',
-      'C:\\Users\\boomh\\OneDrive\\Documents\\Obsidian Vault'
-    ].filter(Boolean);
-
-    for (const p of candidatePaths) {
-      try {
-        if (fs.existsSync(p) && fs.statSync(p).isDirectory()) {
-          const items = fs.readdirSync(p);
-          if (items.length > 5) {
-            return p;
-          }
-        }
-      } catch (e) {}
+    const customVault = process.env.OBSIDIAN_VAULT_PATH || env.obsidianVaultPath;
+    if (!customVault) {
+      return null;
     }
+
+    try {
+      if (fs.existsSync(customVault) && fs.statSync(customVault).isDirectory()) {
+        const items = fs.readdirSync(customVault);
+        if (items.length > 0) {
+          return customVault;
+        }
+      }
+    } catch (e) {}
+
     return null;
   }
 
@@ -64,9 +60,13 @@ class GithubRepository {
           const repoData = await repoRes.json();
           branch = repoData.default_branch || 'main';
         } else if (repoRes.status === 403) {
+          this.lastError = { status: 403, message: `GitHub API bị giới hạn tần suất (Rate limit) hoặc bị chặn truy cập cho repo ${owner}/${repo}.` };
           console.warn(`[GithubRepo] 403 Rate limit exceeded or access denied for ${owner}/${repo}`);
         } else if (repoRes.status === 401) {
+          this.lastError = { status: 401, message: `Token GITHUB_PAT trong .env đã hết hạn hoặc không đúng (401 Bad credentials).` };
           console.warn(`[GithubRepo] 401 Bad credentials for token in .env`);
+        } else if (repoRes.status === 404) {
+          this.lastError = { status: 404, message: `Không tìm thấy repository ${owner}/${repo} trên GitHub (404 Not Found hoặc repo riêng tư thiếu quyền truy cập).` };
         }
 
         const treeRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/trees/${branch}?recursive=1`, {
@@ -77,14 +77,18 @@ class GithubRepository {
         if (treeRes.ok) {
           const treeData = await treeRes.json();
           if (Array.isArray(treeData.tree) && treeData.tree.length > 0) {
+            this.lastError = null;
             this.treeCache = treeData.tree;
             this.treeCacheTime = Date.now();
             return this.treeCache;
           }
         }
       } catch (err) {
+        this.lastError = { status: 500, message: `Lỗi kết nối GitHub API: ${err.message}` };
         console.warn('[GithubRepo] getTree remote error:', err.message);
       }
+    } else {
+      this.lastError = { status: 400, message: 'Chưa cấu hình GITHUB_PAT trong file .env.' };
     }
 
     // 2. Secondary Fallback: Local Obsidian Vault Scanner

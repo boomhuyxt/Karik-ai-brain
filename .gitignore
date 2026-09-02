@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+
+# Environment variables & secrets
+.env
+.env.production
+.env.local
+.env.*.local
+*.env
+
+# Logs & temp
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Scratch & IDE
+scratch/
+.system_generated/
+.DS_Store
+Thumbs.db

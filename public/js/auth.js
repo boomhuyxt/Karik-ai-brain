@@ -10,6 +10,106 @@
     }
 })();
 
+// ================= CLOUDFLARE TURNSTILE CONTROLLER =================
+let turnstileConfig = {
+    enabled: false,
+    siteKey: '1x00000000000000000000AA'
+};
+const turnstileWidgets = {
+    login: null,
+    register: null,
+    forgot: null
+};
+
+async function initTurnstile() {
+    try {
+        const res = await fetch('/api/auth/turnstile-config');
+        if (res.ok) {
+            turnstileConfig = await res.json();
+        }
+    } catch (e) {
+        console.warn('[Turnstile] Could not fetch turnstile-config:', e);
+    }
+
+    if (!turnstileConfig.enabled) {
+        return;
+    }
+
+    const checkAndRender = () => {
+        if (typeof turnstile === 'undefined') {
+            setTimeout(checkAndRender, 150);
+            return;
+        }
+
+        const loginEl = document.getElementById('turnstile-login-container');
+        if (loginEl && turnstileWidgets.login === null) {
+            try {
+                turnstileWidgets.login = turnstile.render('#turnstile-login-container', {
+                    sitekey: turnstileConfig.siteKey,
+                    theme: 'auto'
+                });
+            } catch (err) {
+                console.warn('[Turnstile] Error rendering login widget:', err);
+            }
+        }
+
+        const regEl = document.getElementById('turnstile-register-container');
+        if (regEl && turnstileWidgets.register === null) {
+            try {
+                turnstileWidgets.register = turnstile.render('#turnstile-register-container', {
+                    sitekey: turnstileConfig.siteKey,
+                    theme: 'auto'
+                });
+            } catch (err) {
+                console.warn('[Turnstile] Error rendering register widget:', err);
+            }
+        }
+    };
+
+    checkAndRender();
+}
+
+function renderForgotTurnstile() {
+    if (!turnstileConfig.enabled) return;
+    const checkAndRenderForgot = () => {
+        if (typeof turnstile === 'undefined') {
+            setTimeout(checkAndRenderForgot, 150);
+            return;
+        }
+        const forgotEl = document.getElementById('turnstile-forgot-container');
+        if (forgotEl && turnstileWidgets.forgot === null) {
+            try {
+                turnstileWidgets.forgot = turnstile.render('#turnstile-forgot-container', {
+                    sitekey: turnstileConfig.siteKey,
+                    theme: 'auto'
+                });
+            } catch (err) {
+                console.warn('[Turnstile] Error rendering forgot widget:', err);
+            }
+        }
+    };
+    checkAndRenderForgot();
+}
+
+function getTurnstileToken(widgetId) {
+    if (!turnstileConfig.enabled) return 'turnstile-disabled-bypass';
+    if (typeof turnstile !== 'undefined' && widgetId !== null) {
+        return turnstile.getResponse(widgetId) || '';
+    }
+    return '';
+}
+
+function resetTurnstile(widgetId) {
+    if (!turnstileConfig.enabled) return;
+    if (typeof turnstile !== 'undefined' && widgetId !== null) {
+        try {
+            turnstile.reset(widgetId);
+        } catch (e) {
+            console.warn('[Turnstile] Reset failed:', e);
+        }
+    }
+}
+
 function switchTab(tab) {
     const formLogin = document.getElementById('form-login');
     const formRegister = document.getElementById('form-register');
@@ -27,6 +127,10 @@ function switchTab(tab) {
         if (formRegister) formRegister.classList.remove('d-none');
         if (tabRegister) tabRegister.classList.add('active');
         if (tabLogin) tabLogin.classList.remove('active');
+        // Render register turnstile if not rendered yet
+        if (turnstileConfig.enabled && turnstileWidgets.register === null) {
+            initTurnstile();
+        }
     }
 }
 
@@ -100,6 +204,12 @@ async function handleLogin(event) {
         return;
     }
 
+    const turnstileToken = getTurnstileToken(turnstileWidgets.login);
+    if (turnstileConfig.enabled && !turnstileToken) {
+        showToast('Vui lòng hoàn tất xác thực Turnstile (Anti-Bot).', true);
+        return;
+    }
+
     if (btnSubmit) {
         btnSubmit.disabled = true;
         btnSubmit.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Đang xử lý...`;
@@ -111,12 +221,18 @@ async function handleLogin(event) {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ email, password })
+            body: JSON.stringify({
+                email,
+                password,
+                turnstileToken,
+                'cf-turnstile-response': turnstileToken
+            })
         });
 
         const data = await response.json();
 
         if (!response.ok || data.error) {
+            resetTurnstile(turnstileWidgets.login);
             throw new Error(data.message || 'Đăng nhập thất bại.');
         }
 
@@ -131,6 +247,7 @@ async function handleLogin(event) {
         }, 1000);
 
     } catch (err) {
+        resetTurnstile(turnstileWidgets.login);
         showToast(err.message || 'Lỗi kết nối máy chủ.', true);
     } finally {
         if (btnSubmit) {
@@ -155,6 +272,12 @@ async function handleRegister(event) {
         return;
     }
 
+    const turnstileToken = getTurnstileToken(turnstileWidgets.register);
+    if (turnstileConfig.enabled && !turnstileToken) {
+        showToast('Vui lòng hoàn tất xác thực Turnstile (Anti-Bot).', true);
+        return;
+    }
+
     if (btnSubmit) {
         btnSubmit.disabled = true;
         btnSubmit.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Đang tạo tài khoản...`;
@@ -166,12 +289,20 @@ async function handleRegister(event) {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ fullName, email, password, confirmPassword })
+            body: JSON.stringify({
+                fullName,
+                email,
+                password,
+                confirmPassword,
+                turnstileToken,
+                'cf-turnstile-response': turnstileToken
+            })
         });
 
         const data = await response.json();
 
         if (!response.ok || data.error) {
+            resetTurnstile(turnstileWidgets.register);
             throw new Error(data.message || 'Đăng ký thất bại.');
         }
 
@@ -186,6 +317,7 @@ async function handleRegister(event) {
         }, 1000);
 
     } catch (err) {
+        resetTurnstile(turnstileWidgets.register);
         showToast(err.message || 'Lỗi kết nối máy chủ.', true);
     } finally {
         if (btnSubmit) {
@@ -232,6 +364,12 @@ async function handleSendOtp() {
         return;
     }
 
+    const turnstileToken = getTurnstileToken(turnstileWidgets.forgot);
+    if (turnstileConfig.enabled && !turnstileToken) {
+        alert('Vui lòng hoàn tất xác thực Turnstile (Anti-Bot) trước khi gửi OTP.');
+        return;
+    }
+
     if (btnSend) {
         btnSend.disabled = true;
         btnSend.textContent = 'Đang gửi mã OTP...';
@@ -241,12 +379,17 @@ async function handleSendOtp() {
         const response = await fetch('/api/auth/forgot-password', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email })
+            body: JSON.stringify({
+                email,
+                turnstileToken,
+                'cf-turnstile-response': turnstileToken
+            })
         });
 
         const data = await response.json();
 
         if (!response.ok || data.error) {
+            resetTurnstile(turnstileWidgets.forgot);
             throw new Error(data.message || 'Không thể gửi mã OTP.');
         }
 
@@ -261,6 +404,7 @@ async function handleSendOtp() {
         }
 
     } catch (err) {
+        resetTurnstile(turnstileWidgets.forgot);
         alert(err.message || 'Lỗi gửi OTP.');
     } finally {
         if (btnSend) {
