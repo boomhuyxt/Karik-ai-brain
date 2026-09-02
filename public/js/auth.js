@@ -21,6 +21,50 @@ const turnstileWidgets = {
     forgot: null
 };
 
+function renderLoginTurnstile() {
+    if (!turnstileConfig.enabled) return;
+    const checkAndRender = () => {
+        if (typeof turnstile === 'undefined') {
+            setTimeout(checkAndRender, 150);
+            return;
+        }
+        const loginEl = document.getElementById('turnstile-login-container');
+        if (loginEl && turnstileWidgets.login === null) {
+            try {
+                turnstileWidgets.login = turnstile.render('#turnstile-login-container', {
+                    sitekey: turnstileConfig.siteKey,
+                    theme: 'auto'
+                });
+            } catch (err) {
+                console.warn('[Turnstile] Error rendering login widget:', err);
+            }
+        }
+    };
+    checkAndRender();
+}
+
+function renderRegisterTurnstile() {
+    if (!turnstileConfig.enabled) return;
+    const checkAndRender = () => {
+        if (typeof turnstile === 'undefined') {
+            setTimeout(checkAndRender, 150);
+            return;
+        }
+        const regEl = document.getElementById('turnstile-register-container');
+        if (regEl && turnstileWidgets.register === null) {
+            try {
+                turnstileWidgets.register = turnstile.render('#turnstile-register-container', {
+                    sitekey: turnstileConfig.siteKey,
+                    theme: 'auto'
+                });
+            } catch (err) {
+                console.warn('[Turnstile] Error rendering register widget:', err);
+            }
+        }
+    };
+    checkAndRender();
+}
+
 async function initTurnstile() {
     try {
         const res = await fetch('/api/auth/turnstile-config');
@@ -35,38 +79,13 @@ async function initTurnstile() {
         return;
     }
 
-    const checkAndRender = () => {
-        if (typeof turnstile === 'undefined') {
-            setTimeout(checkAndRender, 150);
-            return;
-        }
-
-        const loginEl = document.getElementById('turnstile-login-container');
-        if (loginEl && turnstileWidgets.login === null) {
-            try {
-                turnstileWidgets.login = turnstile.render('#turnstile-login-container', {
-                    sitekey: turnstileConfig.siteKey,
-                    theme: 'auto'
-                });
-            } catch (err) {
-                console.warn('[Turnstile] Error rendering login widget:', err);
-            }
-        }
-
-        const regEl = document.getElementById('turnstile-register-container');
-        if (regEl && turnstileWidgets.register === null) {
-            try {
-                turnstileWidgets.register = turnstile.render('#turnstile-register-container', {
-                    sitekey: turnstileConfig.siteKey,
-                    theme: 'auto'
-                });
-            } catch (err) {
-                console.warn('[Turnstile] Error rendering register widget:', err);
-            }
-        }
-    };
-
-    checkAndRender();
+    // Auto render Turnstile on the currently visible tab
+    const formLogin = document.getElementById('form-login');
+    if (formLogin && !formLogin.classList.contains('d-none')) {
+        renderLoginTurnstile();
+    } else {
+        renderRegisterTurnstile();
+    }
 }
 
 function renderForgotTurnstile() {
@@ -93,8 +112,12 @@ function renderForgotTurnstile() {
 
 function getTurnstileToken(widgetId) {
     if (!turnstileConfig.enabled) return 'turnstile-disabled-bypass';
-    if (typeof turnstile !== 'undefined' && widgetId !== null) {
-        return turnstile.getResponse(widgetId) || '';
+    if (typeof turnstile !== 'undefined') {
+        if (widgetId !== null) {
+            const token = turnstile.getResponse(widgetId);
+            if (token) return token;
+        }
+        return turnstile.getResponse() || '';
     }
     return '';
 }
@@ -122,6 +145,9 @@ function switchTab(tab) {
         if (formRegister) formRegister.classList.add('d-none');
         if (tabLogin) tabLogin.classList.add('active');
         if (tabRegister) tabRegister.classList.remove('active');
+        if (turnstileConfig.enabled && turnstileWidgets.login === null) {
+            renderLoginTurnstile();
+        }
     } else {
         if (formLogin) formLogin.classList.add('d-none');
         if (formRegister) formRegister.classList.remove('d-none');
@@ -129,7 +155,7 @@ function switchTab(tab) {
         if (tabLogin) tabLogin.classList.remove('active');
         // Render register turnstile if not rendered yet
         if (turnstileConfig.enabled && turnstileWidgets.register === null) {
-            initTurnstile();
+            renderRegisterTurnstile();
         }
     }
 }
@@ -464,3 +490,9 @@ async function handleResetPasswordSubmit() {
     }
 }
 
+// Auto initialize Turnstile on DOM ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initTurnstile);
+} else {
+    initTurnstile();
+}
