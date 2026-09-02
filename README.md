@@ -4,7 +4,7 @@ A complete Node.js backend system for **AI Brain Karik**, designed using Clean A
 
 ## 🌐 Live Domain
 
-- 🔗 **Production URL**: [https://your-domain.com](https://your-domain.com)
+- 🔗 **Production URL**: [https://www.karik.io.vn](https://www.karik.io.vn)
 - 🟢 **Status**: Online / Active
 
 ## Directory Structure
