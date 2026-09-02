@@ -133,7 +133,6 @@ const requireAdmin = async (req, res, next) => {
 const PUBLIC_AUTH_PATHS = [
   '/auth/login',
   '/auth/register',
-  '/auth/turnstile-config',
   '/auth/forgot-password',
   '/auth/reset-password'
 ];

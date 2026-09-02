@@ -40,7 +40,6 @@ test('Admin API Guard & HMAC Signed Token Suite', async (t) => {
   const publicRoutes = [
     '/auth/login',
     '/auth/register',
-    '/auth/turnstile-config',
     '/auth/forgot-password',
     '/auth/reset-password'
   ];
