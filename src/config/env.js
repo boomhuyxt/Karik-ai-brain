@@ -50,7 +50,7 @@ module.exports = {
     imageModel: process.env.CLOUDFLARE_IMAGE_MODEL || '@cf/black-forest-labs/flux-2-klein-9b',
     get turnstileSiteKey() {
       if (_customSiteKey !== null) return _customSiteKey;
-      require('dotenv').config();
+      require('dotenv').config({ override: true });
       return process.env.CLOUDFLARE_TURNSTILE_SITE_KEY || '1x00000000000000000000AA';
     },
     set turnstileSiteKey(val) {
@@ -58,7 +58,7 @@ module.exports = {
     },
     get turnstileSecretKey() {
       if (_customSecretKey !== null) return _customSecretKey;
-      require('dotenv').config();
+      require('dotenv').config({ override: true });
       return process.env.CLOUDFLARE_TURNSTILE_SECRET_KEY || '1x0000000000000000000000000000000AA';
     },
     set turnstileSecretKey(val) {
@@ -66,7 +66,7 @@ module.exports = {
     },
     get turnstileEnabled() {
       if (_customEnabled !== null) return _customEnabled;
-      require('dotenv').config();
+      require('dotenv').config({ override: true });
       return process.env.CLOUDFLARE_TURNSTILE_ENABLED === 'true';
     },
     set turnstileEnabled(val) {
