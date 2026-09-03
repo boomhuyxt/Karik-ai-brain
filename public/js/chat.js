@@ -244,8 +244,8 @@ function initAIChat() {
                         window.lastUploadedImageUrl = url;
                         attachmentHtml = `
                             <div class="mt-1.5 flex flex-col gap-1">
-                                <a href="${url}" target="_blank"><img src="${url}" alt="${name}" class="max-h-48 rounded-xl border border-purple-500/40 shadow-lg object-contain hover:scale-105 transition-transform" /></a>
-                                <button type="button" onclick="window.openImageEditor('${url}')" class="self-end inline-flex items-center gap-1 text-[10px] bg-purple-950/80 hover:bg-purple-800 border border-purple-400/40 text-purple-200 px-2 py-0.5 rounded-full transition-all active:scale-95 shadow-sm cursor-pointer">
+                                <a href="${url}" target="_blank"><img src="${url}" alt="${name}" class="max-h-48 rounded-xl border border-white/40 shadow-lg object-contain hover:scale-105 transition-transform" /></a>
+                                <button type="button" onclick="window.openImageEditor('${url}')" class="user-bubble-studio-pill self-end inline-flex items-center gap-1 text-[10px] bg-purple-950/80 hover:bg-purple-800 border border-purple-400/40 text-purple-200 px-2.5 py-0.5 rounded-full transition-all active:scale-95 shadow-sm cursor-pointer font-semibold">
                                     <span class="material-symbols-outlined text-[12px] text-cyan-300">palette</span> <span>🎨 Mở trong Studio</span>
                                 </button>
                             </div>`;
@@ -272,13 +272,13 @@ function initAIChat() {
 
         // Hiển thị tin nhắn người dùng (Bên Phải - User Bubble tự động vừa chiều dài chữ)
         const userDiv = document.createElement('div');
-        userDiv.className = 'flex flex-col items-end self-end ml-auto w-fit min-w-[120px] max-w-[85%] sm:max-w-[75%] p-3 rounded-2xl bg-purple-900/50 border border-purple-500/40 text-white rounded-tr-none shadow-lg transition-all animate-fadeIn';
+        userDiv.className = 'chat-user-bubble flex flex-col items-end self-end ml-auto w-fit min-w-[120px] max-w-[85%] sm:max-w-[75%] p-3.5 rounded-2xl bg-gradient-to-r from-purple-800 to-indigo-800 text-white rounded-tr-none shadow-md transition-all animate-fadeIn';
         userDiv.innerHTML = `
-            <strong class="text-purple-300 font-bold text-xs flex items-center justify-end gap-1.5 mb-1 text-glow w-full">
+            <strong class="text-purple-200 font-bold text-xs flex items-center justify-end gap-1.5 mb-1 text-glow w-full">
                 <span>Bạn ${isVoice ? '(Giọng nói)' : ''}</span>
-                <span class="material-symbols-outlined text-sm text-purple-400">account_circle</span>
+                <span class="material-symbols-outlined text-sm text-purple-200">account_circle</span>
             </strong>
-            ${userText ? `<div class="text-white font-semibold text-xs sm:text-sm leading-relaxed tracking-wide text-right break-words w-full">${escapeHtml(userText)}</div>` : ''}
+            ${userText ? `<div class="text-white font-medium text-xs sm:text-sm leading-relaxed tracking-wide text-right break-words w-full select-text">${escapeHtml(userText)}</div>` : ''}
             ${attachmentHtml}
         `;
         chatMessages.appendChild(userDiv);
@@ -319,10 +319,10 @@ function initAIChat() {
 
             // Hiển thị phản hồi từ AI (Bên Trái - AI Bubble tự động vừa chiều dài chữ)
             const aiDiv = document.createElement('div');
-            aiDiv.className = 'flex flex-col items-start self-start mr-auto w-fit min-w-[200px] max-w-[90%] sm:max-w-[85%] p-3.5 rounded-2xl bg-slate-900/90 border border-cyan-500/40 text-slate-100 rounded-tl-none shadow-lg transition-all animate-fadeIn';
+            aiDiv.className = 'chat-ai-bubble flex flex-col items-start self-start mr-auto w-fit min-w-[200px] max-w-[90%] sm:max-w-[85%] p-3.5 rounded-2xl bg-slate-900/90 border border-cyan-500/40 text-slate-100 rounded-tl-none shadow-lg transition-all animate-fadeIn';
             const renderFn = typeof window.renderCustomMarkdown === 'function' ? window.renderCustomMarkdown : (t => t);
 
-            const voiceBadgeHtml = `<span class="text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 px-1 py-0.2 rounded font-mono flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">volume_up</span> Chromium Voice</span>`;
+            const voiceBadgeHtml = `<span class="voice-badge text-[9px] bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-400/40 px-1.5 py-0.5 rounded font-mono font-bold flex items-center gap-1"><span class="material-symbols-outlined text-[10px] text-emerald-600 dark:text-emerald-300">volume_up</span> Chromium Voice</span>`;
 
             const replyText = result.reply || result.message || 'Không có phản hồi';
             const agentInfo = result.agent || { id: 'orchestrator', model: result.model || 'gemini-3.6-flash' };
@@ -482,34 +482,34 @@ function initAIChat() {
             }
 
             aiDiv.innerHTML = `
-                <strong class="text-cyan-300 font-bold text-xs flex items-center justify-between w-full mb-1 text-glow">
+                <strong class="ai-header-strong text-purple-950 dark:text-cyan-300 font-bold text-xs flex items-center justify-between w-full mb-1">
                     <span class="flex items-center gap-1.5">
-                        <span class="material-symbols-outlined text-sm text-cyan-400">smart_toy</span>
-                        AI JarVis Assistant:
+                        <span class="material-symbols-outlined text-sm text-purple-600 dark:text-cyan-400">smart_toy</span>
+                        <span class="ai-title-text font-bold">AI JarVis Assistant:</span>
                         ${voiceBadgeHtml}
                     </span>
                     <div class="flex items-center gap-1.5">
-                        <button type="button" class="btn-publish-social bg-gradient-to-r from-blue-600/30 via-purple-600/30 to-pink-600/30 hover:from-blue-600/50 hover:to-pink-600/50 text-white border border-purple-400/40 px-2 py-0.5 rounded text-[10px] font-mono flex items-center gap-1 transition-all shadow-sm" title="Mở Trình Duyệt Đăng Bài Lên Facebook / TikTok">
-                            <span class="material-symbols-outlined text-[12px] text-cyan-300">smart_toy</span>
+                        <button type="button" class="btn-publish-social bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold border border-blue-400/40 px-2.5 py-0.5 rounded text-[10px] font-mono flex items-center gap-1 transition-all shadow-xs active:scale-95 cursor-pointer" title="Mở Trình Duyệt Đăng Bài Lên Facebook / TikTok">
+                            <span class="material-symbols-outlined text-[12px] text-cyan-200">smart_toy</span>
                             <span>Đăng Bài MXH</span>
                         </button>
-                        <span class="text-[10px] text-cyan-300 font-mono flex items-center gap-1 bg-cyan-500/20 border border-cyan-400/40 px-1.5 py-0.5 rounded-full" title="Thời gian AI xử lý và phản hồi">
-                            <span class="material-symbols-outlined text-[11px]">timer</span> ${totalDuration}s
+                        <span class="timer-badge text-[10px] text-cyan-900 dark:text-cyan-300 font-mono font-bold flex items-center gap-1 bg-cyan-100 dark:bg-cyan-500/20 border border-cyan-300 dark:border-cyan-400/40 px-1.5 py-0.5 rounded-full" title="Thời gian AI xử lý và phản hồi">
+                            <span class="material-symbols-outlined text-[11px] text-cyan-700 dark:text-cyan-300">timer</span> ${totalDuration}s
                         </span>
                     </div>
                 </strong>
-                <div id="${msgId}" class="chat-markdown text-slate-100 font-medium text-xs sm:text-sm leading-relaxed border-t border-purple-500/20 pt-1.5 mt-1 w-full break-words">
+                <div id="${msgId}" class="chat-markdown text-slate-900 dark:text-slate-100 font-medium text-xs sm:text-sm leading-relaxed border-t border-slate-200 dark:border-purple-500/20 pt-2 mt-1.5 w-full break-words">
                     ${renderFn(replyText)}
                     ${imageHtml}
                     ${studioActionCardHtml}
                     ${socialActionCardHtml}
                 </div>
-                <div class="w-full flex items-center justify-between border-t border-slate-700/50 mt-2 pt-1 text-[10px] text-slate-400 font-mono">
-                    <span class="flex items-center gap-1 text-emerald-400" title="Độ tiêu hao Token thực tế (In: ${tokenInfo.inputTokens} | Out: ${tokenInfo.outputTokens})">
-                        <span class="material-symbols-outlined text-[11px]">token</span>
-                        <strong>${tokenInfo.totalTokens || 0}</strong> Tokens (In: ${tokenInfo.inputTokens || 0} | Out: ${tokenInfo.outputTokens || 0})
+                <div class="ai-footer-bar w-full flex items-center justify-between border-t border-slate-200 dark:border-slate-700/50 mt-2.5 pt-1.5 text-[10px] text-slate-600 dark:text-slate-400 font-mono">
+                    <span class="flex items-center gap-1 text-emerald-800 dark:text-emerald-400 font-semibold" title="Độ tiêu hao Token thực tế (In: ${tokenInfo.inputTokens} | Out: ${tokenInfo.outputTokens})">
+                        <span class="material-symbols-outlined text-[12px] text-emerald-600 dark:text-emerald-400">token</span>
+                        <strong class="token-text-highlight font-bold text-emerald-900 dark:text-emerald-300">${tokenInfo.totalTokens || 0}</strong> Tokens <span class="text-slate-500 dark:text-slate-400 font-medium">(In: ${tokenInfo.inputTokens || 0} | Out: ${tokenInfo.outputTokens || 0})</span>
                     </span>
-                    <span class="text-slate-500 text-[9px] bg-slate-800/60 px-1 rounded">
+                    <span class="model-badge text-slate-700 dark:text-slate-400 text-[9px] bg-slate-100 dark:bg-slate-800/60 border border-slate-300 dark:border-transparent px-1.5 py-0.5 rounded font-mono font-semibold">
                         Model: ${agentInfo.model || 'gemini-3.1-flash'}
                     </span>
                 </div>

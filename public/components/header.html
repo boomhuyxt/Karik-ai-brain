@@ -27,35 +27,35 @@
 
                 <!-- System Monitoring & Risk Dashboard Button -->
                 <button id="btnSystemMonitor" onclick="window.openSystemMonitorModal()" title="Xem độ tiêu hao Token, Tiến độ dự án & Độ rủi ro các API"
-                    class="bg-cyan-50 hover:bg-cyan-100 dark:bg-cyan-500/20 dark:hover:bg-cyan-500/30 text-cyan-800 dark:text-cyan-300 border border-cyan-300 dark:border-cyan-400/40 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm">
+                    class="bg-cyan-50 hover:bg-cyan-100 dark:bg-cyan-500/20 dark:hover:bg-cyan-500/30 text-cyan-900 dark:text-cyan-300 border border-cyan-300/90 dark:border-cyan-400/40 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs hover:shadow-sm active:scale-95 cursor-pointer">
                     <span class="material-symbols-outlined text-base text-cyan-600 dark:text-cyan-300">analytics</span>
                     <span>Giám Sát & Rủi Ro</span>
                 </button>
 
                 <!-- User Management Button (Admin Only) -->
                 <button id="btnManageUsers" title="Quản lý tài khoản người dùng & Thống kê"
-                    class="bg-purple-50 hover:bg-purple-100 dark:bg-purple-600/20 dark:hover:bg-purple-600/30 text-purple-800 dark:text-purple-200 border border-purple-300 dark:border-purple-400/40 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm">
+                    class="bg-purple-50 hover:bg-purple-100 dark:bg-purple-600/20 dark:hover:bg-purple-600/30 text-purple-900 dark:text-purple-200 border border-purple-300/90 dark:border-purple-400/40 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs hover:shadow-sm active:scale-95 cursor-pointer">
                     <span class="material-symbols-outlined text-base text-purple-600 dark:text-purple-300">group</span>
                     <span>Quản lý Users</span>
                 </button>
 
                 <!-- Daily Action Button -->
                 <button id="btnOpenDaily"
-                    class="bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/20 dark:hover:bg-emerald-500/30 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-500/40 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm">
+                    class="bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/20 dark:hover:bg-emerald-500/30 text-emerald-900 dark:text-emerald-300 border border-emerald-300/90 dark:border-emerald-500/40 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs hover:shadow-sm active:scale-95 cursor-pointer">
                     <span class="material-symbols-outlined text-base text-emerald-600 dark:text-emerald-300">calendar_today</span>
                     <span>Ghi Daily</span>
                 </button>
 
                 <!-- New Note Button -->
                 <button id="btnNewNote"
-                    class="bg-purple-600 hover:bg-purple-700 text-white dark:bg-primary/20 dark:hover:bg-primary/30 dark:text-primary border border-purple-500 dark:border-primary/40 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm">
+                    class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white dark:bg-primary/20 dark:hover:bg-primary/30 dark:text-primary border border-purple-600 dark:border-primary/40 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95 cursor-pointer">
                     <span class="material-symbols-outlined text-base">note_add</span>
                     <span>+ Tạo Note</span>
                 </button>
 
                 <!-- Refresh Button -->
                 <button id="btnRefreshGraph" title="Tải lại dữ liệu từ GitHub"
-                    class="bg-slate-100 hover:bg-slate-200 dark:bg-surface-container-high text-slate-700 dark:text-on-surface border border-slate-300/80 dark:border-white/10 px-2.5 py-1.5 rounded-lg text-xs transition-all flex items-center justify-center">
+                    class="bg-white hover:bg-slate-100 dark:bg-surface-container-high text-slate-800 dark:text-on-surface border border-slate-300 dark:border-white/10 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center justify-center shadow-xs active:scale-95 cursor-pointer">
                     <span class="material-symbols-outlined text-base">refresh</span>
                 </button>
 
@@ -64,22 +64,22 @@
 
             <!-- Theme Mode Switcher (Visible to All Users & Admin) -->
             <button id="btnThemeToggle" onclick="window.toggleTheme()" title="Chuyển đổi chế độ Sáng / Tối (Dark / Light)"
-                class="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-surface-container-high/80 dark:hover:bg-surface-container-high border border-slate-300/80 dark:border-white/10 text-slate-800 dark:text-on-surface hover:text-purple-600 dark:hover:text-primary transition-all flex items-center gap-1.5 text-xs font-semibold shadow-sm cursor-pointer active:scale-95">
+                class="px-2.5 py-1.5 rounded-xl bg-white hover:bg-slate-100 dark:bg-surface-container-high/80 dark:hover:bg-surface-container-high border border-slate-300 dark:border-white/10 text-slate-800 dark:text-on-surface hover:text-purple-700 dark:hover:text-primary transition-all flex items-center gap-1.5 text-xs font-bold shadow-xs cursor-pointer active:scale-95">
                 <span id="themeToggleIcon" class="material-symbols-outlined text-base text-amber-500 dark:text-amber-400">light_mode</span>
-                <span id="themeToggleText" class="hidden xl:inline text-[11px] font-mono font-medium">Sáng/Tối</span>
+                <span id="themeToggleText" class="hidden xl:inline text-[11px] font-mono font-semibold">Sáng/Tối</span>
             </button>
 
             <!-- User Info Badge (Visible to All Logged In Users) -->
-            <div id="userBadge" class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-surface-container-high/60 border border-slate-300/80 dark:border-white/10 text-xs">
+            <div id="userBadge" class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white dark:bg-surface-container-high/60 border border-slate-300 dark:border-white/10 text-xs font-semibold shadow-xs">
                 <span class="material-symbols-outlined text-purple-600 dark:text-purple-300 text-base">account_circle</span>
-                <span id="userNameDisplay" class="font-semibold text-slate-800 dark:text-gray-200 truncate max-w-[140px]">AI Admin</span>
-                <span id="userRoleTag" class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300 border border-purple-300 dark:border-purple-400/30">ADMIN</span>
+                <span id="userNameDisplay" class="font-bold text-slate-900 dark:text-gray-200 truncate max-w-[140px]">AI Admin</span>
+                <span id="userRoleTag" class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-purple-100 dark:bg-purple-500/20 text-purple-800 dark:text-purple-300 border border-purple-300 dark:border-purple-400/30">ADMIN</span>
             </div>
 
             <!-- Logout Button -->
             <button id="btnLogout" title="Đăng xuất khỏi hệ thống"
-                class="bg-red-50 hover:bg-red-100 dark:bg-red-500/15 dark:hover:bg-red-500/25 text-red-700 dark:text-red-300 border border-red-300 dark:border-red-500/35 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm">
-                <span class="material-symbols-outlined text-base">logout</span>
+                class="bg-red-50 hover:bg-red-100 dark:bg-red-500/15 dark:hover:bg-red-500/25 text-red-800 dark:text-red-300 border border-red-300 dark:border-red-500/35 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs hover:shadow-sm active:scale-95 cursor-pointer">
+                <span class="material-symbols-outlined text-base text-red-600 dark:text-red-400">logout</span>
                 <span>Đăng xuất</span>
             </button>
         </div>

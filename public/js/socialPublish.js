@@ -81,7 +81,7 @@
             if (previewCard) previewCard.classList.remove('hidden');
 
             if (tabEditor) {
-                tabEditor.className = 'px-3 py-1 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition-all flex items-center gap-1.5 cursor-pointer';
+                tabEditor.className = 'px-3 py-1 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-all flex items-center gap-1.5 cursor-pointer';
             }
             if (tabPreview) {
                 tabPreview.className = 'px-3 py-1 rounded-lg text-xs font-bold transition-all bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm flex items-center gap-1.5 cursor-pointer';
@@ -94,7 +94,7 @@
                 tabEditor.className = 'px-3 py-1 rounded-lg text-xs font-bold transition-all bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm flex items-center gap-1.5 cursor-pointer';
             }
             if (tabPreview) {
-                tabPreview.className = 'px-3 py-1 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition-all flex items-center gap-1.5 cursor-pointer';
+                tabPreview.className = 'px-3 py-1 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-all flex items-center gap-1.5 cursor-pointer';
             }
         }
     }
@@ -334,19 +334,19 @@
 
         if (platform === 'facebook') {
             if (tabBtnFb) {
-                tabBtnFb.className = 'flex items-center justify-center gap-2.5 p-3 rounded-xl border border-blue-500/50 bg-blue-600/25 text-white font-bold transition-all shadow-md hover:bg-blue-600/35 cursor-pointer';
+                tabBtnFb.className = 'flex items-center justify-center gap-2.5 p-3 rounded-xl border border-blue-500/50 bg-blue-50 dark:bg-blue-600/25 text-blue-900 dark:text-white font-bold transition-all shadow-sm hover:bg-blue-100 dark:hover:bg-blue-600/35 cursor-pointer';
             }
             if (tabBtnTt) {
-                tabBtnTt.className = 'flex items-center justify-center gap-2.5 p-3 rounded-xl border border-white/10 bg-slate-800/40 text-slate-400 font-bold transition-all hover:bg-slate-800/80 hover:text-white cursor-pointer';
+                tabBtnTt.className = 'flex items-center justify-center gap-2.5 p-3 rounded-xl border border-slate-300 dark:border-white/10 bg-slate-100/80 dark:bg-slate-800/40 text-slate-700 dark:text-slate-400 font-bold transition-all hover:bg-slate-200 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-white cursor-pointer';
             }
             if (targetName) targetName.textContent = 'Facebook';
             if (submitBtnText) submitBtnText.textContent = '⚡ Tự Động Đăng Lên Facebook';
         } else {
             if (tabBtnTt) {
-                tabBtnTt.className = 'flex items-center justify-center gap-2.5 p-3 rounded-xl border border-pink-500/50 bg-pink-600/25 text-white font-bold transition-all shadow-md hover:bg-pink-600/35 cursor-pointer';
+                tabBtnTt.className = 'flex items-center justify-center gap-2.5 p-3 rounded-xl border border-pink-500/50 bg-pink-50 dark:bg-pink-600/25 text-pink-900 dark:text-white font-bold transition-all shadow-sm hover:bg-pink-100 dark:hover:bg-pink-600/35 cursor-pointer';
             }
             if (tabBtnFb) {
-                tabBtnFb.className = 'flex items-center justify-center gap-2.5 p-3 rounded-xl border border-white/10 bg-slate-800/40 text-slate-400 font-bold transition-all hover:bg-slate-800/80 hover:text-white cursor-pointer';
+                tabBtnFb.className = 'flex items-center justify-center gap-2.5 p-3 rounded-xl border border-slate-300 dark:border-white/10 bg-slate-100/80 dark:bg-slate-800/40 text-slate-700 dark:text-slate-400 font-bold transition-all hover:bg-slate-200 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-white cursor-pointer';
             }
             if (targetName) targetName.textContent = 'TikTok';
             if (submitBtnText) submitBtnText.textContent = '⚡ Tự Động Đăng Lên TikTok';

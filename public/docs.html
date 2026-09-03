@@ -157,6 +157,82 @@
             color: #ffffff;
             transform: translateY(-1px);
         }
+
+        /* Custom Colors & Subtle Badges for Bootstrap */
+        .text-purple {
+            color: #c084fc !important;
+        }
+        [data-bs-theme="light"] .text-purple {
+            color: #6b21a8 !important;
+        }
+
+        .bg-purple-subtle {
+            background-color: rgba(168, 85, 247, 0.15) !important;
+            color: #e9d5ff !important;
+        }
+        [data-bs-theme="light"] .bg-purple-subtle {
+            background-color: #f3e8ff !important;
+            color: #6b21a8 !important;
+            border-color: #d8b4fe !important;
+        }
+
+        .border-purple-subtle {
+            border-color: rgba(168, 85, 247, 0.3) !important;
+        }
+        [data-bs-theme="light"] .border-purple-subtle {
+            border-color: #d8b4fe !important;
+        }
+
+        .border-purple-500-subtle {
+            border-color: rgba(168, 85, 247, 0.4) !important;
+        }
+        [data-bs-theme="light"] .border-purple-500-subtle {
+            border-color: #cbd5e1 !important;
+        }
+
+        .text-indigo {
+            color: #818cf8 !important;
+        }
+        [data-bs-theme="light"] .text-indigo {
+            color: #3730a3 !important;
+        }
+
+        .bg-indigo-subtle {
+            background-color: rgba(99, 102, 241, 0.15) !important;
+            color: #c7d2fe !important;
+        }
+        [data-bs-theme="light"] .bg-indigo-subtle {
+            background-color: #e0e7ff !important;
+            color: #3730a3 !important;
+            border-color: #c7d2fe !important;
+        }
+
+        /* Bootstrap Subtle Badges Light Mode Contrast Boost */
+        [data-bs-theme="light"] .badge.bg-primary-subtle {
+            background-color: #eff6ff !important;
+            color: #1d4ed8 !important;
+            border-color: #bfdbfe !important;
+        }
+        [data-bs-theme="light"] .badge.bg-success-subtle {
+            background-color: #ecfdf5 !important;
+            color: #047857 !important;
+            border-color: #a7f3d0 !important;
+        }
+        [data-bs-theme="light"] .badge.bg-info-subtle {
+            background-color: #ecfeff !important;
+            color: #0e7490 !important;
+            border-color: #a5f3fc !important;
+        }
+        [data-bs-theme="light"] .badge.bg-warning-subtle {
+            background-color: #fffbeb !important;
+            color: #b45309 !important;
+            border-color: #fde68a !important;
+        }
+        [data-bs-theme="light"] .badge.bg-danger-subtle {
+            background-color: #fef2f2 !important;
+            color: #b91c1c !important;
+            border-color: #fecaca !important;
+        }
     </style>
 </head>
 
@@ -257,10 +333,10 @@
                 <div class="glass-panel p-4 rounded-4 border">
                     <h2 class="font-sora fs-5 fw-bold text-body d-flex align-items-center gap-2 mb-2">
                         <i class="bi bi-mortarboard-fill text-purple fs-4"></i>
-                        Thông Điệp Từ Nhóm Học Viên Phát Triển
+                        Thông Điệp Từ Nhóm Sinh Viên Phát Triển
                     </h2>
                     <p class="text-secondary small m-0 leading-relaxed">
-                        Dự án <strong>AI Brain Karik</strong> là sản phẩm nghiên cứu & thực nghiệm chuyên sâu về <strong>Clean Architecture trong Node.js</strong> kết hợp <strong>Hệ thống Trí Tuệ Nhân Tạo Đa Tác Nhân (Multi-Agent System)</strong> và <strong>Obsidian Knowledge Graph</strong>. Nền tảng đang trong giai đoạn kiểm thử, cải tiến và thu thập đóng góp thực tế từ cộng đồng học viên.
+                        Dự án <strong>AI Brain Karik</strong> là sản phẩm nghiên cứu & thực nghiệm chuyên sâu về <strong>Clean Architecture trong Node.js</strong> kết hợp <strong>Hệ thống Trí Tuệ Nhân Tạo Đa Tác Nhân (Multi-Agent System)</strong> và <strong>Obsidian Knowledge Graph</strong>. Nền tảng đang trong giai đoạn kiểm thử, cải tiến và thu thập đóng góp thực tế từ cộng đồng.
                     </p>
                 </div>
             </div>
@@ -331,7 +407,7 @@
                 </div>
             </div>
 
-            <!-- Section 5 -->
+            <!-- Section 4 -->
             <div class="col-12 col-lg-6">
                 <div class="glass-panel p-4 rounded-4 h-100 border">
                     <h2 class="font-sora fs-6 fw-bold text-body d-flex align-items-center gap-2 mb-2">
@@ -344,6 +420,41 @@
                 </div>
             </div>
 
+            <!-- Section 5: GitHub Repository -->
+            <div class="col-12">
+                <div class="glass-panel p-4 rounded-4 border">
+                    <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
+                        <div>
+                            <h2 class="font-sora fs-6 fw-bold text-body d-flex align-items-center gap-2 mb-1">
+                                <i class="bi bi-github text-body fs-5"></i>
+                                5. Link Repo GitHub Dự Án Mã Nguồn Mở (Open-Source Repository)
+                            </h2>
+                            <p class="text-secondary small m-0 leading-relaxed">
+                                Toàn bộ mã nguồn, tài liệu thiết kế hệ thống và hướng dẫn triển khai được công khai minh bạch tại GitHub Repository:
+                            </p>
+                        </div>
+                        <a href="https://github.com/boomhuyxt/Karik-ai-brain.git" target="_blank" rel="noopener noreferrer"
+                            class="btn btn-outline-primary d-inline-flex align-items-center gap-2 px-3.5 py-2 rounded-3 text-decoration-none fw-bold flex-shrink-0 shadow-sm">
+                            <i class="bi bi-github fs-5"></i>
+                            <span>Xem Trên GitHub</span>
+                            <i class="bi bi-box-arrow-up-right small"></i>
+                        </a>
+                    </div>
+                    <div class="mt-3 p-2.5 px-3 rounded-3 bg-body-tertiary font-mono small d-flex align-items-center justify-content-between border gap-2">
+                        <div class="d-flex align-items-center gap-2 text-truncate">
+                            <i class="bi bi-git text-danger fs-6"></i>
+                            <a href="https://github.com/boomhuyxt/Karik-ai-brain.git" target="_blank" rel="noopener noreferrer" class="text-decoration-none text-primary fw-semibold text-truncate">
+                                https://github.com/boomhuyxt/Karik-ai-brain.git
+                            </a>
+                        </div>
+                        <button type="button" onclick="navigator.clipboard.writeText('https://github.com/boomhuyxt/Karik-ai-brain.git').then(() => { this.innerHTML = '<i class=\'bi bi-check2 text-success\'></i> Đã copy'; setTimeout(() => { this.innerHTML = '<i class=\'bi bi-clipboard\'></i> Copy'; }, 2000); })"
+                            class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1 cursor-pointer flex-shrink-0 font-sans" title="Sao chép link repo">
+                            <i class="bi bi-clipboard"></i> Copy
+                        </button>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
     </main>
@@ -351,7 +462,7 @@
     <!-- ==================== FOOTER ==================== -->
     <footer class="py-3 text-center small text-secondary border-top mt-4">
         <div class="container">
-            <p class="m-0">© 2026 AI Brain Karik &bull; Nền tảng nghiên cứu & thực nghiệm AI bởi các học viên</p>
+            <p class="m-0">© 2026 AI Brain Karik &bull; Nền tảng nghiên cứu & thực nghiệm AI bởi nhóm sinh viên phát triển</p>
         </div>
     </footer>
 

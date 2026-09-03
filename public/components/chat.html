@@ -66,57 +66,238 @@
     /* Light Mode Floating Chat Box Container */
     html:not(.dark) #chatBoxContainer:not(.user-fullscreen-chat),
     html.light #chatBoxContainer:not(.user-fullscreen-chat) {
-        background: rgba(255, 255, 255, 0.95) !important;
-        border-color: rgba(109, 40, 217, 0.3) !important;
-        box-shadow: 0 10px 35px rgba(0, 0, 0, 0.08) !important;
+        background: rgba(255, 255, 255, 0.98) !important;
+        border-color: rgba(124, 58, 237, 0.35) !important;
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1) !important;
     }
 
     html:not(.dark) #chatBoxContainer .chat-header-inner,
     html.light #chatBoxContainer .chat-header-inner {
-        border-bottom-color: rgba(109, 40, 217, 0.15) !important;
+        border-bottom-color: rgba(124, 58, 237, 0.2) !important;
     }
 
     html:not(.dark) #chatBoxContainer .font-headline-md,
     html.light #chatBoxContainer .font-headline-md {
-        color: #0f172a !important;
+        color: #1e1b4b !important;
         text-shadow: none !important;
     }
 
     html:not(.dark) #voiceStatusText,
     html.light #voiceStatusText {
-        color: #64748b !important;
+        color: #475569 !important;
+        font-weight: 500 !important;
     }
 
-    /* Light Mode Chat Messages & Bubbles */
-    html:not(.dark) #chatMessages > div,
-    html.light #chatMessages > div {
-        background-color: #ffffff !important;
-        border-color: #e2e8f0 !important;
+    /* Light Mode AI Assistant Bubble (Clean, High-Contrast & Modern Card Style) */
+    html:not(.dark) .chat-ai-bubble,
+    html.light .chat-ai-bubble {
+        background: #ffffff !important;
+        border: 1.5px solid #cbd5e1 !important;
         color: #0f172a !important;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04) !important;
     }
 
-    html:not(.dark) #chatMessages p,
-    html.light #chatMessages p {
-        color: #1e293b !important;
-    }
-
-    html:not(.dark) #chatMessages strong,
-    html.light #chatMessages strong {
-        color: #0f172a !important;
+    html:not(.dark) .chat-ai-bubble strong.ai-header-strong,
+    html.light .chat-ai-bubble strong.ai-header-strong,
+    html:not(.dark) .chat-ai-bubble .ai-title-text,
+    html.light .chat-ai-bubble .ai-title-text {
+        color: #1e1b4b !important;
         text-shadow: none !important;
+    }
+
+    html:not(.dark) .chat-ai-bubble p,
+    html.light .chat-ai-bubble p {
+        color: #0f172a !important;
+        font-weight: 450 !important;
+    }
+
+    html:not(.dark) .chat-ai-bubble .chat-markdown strong,
+    html.light .chat-ai-bubble .chat-markdown strong,
+    html:not(.dark) .chat-ai-bubble .chat-markdown b,
+    html.light .chat-ai-bubble .chat-markdown b {
+        color: #581c87 !important;
+        font-weight: 700 !important;
+    }
+
+    /* Light Mode Chat Action Badges & Buttons */
+    html:not(.dark) .chat-ai-bubble .voice-badge,
+    html.light .chat-ai-bubble .voice-badge {
+        background-color: #d1fae5 !important;
+        color: #065f46 !important;
+        border-color: #6ee7b7 !important;
+    }
+
+    html:not(.dark) .chat-ai-bubble .timer-badge,
+    html.light .chat-ai-bubble .timer-badge {
+        background-color: #cffafe !important;
+        color: #0e7490 !important;
+        border-color: #67e8f9 !important;
+    }
+
+    html:not(.dark) .chat-ai-bubble .engine-badge,
+    html.light .chat-ai-bubble .engine-badge {
+        background-color: #f3e8ff !important;
+        color: #6b21a8 !important;
+        border-color: #d8b4fe !important;
+    }
+
+    html:not(.dark) .chat-ai-bubble .btn-publish-social,
+    html.light .chat-ai-bubble .btn-publish-social {
+        background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%) !important;
+        color: #ffffff !important;
+        border-color: rgba(37, 99, 235, 0.4) !important;
+        box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25) !important;
+    }
+
+    html:not(.dark) .chat-ai-bubble .ai-footer-bar,
+    html.light .chat-ai-bubble .ai-footer-bar {
+        border-top-color: #e2e8f0 !important;
+        color: #475569 !important;
+    }
+
+    html:not(.dark) .chat-ai-bubble .token-text-highlight,
+    html.light .chat-ai-bubble .token-text-highlight {
+        color: #047857 !important;
+    }
+
+    html:not(.dark) .chat-ai-bubble .model-badge,
+    html.light .chat-ai-bubble .model-badge {
+        background-color: #f1f5f9 !important;
+        color: #334155 !important;
+        border-color: #cbd5e1 !important;
+    }
+
+    /* Light Mode User Chat Bubble (Pastel Lavender / Soft Violet Card Style) */
+    html:not(.dark) .chat-user-bubble,
+    html.light .chat-user-bubble {
+        background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%) !important;
+        border: 1.5px solid #c4b5fd !important;
+        color: #3b0764 !important;
+        box-shadow: 0 3px 14px rgba(124, 58, 237, 0.08), 0 1px 3px rgba(124, 58, 237, 0.04) !important;
+    }
+
+    html:not(.dark) .chat-user-bubble strong,
+    html.light .chat-user-bubble strong {
+        color: #6b21a8 !important;
+        text-shadow: none !important;
+    }
+
+    html:not(.dark) .chat-user-bubble strong span.material-symbols-outlined,
+    html.light .chat-user-bubble strong span.material-symbols-outlined {
+        color: #7c3aed !important;
+    }
+
+    html:not(.dark) .chat-user-bubble div,
+    html.light .chat-user-bubble div,
+    html:not(.dark) .chat-user-bubble span:not(.user-bubble-studio-pill *):not(.user-bubble-studio-pill),
+    html.light .chat-user-bubble span:not(.user-bubble-studio-pill *):not(.user-bubble-studio-pill) {
+        color: #3b0764 !important;
+        font-weight: 500 !important;
+    }
+
+    html:not(.dark) .chat-user-bubble img,
+    html.light .chat-user-bubble img {
+        border: 1.5px solid #c4b5fd !important;
+        box-shadow: 0 4px 12px rgba(109, 40, 217, 0.1) !important;
+    }
+
+    /* Light Mode Studio Button Pill inside User Bubble */
+    html:not(.dark) .chat-user-bubble .user-bubble-studio-pill,
+    html.light .chat-user-bubble .user-bubble-studio-pill {
+        background: #ffffff !important;
+        color: #6b21a8 !important;
+        border: 1.5px solid #c4b5fd !important;
+        box-shadow: 0 1px 4px rgba(109, 40, 217, 0.12) !important;
+    }
+    html:not(.dark) .chat-user-bubble .user-bubble-studio-pill span,
+    html.light .chat-user-bubble .user-bubble-studio-pill span {
+        color: #6b21a8 !important;
+        font-weight: 700 !important;
+    }
+    html:not(.dark) .chat-user-bubble .user-bubble-studio-pill span.material-symbols-outlined,
+    html.light .chat-user-bubble .user-bubble-studio-pill span.material-symbols-outlined {
+        color: #7c3aed !important;
+    }
+    html:not(.dark) .chat-user-bubble .user-bubble-studio-pill:hover,
+    html.light .chat-user-bubble .user-bubble-studio-pill:hover {
+        background: #faf5ff !important;
+        border-color: #a855f7 !important;
+        color: #581c87 !important;
+    }
+
+    /* Light Mode Chat Header & Action Pill Buttons */
+    html:not(.dark) #btnOpenImageEditorHeader,
+    html.light #btnOpenImageEditorHeader {
+        background-color: #f3e8ff !important;
+        color: #6b21a8 !important;
+        border-color: #d8b4fe !important;
+        box-shadow: 0 1px 2px rgba(107, 33, 168, 0.1) !important;
+    }
+    html:not(.dark) #btnOpenImageEditorHeader:hover,
+    html.light #btnOpenImageEditorHeader:hover {
+        background-color: #e9d5ff !important;
+        border-color: #c084fc !important;
+    }
+
+    html:not(.dark) #btnWebRTCCall,
+    html.light #btnWebRTCCall {
+        background-color: #d1fae5 !important;
+        color: #065f46 !important;
+        border-color: #6ee7b7 !important;
+        box-shadow: 0 1px 2px rgba(6, 95, 70, 0.1) !important;
+    }
+    html:not(.dark) #btnWebRTCCall:hover,
+    html.light #btnWebRTCCall:hover {
+        background-color: #a7f3d0 !important;
+        border-color: #34d399 !important;
+    }
+
+    html:not(.dark) #btnLangToggle,
+    html.light #btnLangToggle {
+        background-color: #cffafe !important;
+        color: #155e75 !important;
+        border-color: #67e8f9 !important;
+        box-shadow: 0 1px 2px rgba(21, 94, 117, 0.1) !important;
+    }
+    html:not(.dark) #btnLangToggle:hover,
+    html.light #btnLangToggle:hover {
+        background-color: #a5f3fc !important;
+        border-color: #22d3ee !important;
+    }
+
+    html:not(.dark) #btnWakeWordToggle,
+    html.light #btnWakeWordToggle {
+        background-color: #f1f5f9 !important;
+        color: #334155 !important;
+        border-color: #cbd5e1 !important;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+    }
+    html:not(.dark) #btnWakeWordToggle:hover,
+    html.light #btnWakeWordToggle:hover {
+        background-color: #e2e8f0 !important;
+        border-color: #94a3b8 !important;
+    }
+
+    /* Light Mode Chat Input Bar */
+    html:not(.dark) #chatForm,
+    html.light #chatForm {
+        background: #f8fafc !important;
+        border: 1.5px solid #cbd5e1 !important;
+        border-radius: 1.25rem !important;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04) !important;
     }
 
     html:not(.dark) #chatInput,
     html.light #chatInput {
         color: #0f172a !important;
-        border-bottom-color: rgba(109, 40, 217, 0.3) !important;
+        border-bottom: none !important;
         filter: none !important;
     }
 
     html:not(.dark) #chatInput::placeholder,
     html.light #chatInput::placeholder {
-        color: #94a3b8 !important;
+        color: #64748b !important;
+        font-weight: 400;
     }
 
     html:not(.dark) #jarvisMinPill,
@@ -268,16 +449,16 @@
 
     <!-- Chat Messages Thread Area -->
     <div id="chatMessages" class="flex-1 min-h-0 overflow-y-auto flex flex-col gap-2.5 pr-1 text-xs select-text w-full">
-        <div class="flex flex-col items-start self-start mr-auto w-fit max-w-[90%] sm:max-w-[85%] p-3.5 rounded-2xl bg-slate-900/90 border border-cyan-500/40 text-slate-100 rounded-tl-none shadow-lg">
-            <strong class="text-cyan-300 font-bold text-xs sm:text-sm flex items-center justify-between w-full mb-1.5 text-glow">
+        <div class="chat-ai-bubble flex flex-col items-start self-start mr-auto w-fit max-w-[90%] sm:max-w-[85%] p-3.5 rounded-2xl bg-slate-900/90 border border-cyan-500/40 text-slate-100 rounded-tl-none shadow-lg">
+            <strong class="ai-header-strong text-purple-950 dark:text-cyan-300 font-bold text-xs sm:text-sm flex items-center justify-between w-full mb-1.5">
                 <span class="flex items-center gap-2">
-                    <span class="material-symbols-outlined text-base text-cyan-400">smart_toy</span>
-                    AI Karik Assistant:
+                    <span class="material-symbols-outlined text-base text-purple-600 dark:text-cyan-400">smart_toy</span>
+                    <span class="ai-title-text font-bold">AI Karik Assistant:</span>
                 </span>
-                <span class="text-xs text-cyan-400/80 font-mono">⚡ Flash Engine</span>
+                <span class="engine-badge text-xs bg-purple-100 dark:bg-transparent text-purple-900 dark:text-cyan-400/80 border border-purple-300 dark:border-transparent px-2 py-0.5 rounded-full font-mono font-bold">⚡ Flash Engine</span>
             </strong>
-            <p class="text-slate-100 text-xs sm:text-sm leading-relaxed font-medium">
-                Chào bạn! Nhắn tin hoặc bấm <strong class="text-emerald-300 font-semibold">"Gọi AI"</strong> hoặc nói <strong class="text-emerald-300">"Hey Karik"</strong> để trò chuyện trực tiếp cùng AI Assistant.
+            <p class="text-slate-900 dark:text-slate-100 text-xs sm:text-sm leading-relaxed font-medium">
+                Chào bạn! Nhắn tin hoặc bấm <strong class="text-emerald-700 dark:text-emerald-300 font-bold">"Gọi AI"</strong> hoặc nói <strong class="text-emerald-700 dark:text-emerald-300 font-bold">"Hey Karik"</strong> để trò chuyện trực tiếp cùng AI Assistant.
             </p>
         </div>
     </div>
