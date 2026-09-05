@@ -231,8 +231,16 @@
         border: 1px solid rgba(37, 99, 235, 0.6) !important;
         box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3) !important;
     }
+
+    html:not(.dark) #socialPublishModal.platform-tiktok #btnBrowserBotFB,
+    html.light #socialPublishModal.platform-tiktok #btnBrowserBotFB {
+        background: linear-gradient(135deg, #db2777 0%, #e11d48 100%) !important;
+        color: #ffffff !important;
+        border: 1px solid rgba(219, 39, 119, 0.6) !important;
+        box-shadow: 0 4px 15px rgba(219, 39, 119, 0.3) !important;
+    }
 </style>
-<div id="socialPublishModal" class="fixed inset-0 z-50 hidden items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md transition-all duration-300">
+<div id="socialPublishModal" style="display: none;" class="fixed inset-0 z-[9999] hidden items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md transition-all duration-300">
     <div class="relative w-full max-w-2xl max-h-[92vh] flex flex-col rounded-2xl glass-panel bg-slate-900/95 border border-purple-500/40 shadow-[0_0_50px_rgba(168,85,247,0.25)] overflow-hidden animate-fadeIn">
         
         <!-- Modal Header -->
@@ -282,8 +290,8 @@
                             <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/>
                         </svg>
                         <div class="text-left">
-                            <div class="text-xs font-bold">TikTok Studio</div>
-                            <div class="text-[10px] font-normal">Mở TikTok Creator Studio</div>
+                            <div class="text-xs font-bold text-slate-900 dark:text-white">TikTok Studio</div>
+                            <div class="text-[10px] text-pink-700 dark:text-pink-300 font-medium">Bot tự động vào Chrome đăng TikTok</div>
                         </div>
                     </button>
                 </div>
@@ -351,16 +359,16 @@
                         <button type="button" id="tabViewPreview" onclick="window.socialPublish.toggleViewMode('preview')"
                             class="px-3 py-1 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-all flex items-center gap-1.5 cursor-pointer">
                             <span class="material-symbols-outlined text-xs">visibility</span>
-                            <span>Xem Trước Bảng Tin FB</span>
+                            <span id="tabViewPreviewText">Xem Trước Bảng Tin FB</span>
                         </button>
                     </div>
 
                     <div class="flex items-center gap-1.5">
                         <button type="button" id="btnAutoFormatFB" onclick="window.socialPublish.autoFormatFacebookText()"
                             class="text-[11px] text-amber-900 dark:text-amber-300 hover:text-amber-950 dark:hover:text-amber-200 bg-amber-100 dark:bg-amber-950/50 hover:bg-amber-200 dark:hover:bg-amber-900/70 border border-amber-300 dark:border-amber-500/40 px-2.5 py-1 rounded-lg flex items-center gap-1 transition-all shadow-xs cursor-pointer font-bold active:scale-95"
-                            title="Tự động căn lề, ngắt dòng đôi và chuẩn hóa cấu trúc bài đăng Facebook">
+                            title="Tự động căn lề, ngắt dòng đôi và chuẩn hóa cấu trúc bài đăng">
                             <span class="material-symbols-outlined text-xs text-amber-600 dark:text-amber-400">auto_fix_high</span>
-                            <span>🪄 Chuẩn Hóa Canh Lề FB</span>
+                            <span id="btnAutoFormatText">🪄 Chuẩn Hóa Canh Lề FB</span>
                         </button>
                         <button type="button" id="btnCopyCaptionOnly" onclick="window.socialPublish.copyCaptionToClipboard()"
                             class="text-[11px] text-cyan-900 dark:text-cyan-300 hover:text-cyan-950 dark:hover:text-cyan-200 bg-cyan-100 dark:bg-cyan-950/60 hover:bg-cyan-200 dark:hover:bg-cyan-900 border border-cyan-300 dark:border-cyan-500/30 px-2.5 py-1 rounded-lg flex items-center gap-1 transition-all cursor-pointer font-bold shadow-xs active:scale-95">
@@ -439,6 +447,71 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- View 3: Authentic TikTok Feed / Studio Live Preview Card -->
+                <div id="ttLivePreviewCard" class="hidden rounded-2xl bg-[#121212] border border-pink-500/30 shadow-2xl p-4 space-y-3 animate-fadeIn text-white">
+                    <!-- TikTok Card Container -->
+                    <div class="relative rounded-xl overflow-hidden bg-black/80 border border-white/15 flex flex-col md:flex-row gap-4 p-3 min-h-[340px]">
+                        <!-- Left: TikTok Media Frame with Overlays -->
+                        <div class="relative w-full md:w-64 h-80 rounded-lg overflow-hidden bg-slate-950 flex items-center justify-center flex-shrink-0 border border-white/10">
+                            <img id="ttPreviewMediaImg" src="" alt="TikTok Media Preview" class="w-full h-full object-contain hidden" />
+                            <div id="ttPreviewMediaPlaceholder" class="flex flex-col items-center gap-2 text-slate-500">
+                                <span class="material-symbols-outlined text-4xl text-pink-500/70">movie</span>
+                                <span class="text-[11px] font-medium">TikTok Photo/Video Preview</span>
+                            </div>
+
+                            <!-- TikTok Floating Right Actions (Vertical) -->
+                            <div class="absolute right-2 bottom-4 flex flex-col items-center gap-3 text-white text-center">
+                                <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-pink-500 to-rose-600 flex items-center justify-center shadow-lg border border-white/20">
+                                    <span class="material-symbols-outlined text-base">person</span>
+                                </div>
+                                <div class="flex flex-col items-center cursor-pointer">
+                                    <span class="material-symbols-outlined text-2xl text-pink-500 drop-shadow">favorite</span>
+                                    <span class="text-[10px] font-bold drop-shadow">24.5K</span>
+                                </div>
+                                <div class="flex flex-col items-center cursor-pointer">
+                                    <span class="material-symbols-outlined text-2xl text-white drop-shadow">chat_bubble</span>
+                                    <span class="text-[10px] font-bold drop-shadow">1,248</span>
+                                </div>
+                                <div class="flex flex-col items-center cursor-pointer">
+                                    <span class="material-symbols-outlined text-2xl text-amber-400 drop-shadow">bookmark</span>
+                                    <span class="text-[10px] font-bold drop-shadow">3,890</span>
+                                </div>
+                                <div class="flex flex-col items-center cursor-pointer">
+                                    <span class="material-symbols-outlined text-2xl text-white drop-shadow">share</span>
+                                    <span class="text-[10px] font-bold drop-shadow">850</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right: TikTok Post Details & Caption -->
+                        <div class="flex-1 flex flex-col justify-between space-y-3">
+                            <div class="space-y-2">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-7 h-7 rounded-full bg-gradient-to-r from-pink-500 via-rose-500 to-cyan-400 flex items-center justify-center font-bold text-xs shadow">
+                                        <span>K</span>
+                                    </div>
+                                    <div>
+                                        <div class="text-xs font-bold text-white flex items-center gap-1">
+                                            <span>@aikarik.studio</span>
+                                            <span class="material-symbols-outlined text-[13px] text-cyan-400">verified</span>
+                                        </div>
+                                        <span class="text-[10px] text-slate-400">AI Karik Official · Creator Studio</span>
+                                    </div>
+                                </div>
+
+                                <!-- TikTok Caption Box -->
+                                <div id="ttPreviewPostText" class="text-xs text-slate-200 leading-relaxed font-sans max-h-52 overflow-y-auto custom-scrollbar p-2 rounded-lg bg-white/5 border border-white/10"></div>
+                            </div>
+
+                            <!-- TikTok Audio Pill -->
+                            <div class="flex items-center gap-2 px-2.5 py-1.5 rounded-full bg-white/10 border border-white/15 text-[10px] text-slate-300 w-fit">
+                                <span class="material-symbols-outlined text-xs text-pink-400 animate-pulse">music_note</span>
+                                <span class="font-medium">Âm thanh gốc - AI Karik Trending Audio</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Status / Error Alert Banner -->
@@ -462,10 +535,10 @@
                     class="bg-slate-100 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 text-slate-700 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white px-4 py-2 rounded-xl text-xs font-bold transition-all border border-slate-300 dark:border-transparent cursor-pointer active:scale-95">
                     Đóng
                 </button>
-                <button type="button" id="btnBrowserBotFB" onclick="window.socialPublish.runBrowserBotFacebook()"
+                <button type="button" id="btnBrowserBotFB" onclick="window.socialPublish.triggerActiveBrowserBot()"
                     class="w-full sm:w-auto bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-bold border border-blue-400/50 px-5 py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition-all shadow-md active:scale-95 cursor-pointer">
                     <span class="material-symbols-outlined text-sm text-cyan-200">smart_toy</span>
-                    <span id="btnBrowserBotText">🤖 Đồng Ý & Cho AI Vào Trình Duyệt Đăng Bài</span>
+                    <span id="btnBrowserBotText">🤖 Đồng Ý & Cho AI Vào Facebook Đăng Bài</span>
                 </button>
             </div>
         </div>

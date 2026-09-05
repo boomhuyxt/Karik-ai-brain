@@ -97,6 +97,99 @@ class FacebookBrowserBotService {
   }
 
   /**
+   * Khởi chạy hoặc tái sử dụng trình duyệt Chrome đang mở sẵn
+   */
+  async launchOrReuseBrowser(puppeteer, { executablePath, userDataDir, addLog }) {
+    const debuggingPort = 9222;
+    const debuggingUrl = `http://127.0.0.1:${debuggingPort}`;
+
+    // 1. Thử kết nối vào trình duyệt đang mở sẵn qua Remote Debugging Port
+    try {
+      const browser = await puppeteer.connect({ browserURL: debuggingUrl, defaultViewport: null });
+      addLog('✅ Đã kết nối vào cửa sổ trình duyệt Chrome đang mở!');
+      return { browser, isReused: true };
+    } catch (e) {
+      // Không có instance mở với port này, tiếp tục launch mới
+    }
+
+    const launchArgs = [
+      `--remote-debugging-port=${debuggingPort}`,
+      '--start-maximized',
+      '--disable-blink-features=AutomationControlled',
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-infobars'
+    ];
+
+    try {
+      const browser = await puppeteer.launch({
+        executablePath,
+        userDataDir,
+        headless: false,
+        defaultViewport: null,
+        args: launchArgs
+      });
+      return { browser, isReused: false };
+    } catch (launchErr) {
+      if (launchErr.message && (launchErr.message.includes('already running') || launchErr.message.includes('EBUSY') || launchErr.message.includes('locked'))) {
+        addLog('⚠️ Phát hiện trình duyệt đang chạy hoặc file lock chưa được giải phóng. Đang tự động dọn dẹp và kết nối lại...');
+
+        // Thử kết nối lại qua port
+        try {
+          const browser = await puppeteer.connect({ browserURL: debuggingUrl, defaultViewport: null });
+          addLog('✅ Đã kết nối thành công vào trình duyệt Chrome!');
+          return { browser, isReused: true };
+        } catch (connErr) {}
+
+        // Dọn dẹp lock files trong thư mục session
+        const lockFiles = ['SingletonLock', 'SingletonSocket', 'SingletonCookie', 'lockfile'];
+        for (const f of lockFiles) {
+          try {
+            const p = path.join(userDataDir, f);
+            if (fs.existsSync(p)) fs.unlinkSync(p);
+          } catch (delErr) {}
+        }
+
+        // Chờ 800ms
+        await new Promise(r => setTimeout(r, 800));
+
+        try {
+          const browser = await puppeteer.launch({
+            executablePath,
+            userDataDir,
+            headless: false,
+            defaultViewport: null,
+            args: launchArgs
+          });
+          return { browser, isReused: false };
+        } catch (retryErr) {
+          // Fallback an toàn: Dùng sub-profile để luôn đảm bảo mở được trình duyệt
+          addLog('ℹ️ Tạo phiên làm việc mới an toàn để tránh xung đột file lock...');
+          const fallbackDir = path.join(os.homedir(), `AppData\\Local\\KarikAIBrain\\FacebookSession`);
+          if (!fs.existsSync(fallbackDir)) fs.mkdirSync(fallbackDir, { recursive: true });
+
+          const browser = await puppeteer.launch({
+            executablePath,
+            userDataDir: fallbackDir,
+            headless: false,
+            defaultViewport: null,
+            args: [
+              '--start-maximized',
+              '--disable-blink-features=AutomationControlled',
+              '--no-sandbox',
+              '--disable-setuid-sandbox',
+              '--disable-infobars'
+            ]
+          });
+          return { browser, isReused: false };
+        }
+      }
+
+      throw launchErr;
+    }
+  }
+
+  /**
    * Tự động khởi chạy trình duyệt & đăng bài lên Facebook
    * @param {Object} options { caption, hashtags, mediaUrls, autoClickPost }
    */
@@ -139,28 +232,21 @@ class FacebookBrowserBotService {
       addLog(`Đã chuẩn bị file ảnh sản phẩm từ Studio: ${path.basename(localMediaFile)}`);
     }
 
-    addLog('Đang khởi chạy trình duyệt Chrome trong chế độ giao diện thực tế...');
+    addLog('Đang mở hoặc kết nối trình duyệt Chrome trong chế độ giao diện thực tế...');
 
     let browser = null;
     try {
       const puppeteer = await this.getPuppeteer();
 
-      browser = await puppeteer.launch({
+      const launchResult = await this.launchOrReuseBrowser(puppeteer, {
         executablePath,
         userDataDir,
-        headless: false, // Mở cửa sổ trực tiếp để người dùng xem bot thao tác
-        defaultViewport: null,
-        args: [
-          '--start-maximized',
-          '--disable-blink-features=AutomationControlled',
-          '--no-sandbox',
-          '--disable-setuid-sandbox',
-          '--disable-infobars'
-        ]
+        addLog
       });
+      browser = launchResult.browser;
 
       const pages = await browser.pages();
-      const page = pages.length > 0 ? pages[0] : await browser.newPage();
+      const page = pages.length > 0 ? pages[pages.length - 1] : await browser.newPage();
 
       try {
         const context = browser.defaultBrowserContext();

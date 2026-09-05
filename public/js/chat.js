@@ -1,6 +1,59 @@
 /**
  * Floating AI Chat Module - Fully Transparent Text-Only Style with Live Timer, Gemini Voice & File Upload (Max 50MB)
  */
+
+// Global trigger for Social Publishing Modal from chat or header
+window.triggerSocialPublishFromChat = function(platform, mode = 'modal') {
+    const doOpen = () => {
+        if (window.socialPublish && typeof window.socialPublish.openModal === 'function') {
+            const latestMedia = window.lastStudioEditedImage || window.lastUploadedImageUrl || '';
+            const mediaType = (latestMedia && latestMedia.endsWith('.mp4')) ? 'video' : 'image';
+            const cleanCaption = window.lastProductCaption || '';
+            const selectedPlatform = platform || window.lastSelectedPlatform || 'facebook';
+            const hashtags = window.lastProductHashtags || ['#aikarik', '#sanpham', '#viral', selectedPlatform === 'tiktok' ? '#tiktok' : '#facebook'];
+
+            window.socialPublish.openModal({
+                url: latestMedia,
+                mediaType: mediaType,
+                caption: cleanCaption.slice(0, 2000),
+                hashtags: hashtags,
+                platform: selectedPlatform
+            });
+
+            if (selectedPlatform) {
+                window.socialPublish.switchPlatform(selectedPlatform);
+            }
+
+            if (mode === 'bot') {
+                setTimeout(() => {
+                    if (typeof window.socialPublish.triggerActiveBrowserBot === 'function') {
+                        window.socialPublish.triggerActiveBrowserBot();
+                    }
+                }, 350);
+            }
+        } else {
+            console.error('[SocialPublish] Unable to initialize window.socialPublish');
+        }
+    };
+
+    if (!window.socialPublish) {
+        const script = document.createElement('script');
+        script.src = '/js/socialPublish.js';
+        script.onload = () => {
+            if (window.socialPublish && typeof window.socialPublish.init === 'function') {
+                window.socialPublish.init();
+            }
+            doOpen();
+        };
+        script.onerror = () => {
+            console.error('Failed to dynamically load /js/socialPublish.js');
+        };
+        document.body.appendChild(script);
+    } else {
+        doOpen();
+    }
+};
+
 function initAIChat() {
     const chatForm = document.getElementById('chatForm');
     const chatInput = document.getElementById('chatInput');
@@ -105,6 +158,18 @@ function initAIChat() {
             e.preventDefault();
             if (typeof window.openImageEditor === 'function') {
                 window.openImageEditor(window.lastUploadedImageUrl || null);
+            }
+        }
+
+        const socialBtn = e.target.closest('#btnOpenSocialPublishHeader, .btn-publish-social');
+        if (socialBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+            const platform = socialBtn.getAttribute('data-platform') || 'facebook';
+            if (typeof window.triggerSocialPublishFromChat === 'function') {
+                window.triggerSocialPublishFromChat(platform, 'modal');
+            } else if (window.socialPublish && typeof window.socialPublish.openModal === 'function') {
+                window.socialPublish.openModal({ platform });
             }
         }
     });
@@ -489,7 +554,7 @@ function initAIChat() {
                         ${voiceBadgeHtml}
                     </span>
                     <div class="flex items-center gap-1.5">
-                        <button type="button" class="btn-publish-social bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold border border-blue-400/40 px-2.5 py-0.5 rounded text-[10px] font-mono flex items-center gap-1 transition-all shadow-xs active:scale-95 cursor-pointer" title="Mở Trình Duyệt Đăng Bài Lên Facebook / TikTok">
+                        <button type="button" data-platform="${(parsedSocialConfig && parsedSocialConfig.platform) ? parsedSocialConfig.platform : (/(?:tiktok|clip|video)/i.test(userText) ? 'tiktok' : 'facebook')}" onclick="window.triggerSocialPublishFromChat && window.triggerSocialPublishFromChat('${(parsedSocialConfig && parsedSocialConfig.platform) ? parsedSocialConfig.platform : (/(?:tiktok|clip|video)/i.test(userText) ? 'tiktok' : 'facebook')}', 'modal')" class="btn-publish-social bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold border border-blue-400/40 px-2.5 py-0.5 rounded text-[10px] font-mono flex items-center gap-1 transition-all shadow-xs active:scale-95 cursor-pointer" title="Mở Trình Duyệt Đăng Bài Lên Facebook / TikTok">
                             <span class="material-symbols-outlined text-[12px] text-cyan-200">smart_toy</span>
                             <span>Đăng Bài MXH</span>
                         </button>
@@ -518,39 +583,65 @@ function initAIChat() {
 
             // Bind global trigger function for chat action card
             window.triggerSocialPublishFromChat = function(platform, mode = 'modal') {
-                if (window.socialPublish && typeof window.socialPublish.openModal === 'function') {
-                    // Ưu tiên lấy ảnh mới nhất từ Studio hoặc ảnh upload gần nhất
-                    let mediaUrl = window.lastStudioEditedImage || result.imageData || window.lastUploadedImageUrl || '';
-                    let mediaType = (mediaUrl && mediaUrl.endsWith('.mp4')) ? 'video' : 'image';
-                    
-                    let cleanCaption = (parsedSocialConfig && parsedSocialConfig.caption) 
-                        ? parsedSocialConfig.caption 
-                        : (window.lastProductCaption || (result.reply || result.message || '')
-                            .replace(/```[\s\S]*?```/g, '')
-                            .replace(/!\[.*?\]\(.*?\)/g, '')
-                            .replace(/\[CHỈ THỊ.*?\]/g, '')
-                            .trim());
+                const doOpen = () => {
+                    if (window.socialPublish && typeof window.socialPublish.openModal === 'function') {
+                        // Ưu tiên lấy ảnh mới nhất từ Studio hoặc ảnh upload gần nhất
+                        let mediaUrl = window.lastStudioEditedImage || result.imageData || window.lastUploadedImageUrl || '';
+                        let mediaType = (mediaUrl && mediaUrl.endsWith('.mp4')) ? 'video' : 'image';
+                        
+                        let cleanCaption = (parsedSocialConfig && parsedSocialConfig.caption) 
+                            ? parsedSocialConfig.caption 
+                            : (window.lastProductCaption || (result.reply || result.message || '')
+                                .replace(/```[\s\S]*?```/g, '')
+                                .replace(/!\[.*?\]\(.*?\)/g, '')
+                                .replace(/\[CHỈ THỊ.*?\]/g, '')
+                                .trim());
 
-                    window.lastProductCaption = cleanCaption;
+                        window.lastProductCaption = cleanCaption;
 
-                    window.socialPublish.openModal({
-                        url: mediaUrl,
-                        mediaType,
-                        caption: cleanCaption.slice(0, 2000),
-                        hashtags: parsedSocialConfig?.hashtags || window.lastProductHashtags || ['#aikarik', '#sanpham', '#viral', '#facebook'],
-                        platform: platform || parsedSocialConfig?.platform || 'facebook'
-                    });
+                        window.socialPublish.openModal({
+                            url: mediaUrl,
+                            mediaType,
+                            caption: cleanCaption.slice(0, 2000),
+                            hashtags: parsedSocialConfig?.hashtags || window.lastProductHashtags || ['#aikarik', '#sanpham', '#viral', '#facebook'],
+                            platform: platform || parsedSocialConfig?.platform || 'facebook'
+                        });
 
-                    if (platform) {
-                        window.socialPublish.switchPlatform(platform);
+                        if (platform) {
+                            window.socialPublish.switchPlatform(platform);
+                        }
+
+                        if (mode === 'bot') {
+                            setTimeout(() => {
+                                if (window.socialPublish && typeof window.socialPublish.triggerActiveBrowserBot === 'function') {
+                                    window.socialPublish.triggerActiveBrowserBot();
+                                }
+                            }, 350);
+                        }
                     }
+                };
+
+                if (!window.socialPublish) {
+                    const script = document.createElement('script');
+                    script.src = '/js/socialPublish.js';
+                    script.onload = () => {
+                        if (window.socialPublish && typeof window.socialPublish.init === 'function') {
+                            window.socialPublish.init();
+                        }
+                        doOpen();
+                    };
+                    document.body.appendChild(script);
+                } else {
+                    doOpen();
                 }
             };
 
             // Bind Social Publish Modal button
             const publishBtn = aiDiv.querySelector('.btn-publish-social');
             if (publishBtn) {
-                publishBtn.addEventListener('click', () => {
+                publishBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
                     if (typeof window.triggerSocialPublishFromChat === 'function') {
                         window.triggerSocialPublishFromChat(parsedSocialConfig?.platform || 'facebook');
                     }

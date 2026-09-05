@@ -367,6 +367,31 @@ class SocialController {
       next(err);
     }
   }
+
+  /**
+   * Khởi chạy Browser Bot tự động mở Chrome/Edge vào TikTok Creator Studio để đăng bài
+   */
+  async runTiktokBrowserBot(req, res, next) {
+    try {
+      const tiktokBrowserBotService = require('../services/social/tiktokBrowserBot.service');
+      const { caption = '', hashtags = [], mediaUrls = [], autoClickPost = true } = req.body;
+
+      const botResult = await tiktokBrowserBotService.runTiktokAutoPost({
+        caption,
+        hashtags,
+        mediaUrls,
+        autoClickPost
+      });
+
+      res.status(200).json({
+        success: botResult.success,
+        message: botResult.message || botResult.error,
+        data: botResult
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 module.exports = new SocialController();

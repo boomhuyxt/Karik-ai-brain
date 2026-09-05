@@ -67,31 +67,42 @@
     }
 
     /**
-     * Chuyển đổi giữa chế độ Soạn Thảo (Editor) và Xem Trước Bảng Tin FB (Live Preview)
+     * Chuyển đổi giữa chế độ Soạn Thảo (Editor) và Xem Trước Bảng Tin (Live Preview)
      */
     function toggleViewMode(mode = 'editor') {
         const tabEditor = document.getElementById('tabViewEditor');
         const tabPreview = document.getElementById('tabViewPreview');
         const editorContainer = document.getElementById('socialEditorContainer');
-        const previewCard = document.getElementById('fbLivePreviewCard');
+        const fbPreviewCard = document.getElementById('fbLivePreviewCard');
+        const ttPreviewCard = document.getElementById('ttLivePreviewCard');
 
         if (mode === 'preview') {
             updateLivePreview();
             if (editorContainer) editorContainer.classList.add('hidden');
-            if (previewCard) previewCard.classList.remove('hidden');
+
+            if (currentPlatform === 'tiktok') {
+                if (fbPreviewCard) fbPreviewCard.classList.add('hidden');
+                if (ttPreviewCard) ttPreviewCard.classList.remove('hidden');
+            } else {
+                if (ttPreviewCard) ttPreviewCard.classList.add('hidden');
+                if (fbPreviewCard) fbPreviewCard.classList.remove('hidden');
+            }
 
             if (tabEditor) {
                 tabEditor.className = 'px-3 py-1 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-all flex items-center gap-1.5 cursor-pointer';
             }
             if (tabPreview) {
-                tabPreview.className = 'px-3 py-1 rounded-lg text-xs font-bold transition-all bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm flex items-center gap-1.5 cursor-pointer';
+                const activeGrad = currentPlatform === 'tiktok' ? 'bg-gradient-to-r from-pink-600 to-rose-600' : 'bg-gradient-to-r from-blue-600 to-indigo-600';
+                tabPreview.className = `px-3 py-1 rounded-lg text-xs font-bold transition-all ${activeGrad} text-white shadow-sm flex items-center gap-1.5 cursor-pointer`;
             }
         } else {
-            if (previewCard) previewCard.classList.add('hidden');
+            if (fbPreviewCard) fbPreviewCard.classList.add('hidden');
+            if (ttPreviewCard) ttPreviewCard.classList.add('hidden');
             if (editorContainer) editorContainer.classList.remove('hidden');
 
             if (tabEditor) {
-                tabEditor.className = 'px-3 py-1 rounded-lg text-xs font-bold transition-all bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm flex items-center gap-1.5 cursor-pointer';
+                const activeGrad = currentPlatform === 'tiktok' ? 'bg-gradient-to-r from-pink-600 to-rose-600' : 'bg-gradient-to-r from-blue-600 to-indigo-600';
+                tabEditor.className = `px-3 py-1 rounded-lg text-xs font-bold transition-all ${activeGrad} text-white shadow-sm flex items-center gap-1.5 cursor-pointer`;
             }
             if (tabPreview) {
                 tabPreview.className = 'px-3 py-1 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-all flex items-center gap-1.5 cursor-pointer';
@@ -100,14 +111,21 @@
     }
 
     /**
-     * Cập nhật bản xem trước Bảng tin Facebook và bộ đếm ký tự trong thời gian thực
+     * Cập nhật bản xem trước Bảng tin (Facebook / TikTok) và bộ đếm ký tự trong thời gian thực
      */
     function updateLivePreview() {
         const captionInput = document.getElementById('socialCaptionInput');
         const hashtagsInput = document.getElementById('socialHashtagsInput');
         const charCounter = document.getElementById('captionCharCounter');
-        const previewTextDiv = document.getElementById('fbPreviewPostText');
-        const previewImg = document.getElementById('fbPreviewMediaImg');
+        
+        // FB elements
+        const fbPreviewTextDiv = document.getElementById('fbPreviewPostText');
+        const fbPreviewImg = document.getElementById('fbPreviewMediaImg');
+
+        // TT elements
+        const ttPreviewTextDiv = document.getElementById('ttPreviewPostText');
+        const ttPreviewImg = document.getElementById('ttPreviewMediaImg');
+        const ttPlaceholder = document.getElementById('ttPreviewMediaPlaceholder');
 
         const caption = captionInput ? captionInput.value : '';
         const hashtags = hashtagsInput ? hashtagsInput.value : '';
@@ -116,38 +134,55 @@
             charCounter.textContent = `${caption.length} ký tự`;
         }
 
-        if (previewTextDiv) {
-            let fullText = getFullPostText();
+        const fullText = getFullPostText();
+        const mediaUrlInput = document.getElementById('socialMediaUrlInput');
+        const targetUrl = (mediaUrlInput ? mediaUrlInput.value.trim() : '') || activeMediaData.url;
+
+        // 1. Cập nhật Facebook Live Preview
+        if (fbPreviewTextDiv) {
             if (!fullText) {
-                previewTextDiv.innerHTML = '<span class="text-slate-500 italic">Chưa có nội dung bài đăng. Nhập bài viết ở tab Soạn Thảo hoặc yêu cầu AI tạo...</span>';
+                fbPreviewTextDiv.innerHTML = '<span class="text-slate-500 italic">Chưa có nội dung bài đăng. Nhập bài viết ở tab Soạn Thảo hoặc yêu cầu AI tạo...</span>';
             } else {
-                // Escape HTML
-                let safeText = fullText
-                    .replace(/&/g, '&amp;')
-                    .replace(/</g, '&lt;')
-                    .replace(/>/g, '&gt;');
-
-                // Highlight hashtags with Facebook blue
+                let safeText = fullText.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
                 safeText = safeText.replace(/(#[a-zA-Z0-9_\u00C0-\u1EF9]+)/g, '<span class="text-[#4599ff] font-medium hover:underline cursor-pointer">$1</span>');
-
-                previewTextDiv.innerHTML = safeText;
+                fbPreviewTextDiv.innerHTML = safeText;
             }
         }
 
-        if (previewImg) {
-            const mediaUrlInput = document.getElementById('socialMediaUrlInput');
-            const targetUrl = (mediaUrlInput ? mediaUrlInput.value.trim() : '') || activeMediaData.url;
+        if (fbPreviewImg) {
             if (targetUrl && (targetUrl.startsWith('data:') || targetUrl.startsWith('http') || targetUrl.startsWith('/uploads'))) {
-                previewImg.src = targetUrl;
-                previewImg.classList.remove('hidden');
+                fbPreviewImg.src = targetUrl;
+                fbPreviewImg.classList.remove('hidden');
             } else {
-                previewImg.classList.add('hidden');
+                fbPreviewImg.classList.add('hidden');
+            }
+        }
+
+        // 2. Cập nhật TikTok Live Preview
+        if (ttPreviewTextDiv) {
+            if (!fullText) {
+                ttPreviewTextDiv.innerHTML = '<span class="text-slate-500 italic">Chưa có nội dung mô tả TikTok...</span>';
+            } else {
+                let safeText = fullText.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                safeText = safeText.replace(/(#[a-zA-Z0-9_\u00C0-\u1EF9]+)/g, '<span class="text-[#fe2c55] dark:text-[#25f4ee] font-bold hover:underline cursor-pointer">$1</span>');
+                ttPreviewTextDiv.innerHTML = safeText;
+            }
+        }
+
+        if (ttPreviewImg) {
+            if (targetUrl && (targetUrl.startsWith('data:') || targetUrl.startsWith('http') || targetUrl.startsWith('/uploads'))) {
+                ttPreviewImg.src = targetUrl;
+                ttPreviewImg.classList.remove('hidden');
+                if (ttPlaceholder) ttPlaceholder.classList.add('hidden');
+            } else {
+                ttPreviewImg.classList.add('hidden');
+                if (ttPlaceholder) ttPlaceholder.classList.remove('hidden');
             }
         }
     }
 
     /**
-     * 🪄 Chuẩn Hóa Canh Lề & Xuống Dòng Bài Đăng Chuẩn Facebook 1-Click
+     * 🪄 Chuẩn Hóa Canh Lề & Xuống Dòng Bài Đăng Chuẩn Facebook & TikTok 1-Click
      */
     function autoFormatFacebookText() {
         const captionInput = document.getElementById('socialCaptionInput');
@@ -166,14 +201,12 @@
         const rawLines = text.split('\n');
         const cleanedLines = [];
 
-        // Các emoji bullet phổ biến
-        const bulletIcons = ['🔹', '👉', '✅', '✨', '⭐', '✔', '▪', '•', '🔸', '📍', '📌', '💡', '💎'];
+        const bulletIcons = ['🔹', '👉', '✅', '✨', '⭐', '✔', '▪', '•', '🔸', '📍', '📌', '💡', '💎', '🔥', '⚡'];
         const sectionStarters = ['🔥', '💥', '⚡', '🎁', '🚚', '🛡️', '👉', '☎️', '📞', '🌐', '🏠', '🎯', '💯'];
 
         for (let i = 0; i < rawLines.length; i++) {
             let line = rawLines[i].trim();
 
-            // Chuẩn hóa icon gạch đầu dòng: đảm bảo có 1 dấu cách sau icon
             for (const icon of bulletIcons) {
                 if (line.startsWith(icon) && !line.startsWith(icon + ' ')) {
                     line = icon + ' ' + line.substring(icon.length).trim();
@@ -184,7 +217,7 @@
             cleanedLines.push(line);
         }
 
-        // 3. Tái cấu trúc khoảng thở chuẩn Facebook (Double line breaks giữa các phần)
+        // 3. Tái cấu trúc khoảng thở
         const formatted = [];
         let inBulletList = false;
 
@@ -194,7 +227,6 @@
             const isSection = sectionStarters.some(st => cur.startsWith(st));
 
             if (cur === '') {
-                // Giữ dòng trống
                 if (formatted.length > 0 && formatted[formatted.length - 1] !== '') {
                     formatted.push('');
                 }
@@ -202,12 +234,10 @@
                 continue;
             }
 
-            // Nếu bắt đầu một khối mục mới (như Ưu đãi, Hotline, Hook) và phía trước chưa có dòng trống
             if (isSection && !isBullet && formatted.length > 0 && formatted[formatted.length - 1] !== '') {
                 formatted.push('');
             }
 
-            // Nếu đang trong bullet list mà dòng này không phải bullet, thêm dòng trống tạo khoảng thở
             if (inBulletList && !isBullet && formatted.length > 0 && formatted[formatted.length - 1] !== '') {
                 formatted.push('');
             }
@@ -216,20 +246,43 @@
             inBulletList = isBullet;
         }
 
-        // 4. Gộp thành văn bản chuẩn và loại bỏ dòng trống dư thừa ở đầu/cuối
         let resultText = formatted.join('\n').replace(/\n{3,}/g, '\n\n').trim();
 
         captionInput.value = resultText;
         updateLivePreview();
-        showStatusAlert('✨ Đã tự động chuẩn hóa canh lề & ngắt dòng đẹp mắt chuẩn phong cách Facebook!', 'success');
+        
+        const platformName = currentPlatform === 'tiktok' ? 'TikTok' : 'Facebook';
+        showStatusAlert(`✨ Đã tự động chuẩn hóa canh lề & ngắt dòng đẹp mắt chuẩn phong cách ${platformName}!`, 'success');
     }
 
     /**
      * Mở Modal xuất bản với dữ liệu bài viết (Ảnh / Poster / Video)
      */
-    function openModal(mediaInfo = {}) {
-        const modal = document.getElementById('socialPublishModal');
-        if (!modal) return;
+    async function openModal(mediaInfo = {}) {
+        let modal = document.getElementById('socialPublishModal');
+        if (!modal) {
+            let container = document.getElementById('socialPublishModalContainer');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'socialPublishModalContainer';
+                document.body.appendChild(container);
+            }
+            try {
+                const res = await fetch('/components/socialPublishModal.html');
+                if (res.ok) {
+                    container.innerHTML = await res.text();
+                    initSocialPublishModule();
+                    modal = document.getElementById('socialPublishModal');
+                }
+            } catch (err) {
+                console.error('[SocialPublish] Dynamic load modal error:', err);
+            }
+        }
+
+        if (!modal) {
+            console.error('[SocialPublish] Could not find or load #socialPublishModal');
+            return;
+        }
 
         // Ưu tiên lấy ảnh mới nhất từ Studio hoặc ảnh upload gần nhất
         const resolvedUrl = mediaInfo.url || mediaInfo.imageData || window.lastStudioEditedImage || window.lastUploadedImageUrl || '';
@@ -276,14 +329,26 @@
         hideStatusAlert();
 
         // Chuyển về nền tảng mong muốn hoặc mặc định Facebook
-        switchPlatform(mediaInfo.platform || currentPlatform || 'facebook');
+        try {
+            switchPlatform(mediaInfo.platform || currentPlatform || 'facebook');
+        } catch (err) {
+            console.warn('[SocialPublish] switchPlatform error (non-fatal):', err);
+        }
 
         // Khởi tạo xem trước và chế độ xem
-        toggleViewMode('editor');
-        updateLivePreview();
+        try {
+            toggleViewMode('editor');
+            updateLivePreview();
+        } catch (err) {
+            console.warn('[SocialPublish] toggleViewMode/updateLivePreview error (non-fatal):', err);
+        }
 
+        // Hiện modal - đảm bảo display được set đúng (override cả inline style lẫn Tailwind hidden)
+        modal.removeAttribute('style');
         modal.classList.remove('hidden');
         modal.classList.add('flex');
+        modal.style.display = 'flex';
+        modal.style.zIndex = '9999';
     }
 
     /**
@@ -318,6 +383,7 @@
         if (modal) {
             modal.classList.add('hidden');
             modal.classList.remove('flex');
+            modal.style.display = 'none';
         }
     }
 
@@ -327,10 +393,28 @@
     function switchPlatform(platform) {
         currentPlatform = platform;
 
+        const modal = document.getElementById('socialPublishModal');
         const tabBtnFb = document.getElementById('tabBtnFacebook');
         const tabBtnTt = document.getElementById('tabBtnTiktok');
         const targetName = document.getElementById('targetPlatformName');
         const submitBtnText = document.getElementById('btnAutoPublishText');
+        const tabPreviewText = document.getElementById('tabViewPreviewText');
+        const autoFormatText = document.getElementById('btnAutoFormatText');
+        const autoFormatBtn = document.getElementById('btnAutoFormatFB');
+        const botBtn = document.getElementById('btnBrowserBotFB');
+        const botBtnText = document.getElementById('btnBrowserBotText');
+        const editorContainer = document.getElementById('socialEditorContainer');
+        const isPreviewOpen = editorContainer && editorContainer.classList.contains('hidden');
+
+        if (modal) {
+            if (platform === 'tiktok') {
+                modal.classList.add('platform-tiktok');
+                modal.classList.remove('platform-facebook');
+            } else {
+                modal.classList.add('platform-facebook');
+                modal.classList.remove('platform-tiktok');
+            }
+        }
 
         if (platform === 'facebook') {
             if (tabBtnFb) {
@@ -341,6 +425,13 @@
             }
             if (targetName) targetName.textContent = 'Facebook';
             if (submitBtnText) submitBtnText.textContent = '⚡ Tự Động Đăng Lên Facebook';
+            if (botBtnText) botBtnText.textContent = '🤖 Đồng Ý & Cho AI Vào Facebook Đăng Bài';
+            if (tabPreviewText) tabPreviewText.textContent = 'Xem Trước Bảng Tin FB';
+            if (autoFormatText) autoFormatText.textContent = '🪄 Chuẩn Hóa Canh Lề FB';
+            if (autoFormatBtn) autoFormatBtn.title = 'Tự động căn lề, ngắt dòng đôi và chuẩn hóa cấu trúc bài đăng Facebook';
+            if (botBtn) {
+                botBtn.className = 'w-full sm:w-auto bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-bold border border-blue-400/50 px-5 py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition-all shadow-md active:scale-95 cursor-pointer';
+            }
         } else {
             if (tabBtnTt) {
                 tabBtnTt.className = 'flex items-center justify-center gap-2.5 p-3 rounded-xl border border-pink-500/50 bg-pink-50 dark:bg-pink-600/25 text-pink-900 dark:text-white font-bold transition-all shadow-sm hover:bg-pink-100 dark:hover:bg-pink-600/35 cursor-pointer';
@@ -350,6 +441,19 @@
             }
             if (targetName) targetName.textContent = 'TikTok';
             if (submitBtnText) submitBtnText.textContent = '⚡ Tự Động Đăng Lên TikTok';
+            if (botBtnText) botBtnText.textContent = '🤖 Đồng Ý & Cho AI Vào TikTok Studio Đăng Bài';
+            if (tabPreviewText) tabPreviewText.textContent = 'Xem Trước Feed TikTok';
+            if (autoFormatText) autoFormatText.textContent = '🪄 Chuẩn Hóa Caption TikTok';
+            if (autoFormatBtn) autoFormatBtn.title = 'Tự động ngắt dòng, căn chỉnh độ dài và tối ưu hóa hashtag chuẩn TikTok';
+            if (botBtn) {
+                botBtn.className = 'w-full sm:w-auto bg-gradient-to-r from-pink-600 via-rose-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-bold border border-pink-400/50 px-5 py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition-all shadow-md active:scale-95 cursor-pointer';
+            }
+        }
+
+        if (isPreviewOpen) {
+            toggleViewMode('preview');
+        } else {
+            updateLivePreview();
         }
     }
 
@@ -450,6 +554,24 @@
     }
 
     /**
+     * Helper phân tích JSON an toàn, tránh lỗi Unexpected token '<' khi server trả về HTML 404/500
+     */
+    async function parseJsonResponse(res) {
+        const text = await res.text();
+        try {
+            return JSON.parse(text);
+        } catch (e) {
+            if (res.status === 404) {
+                throw new Error('Chưa tìm thấy endpoint trên Server (404 Not Found). Vui lòng khởi động lại server Node.js (npm start / npm run dev) để nạp route mới nhất!');
+            }
+            if (!res.ok) {
+                throw new Error(`Máy chủ trả về mã lỗi ${res.status}: ${text.slice(0, 150) || res.statusText}`);
+            }
+            throw new Error(`Dữ liệu máy chủ trả về không đúng định dạng JSON: ${text.slice(0, 100)}`);
+        }
+    }
+
+    /**
      * ⚡ CỐT LÕI: TỰ ĐỘNG XUẤT BẢN TRỰC TIẾP QUA API (Không cần mở trình duyệt dán thủ công)
      */
     async function autoPublishDirect() {
@@ -486,7 +608,7 @@
                 body: JSON.stringify(payload)
             });
 
-            const result = await res.json();
+            const result = await parseJsonResponse(res);
 
             if (result.success && result.data) {
                 const postUrl = result.data.postUrl || (currentPlatform === 'facebook' ? 'https://www.facebook.com/' : 'https://www.tiktok.com/tiktokstudio');
@@ -549,7 +671,7 @@
                 body: JSON.stringify(payload)
             });
 
-            const result = await res.json();
+            const result = await parseJsonResponse(res);
 
             if (result.success) {
                 const logsFormatted = (result.data?.logs || []).join('\n');
@@ -578,6 +700,96 @@
                 submitBtn.classList.remove('opacity-70');
             }
         }
+    }
+
+    /**
+     * 🤖 BROWSER BOT: Tự động khởi chạy Chrome/Edge vào TikTok Creator Studio để đăng bài thực tế
+     */
+    async function runBrowserBotTiktok() {
+        const captionInput = document.getElementById('socialCaptionInput');
+        const hashtagsInput = document.getElementById('socialHashtagsInput');
+        const mediaUrlInput = document.getElementById('socialMediaUrlInput');
+        const submitBtn = document.getElementById('btnBrowserBotFB');
+
+        const caption = captionInput ? captionInput.value.trim() : '';
+        const rawTags = hashtagsInput ? hashtagsInput.value.trim() : '';
+        const mediaUrl = (mediaUrlInput ? mediaUrlInput.value.trim() : '') || activeMediaData.url || window.lastStudioEditedImage || window.lastUploadedImageUrl || '';
+        const hashtags = rawTags.split(/[\s,]+/).filter(t => t.length > 0);
+
+        if (!mediaUrl) {
+            showStatusAlert(
+                '⚠️ **TikTok Creator Studio bắt buộc phải có Ảnh hoặc Video để tạo bài đăng.**\n\n' +
+                '👉 Bạn hãy bấm nút **"🔄 Cập nhật ảnh Studio"** ở phía trên (nếu đã tạo ảnh trong Karik Studio), hoặc dán đường dẫn file ảnh/video vào ô **"Hình Ảnh Sản Phẩm"** trước khi cho AI mở trình duyệt!',
+                'error'
+            );
+            if (mediaUrlInput) {
+                mediaUrlInput.focus();
+                mediaUrlInput.classList.add('border-pink-500');
+                setTimeout(() => mediaUrlInput.classList.remove('border-pink-500'), 3000);
+            }
+            return;
+        }
+
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.classList.add('opacity-70');
+        }
+        showStatusAlert('🤖 **Đang khởi chạy TikTok Browser Bot...**\nĐang mở trình duyệt Chrome/Edge và truy cập TikTok Creator Studio để tự động nạp ảnh/video từ Studio, chuyển tab Photos và xuất bản bài đăng...', 'info');
+
+        try {
+            const payload = {
+                caption,
+                hashtags,
+                mediaUrls: mediaUrl ? [mediaUrl] : [],
+                mediaType: activeMediaData.mediaType || (mediaUrl?.endsWith('.mp4') ? 'video' : 'image'),
+                autoClickPost: true
+            };
+
+            const res = await fetch('/api/social/browser-bot/tiktok', {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify(payload)
+            });
+
+            const result = await parseJsonResponse(res);
+
+            if (result.success) {
+                const logsFormatted = (result.data?.logs || []).join('\n');
+                showStatusAlert(
+                    `🎉 **Browser Bot Đã Đăng Bài Lên TikTok Creator Studio Thành Công!**\n` +
+                    (logsFormatted ? `\n\`\`\`\n${logsFormatted}\n\`\`\`` : ''),
+                    'success'
+                );
+            } else {
+                if (result.data?.requiresLogin) {
+                    showStatusAlert(
+                        `⚠️ **Yêu Cầu Đăng Nhập TikTok Trên Trình Duyệt**\n` +
+                        `Bot đã mở sẵn cửa sổ trình duyệt TikTok Creator Studio. Bạn chỉ cần đăng nhập tài khoản một lần để lưu phiên làm việc, sau đó nhấn lại nút Bot!`,
+                        'error'
+                    );
+                } else {
+                    showStatusAlert(`⚠️ Bot báo lỗi: ${result.message || 'Không thể thực thi'}`, 'error');
+                }
+            }
+        } catch (err) {
+            console.error('[SocialPublish] TikTok Browser Bot Error:', err);
+            showStatusAlert(`⚠️ Lỗi khởi chạy Bot: ${err.message}`, 'error');
+        } finally {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('opacity-70');
+            }
+        }
+    }
+
+    /**
+     * Kích hoạt Browser Bot tương ứng với nền tảng đang chọn (Facebook hoặc TikTok)
+     */
+    function triggerActiveBrowserBot() {
+        if (currentPlatform === 'tiktok') {
+            return runBrowserBotTiktok();
+        }
+        return runBrowserBotFacebook();
     }
 
     /**
@@ -640,6 +852,8 @@
         downloadCurrentMedia,
         autoPublishDirect,
         runBrowserBotFacebook,
+        runBrowserBotTiktok,
+        triggerActiveBrowserBot,
         openBrowserDirectLink,
         toggleViewMode,
         autoFormatFacebookText,

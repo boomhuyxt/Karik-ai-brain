@@ -153,21 +153,21 @@ function renderObsidianGroups(data) {
             const isSelected = activeFilterFolder === cat.folder;
             const dotColor = cat.color || '#a0a0a0';
             const itemBg = isSelected
-                ? `bg-cyan-100 dark:bg-cyan-500/20 border-cyan-400 dark:border-cyan-400/60 shadow-sm text-cyan-950 dark:text-cyan-200 font-bold`
-                : `bg-slate-100 hover:bg-slate-200/80 dark:bg-white/5 dark:hover:bg-white/10 border-slate-200 dark:border-white/10 text-slate-800 dark:text-white`;
+                ? `bg-primary/20 border-primary/50 text-purple-900 dark:text-primary font-bold shadow-xs`
+                : `bg-slate-50 hover:bg-slate-100 dark:bg-white/[0.03] dark:hover:bg-white/[0.08] border-slate-200/70 dark:border-white/5 text-slate-800 dark:text-white`;
 
             return `
-            <div class="flex items-center justify-between gap-2.5 text-xs font-medium ${itemBg} px-3 py-1.5 rounded-lg border transition-all cursor-pointer group hover:scale-[1.01]" onclick="window.filterGraphByFolder('${cat.folder}')">
+            <div class="flex items-center justify-between gap-2.5 text-xs font-medium ${itemBg} px-3 py-2 rounded-xl border transition-all cursor-pointer group hover:scale-[1.01]" onclick="window.filterGraphByFolder('${cat.folder}')">
                 <div class="flex items-center gap-2 min-w-0">
-                    <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background: ${dotColor}"></span>
+                    <span class="w-2.5 h-2.5 rounded-full flex-shrink-0 shadow-xs" style="background: ${dotColor}"></span>
                     <span class="font-semibold tracking-wide text-xs truncate">${cat.folder}</span>
                 </div>
-                <span class="text-[10px] font-mono text-slate-700 dark:text-slate-300 bg-white dark:bg-white/10 border border-slate-300/80 dark:border-white/10 px-1.5 py-0.2 rounded flex-shrink-0 shadow-2xs">${count}</span>
+                <span class="text-[10px] font-mono text-slate-600 dark:text-slate-400 bg-white/80 dark:bg-black/40 border border-slate-200 dark:border-white/10 px-2 py-0.5 rounded-lg flex-shrink-0">${count}</span>
             </div>
             `;
         }).join('');
     } else {
-        legendList.innerHTML = '<div class="text-xs text-slate-500 dark:text-on-surface-variant italic py-1">Không có thư mục</div>';
+        legendList.innerHTML = '<div class="text-xs text-slate-500 dark:text-on-surface-variant italic py-2">Không có thư mục</div>';
     }
 }
 
@@ -493,8 +493,28 @@ function render2DGraph(data) {
 }
 
 /* ==========================================================
-   4. OBSIDIAN ACCORDION & SETTINGS PANEL CONTROLS
+   4. OBSIDIAN SETTINGS PANEL CONTROLS & SEGMENTED TABS
    ========================================================== */
+window.switchGraphTab = function (tabName) {
+    const tabs = ['filters', 'groups', 'display', 'forces'];
+    tabs.forEach(t => {
+        const btn = document.getElementById(`tabBtn${t.charAt(0).toUpperCase() + t.slice(1)}`);
+        const content = document.getElementById(`tabContent${t.charAt(0).toUpperCase() + t.slice(1)}`);
+        const isActive = (t === tabName);
+
+        if (content) {
+            content.classList.toggle('hidden', !isActive);
+        }
+        if (btn) {
+            if (isActive) {
+                btn.className = 'graph-tab-btn flex-1 py-1.5 px-2 rounded-xl text-[11px] font-bold flex items-center justify-center gap-1 transition-all bg-primary/20 text-purple-800 dark:text-primary border border-primary/30 shadow-xs';
+            } else {
+                btn.className = 'graph-tab-btn flex-1 py-1.5 px-2 rounded-xl text-[11px] font-semibold flex items-center justify-center gap-1 transition-all text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 border border-transparent';
+            }
+        }
+    });
+};
+
 window.toggleAccordion = function (sectionId, iconId) {
     const section = document.getElementById(sectionId);
     const icon = document.getElementById(iconId);
@@ -512,12 +532,19 @@ window.toggleAccordion = function (sectionId, iconId) {
 
 window.toggleGraphSettings = function () {
     const panel = document.getElementById('obsidianGraphSettingsPanel');
+    const btn = document.getElementById('btnToggleGraphSettings');
     if (!panel) return;
     const isHidden = panel.classList.contains('hidden');
     if (isHidden) {
         panel.classList.remove('hidden');
+        if (btn) {
+            btn.classList.add('glow-active', 'border-primary');
+        }
     } else {
         panel.classList.add('hidden');
+        if (btn) {
+            btn.classList.remove('glow-active', 'border-primary');
+        }
     }
 };
 
@@ -608,9 +635,11 @@ window.toggleGraphLabels = function (checked) {
 
     const btnToggleLabels = document.getElementById('btnToggleLabels');
     if (btnToggleLabels) {
-        btnToggleLabels.classList.toggle('bg-cyan-500/25', stateShowAllLabels);
-        btnToggleLabels.classList.toggle('text-white', stateShowAllLabels);
-        btnToggleLabels.classList.toggle('border-cyan-400', stateShowAllLabels);
+        btnToggleLabels.classList.toggle('bg-primary/20', stateShowAllLabels);
+        btnToggleLabels.classList.toggle('text-purple-800', stateShowAllLabels);
+        btnToggleLabels.classList.toggle('dark:text-primary', stateShowAllLabels);
+        btnToggleLabels.classList.toggle('border-primary/40', stateShowAllLabels);
+        btnToggleLabels.classList.toggle('shadow-xs', stateShowAllLabels);
     }
 
     const isZoomedInClose = currentZoomScale2D >= textFadeThreshold;

@@ -371,6 +371,13 @@
                 <span class="font-mono">Studio Ảnh</span>
             </button>
 
+            <!-- Social Publish Direct Modal Button (Đăng MXH) -->
+            <button id="btnOpenSocialPublishHeader" onclick="if(typeof window.triggerSocialPublishFromChat==='function'){window.triggerSocialPublishFromChat();}else if(window.socialPublish&&typeof window.socialPublish.openModal==='function'){window.socialPublish.openModal();}" type="button" title="Mở bộ công cụ đăng bài Facebook / TikTok"
+                class="flex items-center gap-1 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/60 dark:hover:bg-blue-800/80 active:scale-95 border border-blue-300 dark:border-blue-400/50 px-2 py-0.5 rounded-full text-blue-800 dark:text-blue-200 text-[10px] font-semibold transition-all shadow-sm cursor-pointer z-10">
+                <span class="material-symbols-outlined text-[12px] text-blue-600 dark:text-blue-300">smart_toy</span>
+                <span class="font-mono">Đăng MXH</span>
+            </button>
+
             <!-- Live Call Button (Gọi AI Trực Tiếp) -->
             <button id="btnWebRTCCall" type="button" title="Gọi trực tiếp AI Karik (Đàm thoại 2 chiều + Ngắt lời tự nhiên)"
                 class="flex items-center gap-1 bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-950/80 dark:hover:bg-emerald-800/90 border border-emerald-300 dark:border-emerald-400/50 px-2 py-0.5 rounded-full text-emerald-800 dark:text-emerald-200 text-[10px] font-semibold transition-all active:scale-95 shadow-sm">

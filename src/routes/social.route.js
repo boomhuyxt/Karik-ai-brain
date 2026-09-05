@@ -17,6 +17,7 @@ router.delete('/accounts/:id', (req, res, next) => socialController.disconnectAc
 router.post('/posts', validateCreatePost, (req, res, next) => socialController.createPost(req, res, next));
 router.post('/direct-publish', (req, res, next) => socialController.directPublish(req, res, next));
 router.post('/browser-bot/facebook', (req, res, next) => socialController.runFacebookBrowserBot(req, res, next));
+router.post('/browser-bot/tiktok', (req, res, next) => socialController.runTiktokBrowserBot(req, res, next));
 router.get('/posts/me', (req, res, next) => socialController.getMyPosts(req, res, next));
 router.post('/posts/:postId/publish-now', (req, res, next) => socialController.publishNow(req, res, next));
 
