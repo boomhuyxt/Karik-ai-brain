@@ -36,7 +36,7 @@ class JarvisVoiceManager {
         // Wake Word Keywords - Only full, distinct phrases to prevent false triggers from clicks or noise
         this.wakeKeywords = [
             'nói hey karik', 'hello karik', 'hey karik', 'chào karik', 'alo karik',
-            'karik ơi', 'chào karik ơi',
+            'karik ơi', 'chào karik ơi', 'karik',
             'hey jarvis', 'hello jarvis', 'jarvis ơi'
         ].sort((a, b) => b.length - a.length);
 
@@ -170,7 +170,7 @@ class JarvisVoiceManager {
         this.startCallSpeechRecognition();
 
         // Speak welcome acknowledgment
-        this.speakText("Em đang nghe đây sếp ơi!").catch(() => {});
+        this.speakText("Em đang nghe đây sếp ơi!").catch(() => { });
     }
 
     endLiveCall() {
@@ -196,7 +196,7 @@ class JarvisVoiceManager {
         if (!SpeechRecognition) return;
 
         if (this.callRecognition) {
-            try { this.callRecognition.stop(); } catch (e) {}
+            try { this.callRecognition.stop(); } catch (e) { }
         }
 
         this.callRecognition = new SpeechRecognition();
@@ -246,7 +246,7 @@ class JarvisVoiceManager {
             if (this.isCallActive && !this.isProcessingAI) {
                 setTimeout(() => {
                     if (this.isCallActive) {
-                        try { this.callRecognition.start(); } catch (e) {}
+                        try { this.callRecognition.start(); } catch (e) { }
                     }
                 }, 200);
             }
@@ -261,7 +261,7 @@ class JarvisVoiceManager {
 
     stopCallSpeechRecognition() {
         if (this.callRecognition) {
-            try { this.callRecognition.stop(); } catch (e) {}
+            try { this.callRecognition.stop(); } catch (e) { }
             this.callRecognition = null;
         }
         clearTimeout(this.silenceTimeout);
