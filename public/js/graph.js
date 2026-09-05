@@ -157,12 +157,12 @@ function renderObsidianGroups(data) {
                 : `bg-slate-50 hover:bg-slate-100 dark:bg-white/[0.03] dark:hover:bg-white/[0.08] border-slate-200/70 dark:border-white/5 text-slate-800 dark:text-white`;
 
             return `
-            <div class="flex items-center justify-between gap-2.5 text-xs font-medium ${itemBg} px-3 py-2 rounded-xl border transition-all cursor-pointer group hover:scale-[1.01]" onclick="window.filterGraphByFolder('${cat.folder}')">
-                <div class="flex items-center gap-2 min-w-0">
+            <div class="flex items-center justify-between gap-2.5 text-xs font-medium ${itemBg} px-3 py-2 rounded-xl border transition-all cursor-pointer group hover:scale-[1.01]" data-folder="${encodeURIComponent(cat.folder)}" onclick="window.filterGraphByFolder(decodeURIComponent(this.dataset.folder))">
+                <div class="flex items-center gap-2 min-w-0 pointer-events-none">
                     <span class="w-2.5 h-2.5 rounded-full flex-shrink-0 shadow-xs" style="background: ${dotColor}"></span>
                     <span class="font-semibold tracking-wide text-xs truncate">${cat.folder}</span>
                 </div>
-                <span class="text-[10px] font-mono text-slate-600 dark:text-slate-400 bg-white/80 dark:bg-black/40 border border-slate-200 dark:border-white/10 px-2 py-0.5 rounded-lg flex-shrink-0">${count}</span>
+                <span class="text-[10px] font-mono text-slate-600 dark:text-slate-400 bg-white/80 dark:bg-black/40 border border-slate-200 dark:border-white/10 px-2 py-0.5 rounded-lg flex-shrink-0 pointer-events-none">${count}</span>
             </div>
             `;
         }).join('');
@@ -504,6 +504,7 @@ window.switchGraphTab = function (tabName) {
 
         if (content) {
             content.classList.toggle('hidden', !isActive);
+            content.style.display = isActive ? 'block' : 'none';
         }
         if (btn) {
             if (isActive) {
@@ -513,6 +514,10 @@ window.switchGraphTab = function (tabName) {
             }
         }
     });
+
+    if (tabName === 'groups' && currentGraphData) {
+        renderObsidianGroups(currentGraphData);
+    }
 };
 
 window.toggleAccordion = function (sectionId, iconId) {
@@ -781,12 +786,17 @@ window.resetGraphForces = function () {
         simulation2D.force('x', d3.forceX(cx).strength(centerForceStrength))
             .force('y', d3.forceY(cy).strength(centerForceStrength))
             .force('charge', d3.forceManyBody().strength(d => (repelForceStrength * 0.45) - (d.degree || 0) * 8))
-            .force('radial', d3.forceRadial(d => d.degree === 0 ? outerOrbitRadius * 0.85 : (d.degree < 2 ? outerOrbitRadius * 0.55 : 0), cx, cy).strength(d => d.degree === 0 ? 0.18 : 0.02))
-            .force('link', d3.forceLink().id(d => d.id).distance(l => {
-                const sFolder = l.source.folder || 'Root';
-                const tFolder = l.target.folder || 'Root';
+            .force('radial', d3.forceRadial(d => d.degree === 0 ? outerOrbitRadius * 0.85 : (d.degree < 2 ? outerOrbitRadius * 0.55 : 0), cx, cy).strength(d => d.degree === 0 ? 0.18 : 0.02));
+
+        const linkForce = simulation2D.force('link');
+        if (linkForce) {
+            linkForce.strength(linkForceStrength);
+            linkForce.distance(l => {
+                const sFolder = l.source?.folder || 'Root';
+                const tFolder = l.target?.folder || 'Root';
                 return (sFolder === tFolder) ? (linkDistanceValue * 0.45) : (linkDistanceValue * 0.95);
-            }).strength(linkForceStrength));
+            });
+        }
 
         simulation2D.alpha(0.4).restart();
     }
@@ -947,4 +957,14 @@ window.addEventListener('themechange', () => {
 
 document.addEventListener('DOMContentLoaded', () => {
     fetchAndRenderGraph();
+});
+
+// Delegate segmented tab clicks reliably
+document.addEventListener('click', (e) => {
+    const tabBtn = e.target.closest('.graph-tab-btn');
+    if (!tabBtn) return;
+    if (tabBtn.id === 'tabBtnFilters') window.switchGraphTab('filters');
+    else if (tabBtn.id === 'tabBtnGroups') window.switchGraphTab('groups');
+    else if (tabBtn.id === 'tabBtnDisplay') window.switchGraphTab('display');
+    else if (tabBtn.id === 'tabBtnForces') window.switchGraphTab('forces');
 });

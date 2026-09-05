@@ -77,25 +77,25 @@
 
         <!-- Segmented Tab Navigation Bar -->
         <div class="p-2 border-b border-slate-200/80 dark:border-white/10 bg-slate-50/60 dark:bg-black/20 flex items-center gap-1 flex-shrink-0">
-            <button id="tabBtnFilters" onclick="window.switchGraphTab('filters')"
-                class="graph-tab-btn flex-1 py-1.5 px-2 rounded-xl text-[11px] font-bold flex items-center justify-center gap-1 transition-all bg-primary/20 text-purple-800 dark:text-primary border border-primary/30 shadow-xs">
-                <span class="material-symbols-outlined text-sm">filter_list</span>
-                <span>Bộ lọc</span>
+            <button id="tabBtnFilters" type="button" onclick="window.switchGraphTab('filters')"
+                class="graph-tab-btn flex-1 py-1.5 px-2 rounded-xl text-[11px] font-bold flex items-center justify-center gap-1 transition-all bg-primary/20 text-purple-800 dark:text-primary border border-primary/30 shadow-xs cursor-pointer">
+                <span class="material-symbols-outlined text-sm pointer-events-none">filter_list</span>
+                <span class="pointer-events-none">Bộ lọc</span>
             </button>
-            <button id="tabBtnGroups" onclick="window.switchGraphTab('groups')"
-                class="graph-tab-btn flex-1 py-1.5 px-2 rounded-xl text-[11px] font-semibold flex items-center justify-center gap-1 transition-all text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 border border-transparent">
-                <span class="material-symbols-outlined text-sm">palette</span>
-                <span>Nhóm</span>
+            <button id="tabBtnGroups" type="button" onclick="window.switchGraphTab('groups')"
+                class="graph-tab-btn flex-1 py-1.5 px-2 rounded-xl text-[11px] font-semibold flex items-center justify-center gap-1 transition-all text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 border border-transparent cursor-pointer">
+                <span class="material-symbols-outlined text-sm pointer-events-none">palette</span>
+                <span class="pointer-events-none">Nhóm</span>
             </button>
-            <button id="tabBtnDisplay" onclick="window.switchGraphTab('display')"
-                class="graph-tab-btn flex-1 py-1.5 px-2 rounded-xl text-[11px] font-semibold flex items-center justify-center gap-1 transition-all text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 border border-transparent">
-                <span class="material-symbols-outlined text-sm">visibility</span>
-                <span>Hiển thị</span>
+            <button id="tabBtnDisplay" type="button" onclick="window.switchGraphTab('display')"
+                class="graph-tab-btn flex-1 py-1.5 px-2 rounded-xl text-[11px] font-semibold flex items-center justify-center gap-1 transition-all text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 border border-transparent cursor-pointer">
+                <span class="material-symbols-outlined text-sm pointer-events-none">visibility</span>
+                <span class="pointer-events-none">Hiển thị</span>
             </button>
-            <button id="tabBtnForces" onclick="window.switchGraphTab('forces')"
-                class="graph-tab-btn flex-1 py-1.5 px-2 rounded-xl text-[11px] font-semibold flex items-center justify-center gap-1 transition-all text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 border border-transparent">
-                <span class="material-symbols-outlined text-sm">bubble_chart</span>
-                <span>Vật lý</span>
+            <button id="tabBtnForces" type="button" onclick="window.switchGraphTab('forces')"
+                class="graph-tab-btn flex-1 py-1.5 px-2 rounded-xl text-[11px] font-semibold flex items-center justify-center gap-1 transition-all text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 border border-transparent cursor-pointer">
+                <span class="material-symbols-outlined text-sm pointer-events-none">bubble_chart</span>
+                <span class="pointer-events-none">Vật lý</span>
             </button>
         </div>
 
@@ -123,52 +123,52 @@
 
                 <div class="space-y-2">
                     <!-- Toggle: Tags -->
-                    <div class="flex items-center justify-between py-1.5 px-2.5 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/5">
-                        <span class="text-slate-700 dark:text-slate-300 font-medium flex items-center gap-2">
+                    <label class="flex items-center justify-between py-1.5 px-2.5 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/5 cursor-pointer hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-all">
+                        <span class="text-slate-700 dark:text-slate-300 font-medium flex items-center gap-2 select-none">
                             <span class="material-symbols-outlined text-sm text-purple-600 dark:text-purple-400">tag</span>
                             Thẻ tag (Tags)
                         </span>
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input id="toggleTagsInput" type="checkbox" checked onchange="window.toggleGraphTags(this.checked)" class="sr-only peer">
+                        <span class="relative inline-flex items-center pointer-events-none">
+                            <input id="toggleTagsInput" type="checkbox" checked onchange="window.toggleGraphTags(this.checked)" class="sr-only peer pointer-events-auto">
                             <div class="w-8 h-4 bg-slate-300 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3.5 after:transition-all peer-checked:bg-purple-600"></div>
-                        </label>
-                    </div>
+                        </span>
+                    </label>
 
                     <!-- Toggle: Attachments -->
-                    <div class="flex items-center justify-between py-1.5 px-2.5 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/5">
-                        <span class="text-slate-700 dark:text-slate-300 font-medium flex items-center gap-2">
+                    <label class="flex items-center justify-between py-1.5 px-2.5 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/5 cursor-pointer hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-all">
+                        <span class="text-slate-700 dark:text-slate-300 font-medium flex items-center gap-2 select-none">
                             <span class="material-symbols-outlined text-sm text-purple-600 dark:text-purple-400">attach_file</span>
                             Tệp đính kèm (Attachments)
                         </span>
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input id="toggleAttachmentsInput" type="checkbox" onchange="window.toggleGraphAttachments(this.checked)" class="sr-only peer">
+                        <span class="relative inline-flex items-center pointer-events-none">
+                            <input id="toggleAttachmentsInput" type="checkbox" onchange="window.toggleGraphAttachments(this.checked)" class="sr-only peer pointer-events-auto">
                             <div class="w-8 h-4 bg-slate-300 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3.5 after:transition-all peer-checked:bg-purple-600"></div>
-                        </label>
-                    </div>
+                        </span>
+                    </label>
 
                     <!-- Toggle: Existing files only -->
-                    <div class="flex items-center justify-between py-1.5 px-2.5 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/5">
-                        <span class="text-slate-700 dark:text-slate-300 font-medium flex items-center gap-2">
+                    <label class="flex items-center justify-between py-1.5 px-2.5 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/5 cursor-pointer hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-all">
+                        <span class="text-slate-700 dark:text-slate-300 font-medium flex items-center gap-2 select-none">
                             <span class="material-symbols-outlined text-sm text-purple-600 dark:text-purple-400">task_alt</span>
                             Chỉ tệp tồn tại (Existing files)
                         </span>
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input id="toggleExistingInput" type="checkbox" checked onchange="window.toggleGraphExisting(this.checked)" class="sr-only peer">
+                        <span class="relative inline-flex items-center pointer-events-none">
+                            <input id="toggleExistingInput" type="checkbox" checked onchange="window.toggleGraphExisting(this.checked)" class="sr-only peer pointer-events-auto">
                             <div class="w-8 h-4 bg-slate-300 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3.5 after:transition-all peer-checked:bg-purple-600"></div>
-                        </label>
-                    </div>
+                        </span>
+                    </label>
 
                     <!-- Toggle: Orphans (Ghi chú mồ côi) -->
-                    <div class="flex items-center justify-between py-1.5 px-2.5 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/5">
-                        <span class="text-slate-700 dark:text-slate-300 font-medium flex items-center gap-2">
+                    <label class="flex items-center justify-between py-1.5 px-2.5 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/5 cursor-pointer hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-all">
+                        <span class="text-slate-700 dark:text-slate-300 font-medium flex items-center gap-2 select-none">
                             <span class="material-symbols-outlined text-sm text-purple-600 dark:text-purple-400">share</span>
                             Hiện tệp mồ côi (Orphans)
                         </span>
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input id="toggleOrphansInput" type="checkbox" checked onchange="window.toggleOrphanNodes(this.checked)" class="sr-only peer">
+                        <span class="relative inline-flex items-center pointer-events-none">
+                            <input id="toggleOrphansInput" type="checkbox" checked onchange="window.toggleOrphanNodes(this.checked)" class="sr-only peer pointer-events-auto">
                             <div class="w-8 h-4 bg-slate-300 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3.5 after:transition-all peer-checked:bg-purple-600"></div>
-                        </label>
-                    </div>
+                        </span>
+                    </label>
                 </div>
             </div>
 
@@ -192,28 +192,28 @@
                  ========================================== -->
             <div id="tabContentDisplay" class="graph-tab-content hidden space-y-3.5">
                 <!-- Toggle: Arrows -->
-                <div class="flex items-center justify-between py-1.5 px-2.5 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/5">
-                    <span class="text-slate-700 dark:text-slate-300 font-medium flex items-center gap-2">
+                <label class="flex items-center justify-between py-1.5 px-2.5 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/5 cursor-pointer hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-all">
+                    <span class="text-slate-700 dark:text-slate-300 font-medium flex items-center gap-2 select-none">
                         <span class="material-symbols-outlined text-sm text-purple-600 dark:text-purple-400">arrow_right_alt</span>
                         Mũi tên liên kết (Arrows)
                     </span>
-                    <label class="relative inline-flex items-center cursor-pointer">
-                        <input id="toggleArrowsInput" type="checkbox" onchange="window.toggleGraphArrows(this.checked)" class="sr-only peer">
+                    <span class="relative inline-flex items-center pointer-events-none">
+                        <input id="toggleArrowsInput" type="checkbox" onchange="window.toggleGraphArrows(this.checked)" class="sr-only peer pointer-events-auto">
                         <div class="w-8 h-4 bg-slate-300 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3.5 after:transition-all peer-checked:bg-purple-600"></div>
-                    </label>
-                </div>
+                    </span>
+                </label>
 
                 <!-- Toggle: Always Show Labels -->
-                <div class="flex items-center justify-between py-1.5 px-2.5 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/5">
-                    <span class="text-slate-700 dark:text-slate-300 font-medium flex items-center gap-2">
+                <label class="flex items-center justify-between py-1.5 px-2.5 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/5 cursor-pointer hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-all">
+                    <span class="text-slate-700 dark:text-slate-300 font-medium flex items-center gap-2 select-none">
                         <span class="material-symbols-outlined text-sm text-purple-600 dark:text-purple-400">label</span>
                         Luôn hiện nhãn chữ (Labels)
                     </span>
-                    <label class="relative inline-flex items-center cursor-pointer">
-                        <input id="toggleLabelsInput" type="checkbox" onchange="window.toggleGraphLabels(this.checked)" class="sr-only peer">
+                    <span class="relative inline-flex items-center pointer-events-none">
+                        <input id="toggleLabelsInput" type="checkbox" onchange="window.toggleGraphLabels(this.checked)" class="sr-only peer pointer-events-auto">
                         <div class="w-8 h-4 bg-slate-300 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3.5 after:transition-all peer-checked:bg-purple-600"></div>
-                    </label>
-                </div>
+                    </span>
+                </label>
 
                 <!-- Slider: Text Fade Threshold -->
                 <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/5 space-y-1.5">
@@ -298,10 +298,10 @@
                 </div>
 
                 <!-- Reset Button inside Forces -->
-                <button onclick="window.resetGraphForces()"
-                    class="w-full py-2 px-3 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-purple-500/15 hover:border-purple-400/40 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:text-purple-800 dark:hover:text-primary flex items-center justify-center gap-1.5 text-xs font-semibold transition-all shadow-xs active:scale-98">
-                    <span class="material-symbols-outlined text-sm text-purple-600 dark:text-primary">restart_alt</span>
-                    <span>Khôi phục lực mặc định</span>
+                <button type="button" onclick="window.resetGraphForces()"
+                    class="w-full py-2 px-3 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-purple-500/15 hover:border-purple-400/40 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:text-purple-800 dark:hover:text-primary flex items-center justify-center gap-1.5 text-xs font-semibold transition-all shadow-xs active:scale-98 cursor-pointer">
+                    <span class="material-symbols-outlined text-sm text-purple-600 dark:text-primary pointer-events-none">restart_alt</span>
+                    <span class="pointer-events-none">Khôi phục lực mặc định</span>
                 </button>
             </div>
 

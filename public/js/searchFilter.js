@@ -10,13 +10,21 @@ function initSearchAndFilter() {
         });
     }
 
-    window.filterGraphByFolder = function (folderName) {
-        filterGraphByFolder(folderName);
-    };
+    // Only set fallback filterGraphByFolder if graph.js has not defined it
+    if (typeof window.filterGraphByFolder !== 'function') {
+        window.filterGraphByFolder = function (folderName) {
+            filterGraphByFolderInternal(folderName);
+        };
+    }
 }
 
 function filterGraphByQuery(query) {
-    // 2D SVG Node Filtering
+    if (typeof window.applyCurrentFilters === 'function') {
+        // graph.js handles sync and filtering comprehensively
+        return;
+    }
+
+    // 2D SVG Node Filtering fallback
     const nodeGroups = d3.selectAll('.node-group');
     if (!nodeGroups.empty()) {
         if (!query) {
@@ -33,10 +41,10 @@ function filterGraphByQuery(query) {
     }
 }
 
-function filterGraphByFolder(folderName) {
+function filterGraphByFolderInternal(folderName) {
     const folderLower = (folderName || '').toLowerCase().trim();
 
-    // 2D SVG Folder Filtering
+    // 2D SVG Folder Filtering fallback
     const nodeGroups = d3.selectAll('.node-group');
     if (!nodeGroups.empty()) {
         nodeGroups.style('opacity', d => {
@@ -45,3 +53,4 @@ function filterGraphByFolder(folderName) {
         });
     }
 }
+
