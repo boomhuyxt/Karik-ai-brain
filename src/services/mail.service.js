@@ -2,27 +2,19 @@ const nodemailer = require('nodemailer');
 const env = require('../config/env');
 
 class MailService {
-  constructor() {
-    this.transporter = null;
-    this.initTransporter();
-  }
+  constructor() {}
 
-  initTransporter() {
+  getTransporter() {
     if (env.smtp.user && env.smtp.pass) {
-      try {
-        this.transporter = nodemailer.createTransport({
-          host: env.smtp.host,
-          port: env.smtp.port,
-          secure: env.smtp.port === 465,
-          auth: {
-            user: env.smtp.user,
-            pass: env.smtp.pass
-          }
-        });
-      } catch (err) {
-        console.warn('[MailService] Failed to initialize Nodemailer transporter:', err.message);
-      }
+      return nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: env.smtp.user,
+          pass: env.smtp.pass.replace(/\s+/g, '')
+        }
+      });
     }
+    return null;
   }
 
   async sendOtpEmail(toEmail, otpCode) {
@@ -33,7 +25,7 @@ class MailService {
           <h2 style="color: #c084fc; margin: 0;">AI Brain Karik System</h2>
           <p style="color: #94a3b8; font-size: 14px; margin-top: 4px;">Yêu cầu đặt lại mật khẩu</p>
         </div>
-        <div style="background-color: #1e293b; padding: 15px; rounded: 8px; text-align: center; margin: 20px 0; border: 1px solid #475569;">
+        <div style="background-color: #1e293b; padding: 15px; border-radius: 8px; text-align: center; margin: 20px 0; border: 1px solid #475569;">
           <p style="color: #cbd5e1; font-size: 14px; margin: 0 0 10px 0;">Mã xác thực OTP của bạn là:</p>
           <span style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #38bdf8; font-family: monospace;">${otpCode}</span>
           <p style="color: #94a3b8; font-size: 12px; margin-top: 10px;">(Mã có hiệu lực trong vòng 15 phút)</p>
@@ -46,9 +38,10 @@ class MailService {
     console.log(`📧 [GMAIL SMTP OTP SENT] To: ${toEmail} | OTP Code: ${otpCode}`);
     console.log(`======================================================\n`);
 
-    if (this.transporter && env.smtp.user) {
+    const transporter = this.getTransporter();
+    if (transporter && env.smtp.user) {
       try {
-        await this.transporter.sendMail({
+        await transporter.sendMail({
           from: `"AI Brain Karik" <${env.smtp.user}>`,
           to: toEmail,
           subject,

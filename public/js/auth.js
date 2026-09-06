@@ -205,27 +205,36 @@ async function handleRegister(event) {
     }
 }
 
-// FORGOT PASSWORD MODAL HANDLERS
+let forgotBsModal = null;
 function openForgotModal() {
-    const modal = document.getElementById('forgotModal');
+    const modalEl = document.getElementById('forgotModal');
     const step1 = document.getElementById('forgotStep1');
     const step2 = document.getElementById('forgotStep2');
     const emailInput = document.getElementById('forgot-email');
     
-    if (modal) {
-        modal.classList.remove('d-none');
+    if (modalEl) {
         if (step1) step1.classList.remove('d-none');
         if (step2) step2.classList.add('d-none');
         if (emailInput) {
             const loginEmail = document.getElementById('login-email');
             if (loginEmail && loginEmail.value) emailInput.value = loginEmail.value;
         }
+        if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+            if (!forgotBsModal) forgotBsModal = new bootstrap.Modal(modalEl);
+            forgotBsModal.show();
+        } else {
+            modalEl.classList.remove('d-none');
+        }
     }
 }
 
 function closeForgotModal() {
-    const modal = document.getElementById('forgotModal');
-    if (modal) modal.classList.add('d-none');
+    const modalEl = document.getElementById('forgotModal');
+    if (forgotBsModal) {
+        forgotBsModal.hide();
+    } else if (modalEl) {
+        modalEl.classList.add('d-none');
+    }
 }
 
 async function handleSendOtp() {
@@ -270,10 +279,14 @@ async function handleSendOtp() {
         if (data.devOtp) {
             if (devNotice) devNotice.classList.remove('d-none');
             if (devValue) devValue.textContent = data.devOtp;
+        } else {
+            if (devNotice) devNotice.classList.add('d-none');
         }
 
     } catch (err) {
-        resetTurnstile(turnstileWidgets.forgot);
+        if (typeof resetTurnstile === 'function' && typeof turnstileWidgets !== 'undefined' && turnstileWidgets?.forgot) {
+            resetTurnstile(turnstileWidgets.forgot);
+        }
         alert(err.message || 'Lỗi gửi OTP.');
     } finally {
         if (btnSend) {

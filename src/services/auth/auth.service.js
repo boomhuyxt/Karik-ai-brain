@@ -113,7 +113,7 @@ class AuthService {
     return {
       success: true,
       message: 'Mã OTP đặt lại mật khẩu đã được gửi tới email của bạn!',
-      devOtp: mailResult.devOtp || null
+      devOtp: mailResult.sentViaSmtp ? null : (mailResult.devOtp || otpCode)
     };
   }
 

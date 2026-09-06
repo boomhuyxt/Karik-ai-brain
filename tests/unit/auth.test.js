@@ -54,12 +54,13 @@ test('AuthService - Register & Login Flow', async (t) => {
   // 6. Test Forgot Password & Reset Password Flow
   const forgotRes = await authService.forgotPassword(testEmail);
   assert.strictEqual(forgotRes.success, true);
-  assert.ok(forgotRes.devOtp);
+  const otpToUse = forgotRes.devOtp || authService.otpStore.get(testEmail.toLowerCase())?.otpCode;
+  assert.ok(otpToUse);
 
   const newPassword = 'NewSecretPassword123!';
   const resetRes = await authService.resetPassword({
     email: testEmail,
-    otp: forgotRes.devOtp,
+    otp: otpToUse,
     newPassword
   });
   assert.strictEqual(resetRes.success, true);

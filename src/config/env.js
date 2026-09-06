@@ -93,9 +93,21 @@ module.exports = {
     nologo: true
   },
   smtp: {
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: parseInt(process.env.SMTP_PORT || '587', 10),
-    user: process.env.SMTP_USER || '',
-    pass: process.env.SMTP_PASS || ''
+    get host() {
+      require('dotenv').config({ override: true });
+      return process.env.SMTP_HOST || 'smtp.gmail.com';
+    },
+    get port() {
+      require('dotenv').config({ override: true });
+      return parseInt(process.env.SMTP_PORT || '587', 10);
+    },
+    get user() {
+      require('dotenv').config({ override: true });
+      return process.env.SMTP_USER || '';
+    },
+    get pass() {
+      require('dotenv').config({ override: true });
+      return process.env.SMTP_PASS || '';
+    }
   }
 };
