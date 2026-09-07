@@ -1,5 +1,6 @@
 const nodemailer = require('nodemailer');
 const env = require('../config/env');
+const { maskEmail } = require('../utils/helper');
 
 class MailService {
   constructor() {}
@@ -18,12 +19,14 @@ class MailService {
   }
 
   async sendOtpEmail(toEmail, otpCode) {
+    const maskedTo = maskEmail(toEmail);
     const subject = 'Mã OTP Đặt Lại Mật Khẩu - AI Brain Karik';
     const htmlContent = `
       <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; border: 1px solid #334155; border-radius: 12px; background-color: #0f172a; color: #f8fafc;">
         <div style="text-align: center; margin-bottom: 20px;">
           <h2 style="color: #c084fc; margin: 0;">AI Brain Karik System</h2>
           <p style="color: #94a3b8; font-size: 14px; margin-top: 4px;">Yêu cầu đặt lại mật khẩu</p>
+          <p style="color: #94a3b8; font-size: 13px; margin-top: 2px;">Tài khoản nhận mã: <strong style="color: #38bdf8;">${maskedTo}</strong></p>
         </div>
         <div style="background-color: #1e293b; padding: 15px; border-radius: 8px; text-align: center; margin: 20px 0; border: 1px solid #475569;">
           <p style="color: #cbd5e1; font-size: 14px; margin: 0 0 10px 0;">Mã xác thực OTP của bạn là:</p>
@@ -35,7 +38,7 @@ class MailService {
     `;
 
     console.log(`\n======================================================`);
-    console.log(`📧 [GMAIL SMTP OTP SENT] To: ${toEmail} | OTP Code: ${otpCode}`);
+    console.log(`📧 [GMAIL SMTP OTP SENT] To: ${maskedTo} | OTP Code: ${otpCode}`);
     console.log(`======================================================\n`);
 
     const transporter = this.getTransporter();

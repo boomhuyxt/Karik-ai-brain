@@ -237,6 +237,15 @@ function closeForgotModal() {
     }
 }
 
+function maskEmail(email) {
+    if (!email || typeof email !== 'string' || !email.includes('@')) return email || '';
+    const parts = email.trim().split('@');
+    const localPart = parts[0];
+    const domain = parts.slice(1).join('@');
+    if (localPart.length <= 2) return `****@${domain}`;
+    return `****${localPart.slice(-2)}@${domain}`;
+}
+
 async function handleSendOtp() {
     const emailInput = document.getElementById('forgot-email');
     const email = emailInput ? emailInput.value.trim() : '';
@@ -271,7 +280,11 @@ async function handleSendOtp() {
             throw new Error(data.message || 'Không thể gửi mã OTP.');
         }
 
-        alert(data.message || 'Đã gửi mã OTP xác nhận!');
+        const masked = data.maskedEmail || maskEmail(email);
+        const maskedEl = document.getElementById('forgotMaskedEmail');
+        if (maskedEl) maskedEl.textContent = masked;
+
+        alert(data.message || `Đã gửi mã OTP xác nhận tới email ${masked}!`);
 
         if (step1) step1.classList.add('d-none');
         if (step2) step2.classList.remove('d-none');

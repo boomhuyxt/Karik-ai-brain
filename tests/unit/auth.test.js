@@ -54,6 +54,8 @@ test('AuthService - Register & Login Flow', async (t) => {
   // 6. Test Forgot Password & Reset Password Flow
   const forgotRes = await authService.forgotPassword(testEmail);
   assert.strictEqual(forgotRes.success, true);
+  assert.ok(forgotRes.maskedEmail, 'Should return masked email in forgot password response');
+  assert.ok(forgotRes.maskedEmail.startsWith('****'), 'Masked email must start with ****');
   const otpToUse = forgotRes.devOtp || authService.otpStore.get(testEmail.toLowerCase())?.otpCode;
   assert.ok(otpToUse);
 
@@ -70,4 +72,13 @@ test('AuthService - Register & Login Flow', async (t) => {
   assert.strictEqual(newLoginResult.success, true);
 
   console.log('✅ Auth Register, Login & OTP Reset Password unit tests passed successfully!');
+});
+
+test('Helper - maskEmail format verification', () => {
+  const { maskEmail } = require('../../src/utils/helper');
+  assert.strictEqual(maskEmail('boomhuyxt@gmail.com'), '****xt@gmail.com');
+  assert.strictEqual(maskEmail('caotoan200507@gmail.com'), '****07@gmail.com');
+  assert.strictEqual(maskEmail('admin@ai-brain.local'), '****in@ai-brain.local');
+  assert.strictEqual(maskEmail('xt@gmail.com'), '****@gmail.com');
+  assert.strictEqual(maskEmail(''), '');
 });

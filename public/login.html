@@ -863,6 +863,13 @@
 
                     <!-- Step 2: Input OTP & New Password -->
                     <div id="forgotStep2" class="d-none">
+                        <div class="alert alert-info py-2 px-3 small mb-3 d-flex align-items-center gap-2">
+                            <i class="bi bi-envelope-check-fill text-info fs-5"></i>
+                            <div>
+                                Mã OTP đã gửi đến: <strong id="forgotMaskedEmail" class="font-mono text-primary-emphasis"></strong>
+                            </div>
+                        </div>
+
                         <div id="devOtpNotice" class="d-none alert alert-warning py-2 px-3 small mb-3">
                             🔑 <strong>Mã OTP Dev:</strong> <span id="devOtpValue"
                                 class="font-mono text-info fw-bold"></span>
@@ -932,21 +939,6 @@
             }
             if (text) {
                 text.textContent = isDark ? 'Sáng' : 'Tối';
-            }
-        }
-
-        // Modal triggers
-        let forgotBsModal = null;
-        function openForgotModal() {
-            const el = document.getElementById('forgotModal');
-            if (el) {
-                forgotBsModal = new bootstrap.Modal(el);
-                forgotBsModal.show();
-            }
-        }
-        function closeForgotModal() {
-            if (forgotBsModal) {
-                forgotBsModal.hide();
             }
         }
 
