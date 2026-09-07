@@ -1,192 +1,47 @@
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const browserPlatformHelper = require('./browserPlatformHelper');
 
 class FacebookBrowserBotService {
   /**
    * Helper nạp Puppeteer-Core bằng Dynamic Import (Hỗ trợ thuần ECMAScript Module)
    */
   async getPuppeteer() {
-    const puppeteerModule = await import('puppeteer-core');
-    return puppeteerModule.default || puppeteerModule;
+    return browserPlatformHelper.getPuppeteer();
   }
 
   /**
-   * Tự động dò tìm đường dẫn Chrome hoặc Edge trên máy tính Windows
+   * Tự động dò tìm đường dẫn Chrome hoặc Edge trên máy tính (Windows, macOS, Linux)
    */
   findBrowserExecutable() {
-    const candidatePaths = [
-      'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
-      'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
-      path.join(os.homedir(), 'AppData\\Local\\Google\\Chrome\\Application\\chrome.exe'),
-      'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
-      'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe'
-    ];
-
-    for (const p of candidatePaths) {
-      if (fs.existsSync(p)) {
-        return p;
-      }
-    }
-    return null;
+    return browserPlatformHelper.findBrowserExecutable();
   }
 
   /**
-   * Đường dẫn thư mục Profile người dùng (để giữ phiên đăng nhập Facebook có sẵn)
+   * Đường dẫn thư mục Profile người dùng (để giữ phiên đăng nhập Facebook có sẵn trên Win, Mac, Linux)
    */
   getUserDataDir() {
-    const customDir = path.join(os.homedir(), 'AppData\\Local\\KarikAIBrain\\ChromeSession');
-    if (!fs.existsSync(customDir)) {
-      fs.mkdirSync(customDir, { recursive: true });
-    }
-    return customDir;
+    return browserPlatformHelper.getUserDataDir('ChromeSession');
   }
 
   /**
    * Tải / Lưu file media tạm ra ổ cứng để trình duyệt upload
    */
   async prepareLocalMediaFile(mediaUrl) {
-    if (!mediaUrl) return null;
-    const tempDir = path.join(os.tmpdir(), 'aikarik_social_uploads');
-    if (!fs.existsSync(tempDir)) {
-      fs.mkdirSync(tempDir, { recursive: true });
-    }
-
-    const isVideo = mediaUrl.endsWith('.mp4');
-    const isSvg = mediaUrl.startsWith('data:image/svg');
-    const ext = isVideo ? '.mp4' : (isSvg ? '.svg' : '.png');
-    const localFilePath = path.join(tempDir, `fb_upload_${Date.now()}${ext}`);
-
-    // 1. Base64 DataURL (Xuất trực tiếp từ Karik Studio Canvas)
-    if (mediaUrl.startsWith('data:')) {
-      const cleanBase64 = mediaUrl.replace(/^data:[^;]+;base64,/, '');
-      fs.writeFileSync(localFilePath, Buffer.from(cleanBase64, 'base64'));
-      return localFilePath;
-    }
-
-    // 2. Relative upload path (e.g. /uploads/filename.png)
-    if (typeof mediaUrl === 'string' && mediaUrl.startsWith('/uploads/')) {
-      const publicUploads = path.join(__dirname, '../../../public', mediaUrl);
-      if (fs.existsSync(publicUploads)) return publicUploads;
-
-      try {
-        const { uploadsPath } = require('../../storage');
-        const directUpload = path.join(uploadsPath, path.basename(mediaUrl));
-        if (fs.existsSync(directUpload)) return directUpload;
-      } catch (e) {}
-    }
-
-    // 3. Remote URL (http / https)
-    if (mediaUrl.startsWith('http://') || mediaUrl.startsWith('https://')) {
-      try {
-        const res = await fetch(mediaUrl);
-        const buffer = await res.arrayBuffer();
-        fs.writeFileSync(localFilePath, Buffer.from(buffer));
-        return localFilePath;
-      } catch (e) {
-        console.warn('[FacebookBrowserBot] Failed to download remote media:', e.message);
-      }
-    }
-
-    // 4. Direct absolute/relative file path
-    if (fs.existsSync(mediaUrl)) {
-      return mediaUrl;
-    }
-
-    return null;
+    return browserPlatformHelper.prepareLocalMediaFile(mediaUrl, 'fb_upload');
   }
 
   /**
    * Khởi chạy hoặc tái sử dụng trình duyệt Chrome đang mở sẵn
    */
   async launchOrReuseBrowser(puppeteer, { executablePath, userDataDir, addLog }) {
-    const debuggingPort = 9222;
-    const debuggingUrl = `http://127.0.0.1:${debuggingPort}`;
-
-    // 1. Thử kết nối vào trình duyệt đang mở sẵn qua Remote Debugging Port
-    try {
-      const browser = await puppeteer.connect({ browserURL: debuggingUrl, defaultViewport: null });
-      addLog('✅ Đã kết nối vào cửa sổ trình duyệt Chrome đang mở!');
-      return { browser, isReused: true };
-    } catch (e) {
-      // Không có instance mở với port này, tiếp tục launch mới
-    }
-
-    const launchArgs = [
-      `--remote-debugging-port=${debuggingPort}`,
-      '--start-maximized',
-      '--disable-blink-features=AutomationControlled',
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-infobars'
-    ];
-
-    try {
-      const browser = await puppeteer.launch({
-        executablePath,
-        userDataDir,
-        headless: false,
-        defaultViewport: null,
-        args: launchArgs
-      });
-      return { browser, isReused: false };
-    } catch (launchErr) {
-      if (launchErr.message && (launchErr.message.includes('already running') || launchErr.message.includes('EBUSY') || launchErr.message.includes('locked'))) {
-        addLog('⚠️ Phát hiện trình duyệt đang chạy hoặc file lock chưa được giải phóng. Đang tự động dọn dẹp và kết nối lại...');
-
-        // Thử kết nối lại qua port
-        try {
-          const browser = await puppeteer.connect({ browserURL: debuggingUrl, defaultViewport: null });
-          addLog('✅ Đã kết nối thành công vào trình duyệt Chrome!');
-          return { browser, isReused: true };
-        } catch (connErr) {}
-
-        // Dọn dẹp lock files trong thư mục session
-        const lockFiles = ['SingletonLock', 'SingletonSocket', 'SingletonCookie', 'lockfile'];
-        for (const f of lockFiles) {
-          try {
-            const p = path.join(userDataDir, f);
-            if (fs.existsSync(p)) fs.unlinkSync(p);
-          } catch (delErr) {}
-        }
-
-        // Chờ 800ms
-        await new Promise(r => setTimeout(r, 800));
-
-        try {
-          const browser = await puppeteer.launch({
-            executablePath,
-            userDataDir,
-            headless: false,
-            defaultViewport: null,
-            args: launchArgs
-          });
-          return { browser, isReused: false };
-        } catch (retryErr) {
-          // Fallback an toàn: Dùng sub-profile để luôn đảm bảo mở được trình duyệt
-          addLog('ℹ️ Tạo phiên làm việc mới an toàn để tránh xung đột file lock...');
-          const fallbackDir = path.join(os.homedir(), `AppData\\Local\\KarikAIBrain\\FacebookSession`);
-          if (!fs.existsSync(fallbackDir)) fs.mkdirSync(fallbackDir, { recursive: true });
-
-          const browser = await puppeteer.launch({
-            executablePath,
-            userDataDir: fallbackDir,
-            headless: false,
-            defaultViewport: null,
-            args: [
-              '--start-maximized',
-              '--disable-blink-features=AutomationControlled',
-              '--no-sandbox',
-              '--disable-setuid-sandbox',
-              '--disable-infobars'
-            ]
-          });
-          return { browser, isReused: false };
-        }
-      }
-
-      throw launchErr;
-    }
+    return browserPlatformHelper.launchOrReuseBrowser(puppeteer, {
+      executablePath,
+      userDataDir,
+      fallbackSessionName: 'FacebookSession',
+      addLog
+    });
   }
 
   /**
@@ -401,9 +256,10 @@ class FacebookBrowserBotService {
               const textbox = await page.$('div[role="textbox"][contenteditable="true"]');
               if (textbox) {
                 await textbox.focus();
-                await page.keyboard.down('Control');
+                const modifierKey = browserPlatformHelper.getKeyboardModifier();
+                await page.keyboard.down(modifierKey);
                 await page.keyboard.press('KeyV');
-                await page.keyboard.up('Control');
+                await page.keyboard.up(modifierKey);
                 inserted = true;
               }
             }
@@ -477,15 +333,17 @@ class FacebookBrowserBotService {
         }
 
         if (!posted) {
-          // Thử phím tắt Ctrl + Enter để đăng bài
-          addLog('Đang thử kích hoạt lệnh đăng bài bằng phím tắt Ctrl+Enter...');
+          // Thử phím tắt Ctrl/Cmd + Enter để đăng bài
+          const modLabel = browserPlatformHelper.getModifierLabel();
+          addLog(`Đang thử kích hoạt lệnh đăng bài bằng phím tắt ${modLabel}+Enter...`);
           const textbox = await page.$('div[role="dialog"] div[role="textbox"][contenteditable="true"], div[role="textbox"][contenteditable="true"]');
           if (textbox) {
             await textbox.focus();
-            await page.keyboard.down('Control');
+            const modifierKey = browserPlatformHelper.getKeyboardModifier();
+            await page.keyboard.down(modifierKey);
             await page.keyboard.press('Enter');
-            await page.keyboard.up('Control');
-            addLog('🎉 Đã kích hoạt lệnh Đăng bài (Ctrl+Enter)!');
+            await page.keyboard.up(modifierKey);
+            addLog(`🎉 Đã kích hoạt lệnh Đăng bài (${modLabel}+Enter)!`);
             await new Promise(r => setTimeout(r, 4500));
           } else {
             addLog('⚠️ Đã đính kèm ảnh và điền caption đầy đủ. Bạn có thể nhấn nút "Đăng" trên trình duyệt.');
