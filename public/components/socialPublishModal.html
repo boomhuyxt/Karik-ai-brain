@@ -514,6 +514,40 @@
                 </div>
             </div>
 
+            <!-- Headless & Stealth Session Control -->
+            <div class="rounded-xl border border-slate-300 dark:border-white/10 bg-slate-50 dark:bg-slate-900/60 p-3 space-y-2.5">
+                <div class="flex items-center justify-between">
+                    <label class="flex items-center gap-2.5 cursor-pointer select-none">
+                        <input type="checkbox" id="chkHeadlessMode" checked
+                            class="w-4 h-4 text-cyan-500 rounded border-slate-400 dark:border-slate-600 focus:ring-cyan-400 cursor-pointer">
+                        <div>
+                            <div class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                                <span class="material-symbols-outlined text-sm text-cyan-500">visibility_off</span>
+                                <span>Chạy ngầm ẩn trình duyệt (Headless Mode)</span>
+                            </div>
+                            <div class="text-[10px] text-slate-500 dark:text-slate-400">
+                                Chrome chạy ngầm 100% trong nền hệ thống, hoàn toàn không mở cửa sổ trên màn hình.
+                            </div>
+                        </div>
+                    </label>
+                    <button type="button" id="btnToggleCookieDrawer" onclick="window.socialPublish.toggleCookieDrawer()"
+                        class="text-[11px] text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-bold flex items-center gap-1 px-2.5 py-1 rounded-lg border border-indigo-300/40 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 cursor-pointer transition-all">
+                        <span class="material-symbols-outlined text-xs">key</span>
+                        <span>Nạp Cookie</span>
+                    </button>
+                </div>
+
+                <!-- Cookie Input Drawer (Collapsible) -->
+                <div id="cookieDrawerContainer" class="hidden pt-2 border-t border-slate-200 dark:border-white/10 space-y-1.5">
+                    <div class="flex items-center justify-between text-[11px] text-slate-600 dark:text-slate-400">
+                        <span>Dán Cookie tài khoản (VD: <code class="text-pink-500">c_user=...; xs=...</code>) nếu không muốn mở Chrome đăng nhập lần đầu:</span>
+                    </div>
+                    <textarea id="socialCookieInput" rows="2"
+                        placeholder="c_user=...; xs=...; datr=... (Cookie sẽ được tự động lưu vĩnh viễn vào profile Bot)"
+                        class="w-full text-xs font-mono p-2 rounded-lg border border-slate-300 dark:border-white/15 bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-200 focus:outline-none focus:border-cyan-400"></textarea>
+                </div>
+            </div>
+
             <!-- Status / Error Alert Banner -->
             <div id="socialStatusAlert" class="hidden p-3 rounded-xl text-xs flex items-center gap-2 animate-fadeIn"></div>
         </div>

@@ -654,7 +654,17 @@
             submitBtn.disabled = true;
             submitBtn.classList.add('opacity-70');
         }
-        showStatusAlert('🤖 **Đang khởi chạy Browser Bot...**\nĐang mở trình duyệt Chrome/Edge và truy cập Facebook để tự động tải ảnh sản phẩm từ Studio & đăng bài...', 'info');
+
+        const headlessToggle = document.getElementById('chkHeadlessMode');
+        const isHeadless = headlessToggle ? headlessToggle.checked : true;
+        const cookieInput = document.getElementById('socialCookieInput');
+        const cookieString = cookieInput ? cookieInput.value.trim() : '';
+
+        showStatusAlert(isHeadless 
+            ? '🤖 **Đang khởi chạy Browser Bot chạy ngầm (Headless Mode)...**\nChrome đang truy cập Facebook trong nền hệ thống (không mở cửa sổ) để nạp ảnh & đăng bài...'
+            : '🤖 **Đang khởi chạy Browser Bot...**\nĐang mở trình duyệt Chrome/Edge và truy cập Facebook để tự động tải ảnh sản phẩm từ Studio & đăng bài...', 
+            'info'
+        );
 
         try {
             const payload = {
@@ -662,7 +672,9 @@
                 hashtags,
                 mediaUrls: mediaUrl ? [mediaUrl] : [],
                 mediaType: activeMediaData.mediaType || (mediaUrl?.endsWith('.mp4') ? 'video' : 'image'),
-                autoClickPost: true
+                autoClickPost: true,
+                headless: isHeadless,
+                cookieString: cookieString || undefined
             };
 
             const res = await fetch('/api/social/browser-bot/facebook', {
@@ -683,8 +695,8 @@
             } else {
                 if (result.data?.requiresLogin) {
                     showStatusAlert(
-                        `⚠️ **Yêu Cầu Đăng Nhập Facebook Trên Trình Duyệt**\n` +
-                        `Bot đã mở sẵn cửa sổ trình duyệt Facebook. Bạn chỉ cần đăng nhập tài khoản một lần để lưu phiên làm việc, sau đó nhấn lại nút Bot!`,
+                        `⚠️ **Yêu Cầu Đăng Nhập Facebook**\n` +
+                        (result.message || 'Chưa phát hiện phiên đăng nhập Facebook. Bạn có thể tạm tắt "Chế độ chạy ngầm" để đăng nhập 1 lần, hoặc bấm "Nạp Cookie" để dán Cookie đăng nhập.'),
                         'error'
                     );
                 } else {
@@ -734,7 +746,17 @@
             submitBtn.disabled = true;
             submitBtn.classList.add('opacity-70');
         }
-        showStatusAlert('🤖 **Đang khởi chạy TikTok Browser Bot...**\nĐang mở trình duyệt Chrome/Edge và truy cập TikTok Creator Studio để tự động nạp ảnh/video từ Studio, chuyển tab Photos và xuất bản bài đăng...', 'info');
+
+        const headlessToggle = document.getElementById('chkHeadlessMode');
+        const isHeadless = headlessToggle ? headlessToggle.checked : true;
+        const cookieInput = document.getElementById('socialCookieInput');
+        const cookieString = cookieInput ? cookieInput.value.trim() : '';
+
+        showStatusAlert(isHeadless
+            ? '🤖 **Đang khởi chạy TikTok Browser Bot chạy ngầm (Headless Mode)...**\nChrome đang truy cập TikTok Creator Studio trong nền để tự động nạp ảnh/video và xuất bản...'
+            : '🤖 **Đang khởi chạy TikTok Browser Bot...**\nĐang mở trình duyệt Chrome/Edge và truy cập TikTok Creator Studio để tự động nạp ảnh/video từ Studio, chuyển tab Photos và xuất bản bài đăng...',
+            'info'
+        );
 
         try {
             const payload = {
@@ -742,7 +764,9 @@
                 hashtags,
                 mediaUrls: mediaUrl ? [mediaUrl] : [],
                 mediaType: activeMediaData.mediaType || (mediaUrl?.endsWith('.mp4') ? 'video' : 'image'),
-                autoClickPost: true
+                autoClickPost: true,
+                headless: isHeadless,
+                cookieString: cookieString || undefined
             };
 
             const res = await fetch('/api/social/browser-bot/tiktok', {
@@ -763,8 +787,8 @@
             } else {
                 if (result.data?.requiresLogin) {
                     showStatusAlert(
-                        `⚠️ **Yêu Cầu Đăng Nhập TikTok Trên Trình Duyệt**\n` +
-                        `Bot đã mở sẵn cửa sổ trình duyệt TikTok Creator Studio. Bạn chỉ cần đăng nhập tài khoản một lần để lưu phiên làm việc, sau đó nhấn lại nút Bot!`,
+                        `⚠️ **Yêu Cầu Đăng Nhập TikTok**\n` +
+                        (result.message || 'Chưa phát hiện phiên đăng nhập TikTok Creator Studio. Bạn có thể tạm tắt "Chế độ chạy ngầm" để đăng nhập 1 lần, hoặc bấm "Nạp Cookie" để dán Cookie đăng nhập.'),
                         'error'
                     );
                 } else {
@@ -841,6 +865,17 @@
         if (alertBox) alertBox.classList.add('hidden');
     }
 
+    function toggleCookieDrawer() {
+        const drawer = document.getElementById('cookieDrawerContainer');
+        if (drawer) {
+            drawer.classList.toggle('hidden');
+            if (!drawer.classList.contains('hidden')) {
+                const input = document.getElementById('socialCookieInput');
+                if (input) input.focus();
+            }
+        }
+    }
+
     // Expose to global window object
     window.socialPublish = {
         init: initSocialPublishModule,
@@ -857,6 +892,7 @@
         openBrowserDirectLink,
         toggleViewMode,
         autoFormatFacebookText,
-        updateLivePreview
+        updateLivePreview,
+        toggleCookieDrawer
     };
 })();

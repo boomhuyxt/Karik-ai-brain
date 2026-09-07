@@ -35,20 +35,21 @@ class FacebookBrowserBotService {
   /**
    * Khởi chạy hoặc tái sử dụng trình duyệt Chrome đang mở sẵn
    */
-  async launchOrReuseBrowser(puppeteer, { executablePath, userDataDir, addLog }) {
+  async launchOrReuseBrowser(puppeteer, { executablePath, userDataDir, addLog, headless = null }) {
     return browserPlatformHelper.launchOrReuseBrowser(puppeteer, {
       executablePath,
       userDataDir,
       fallbackSessionName: 'FacebookSession',
-      addLog
+      addLog,
+      headless
     });
   }
 
   /**
    * Tự động khởi chạy trình duyệt & đăng bài lên Facebook
-   * @param {Object} options { caption, hashtags, mediaUrls, autoClickPost, executablePath }
+   * @param {Object} options { caption, hashtags, mediaUrls, autoClickPost, executablePath, headless, cookieString }
    */
-  async runFacebookAutoPost({ caption = '', hashtags = [], mediaUrls = [], autoClickPost = true, executablePath: customExecutablePath = null }) {
+  async runFacebookAutoPost({ caption = '', hashtags = [], mediaUrls = [], autoClickPost = true, executablePath: customExecutablePath = null, headless = true, cookieString = null }) {
     const logs = [];
     const addLog = (msg) => {
       console.log(`[FB-Browser-Bot] ${msg}`);
@@ -88,7 +89,10 @@ class FacebookBrowserBotService {
       addLog(`Đã chuẩn bị file ảnh sản phẩm từ Studio: ${path.basename(localMediaFile)}`);
     }
 
-    addLog('Đang mở hoặc kết nối trình duyệt Chrome trong chế độ giao diện thực tế...');
+    const isHeadless = Boolean(headless);
+    addLog(isHeadless 
+      ? 'Đang khởi chạy Chrome ngầm (Headless Mode - hoàn toàn không hiện cửa sổ)...' 
+      : 'Đang mở trình duyệt Chrome trong chế độ giao diện thực tế...');
 
     let browser = null;
     try {
@@ -97,12 +101,29 @@ class FacebookBrowserBotService {
       const launchResult = await this.launchOrReuseBrowser(puppeteer, {
         executablePath,
         userDataDir,
-        addLog
+        addLog,
+        headless: isHeadless
       });
       browser = launchResult.browser;
 
       const pages = await browser.pages();
       const page = pages.length > 0 ? pages[pages.length - 1] : await browser.newPage();
+
+      // Stealth & anti-detection cho Headless Chrome
+      try {
+        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36');
+        await page.setViewport({ width: 1366, height: 768 });
+        await page.evaluateOnNewDocument(() => {
+          Object.defineProperty(navigator, 'webdriver', { get: () => false });
+        });
+      } catch (stErr) {}
+
+      // Nếu có chuỗi Cookie được cung cấp, nạp vào page trước khi mở Facebook
+      const activeCookie = cookieString || process.env.FACEBOOK_COOKIES;
+      if (activeCookie) {
+        addLog('Đang nạp Cookie phiên đăng nhập vào trình duyệt...');
+        await browserPlatformHelper.injectCookieString(page, activeCookie, 'facebook');
+      }
 
       try {
         const context = browser.defaultBrowserContext();
@@ -122,10 +143,13 @@ class FacebookBrowserBotService {
 
       if (isLoginPage) {
         addLog('⚠️ Phát hiện chưa đăng nhập Facebook trên phiên trình duyệt của Bot.');
+        const loginHint = isHeadless
+          ? 'Bot đang chạy ở chế độ ngầm (Headless) nhưng tài khoản Facebook chưa đăng nhập. Bạn có thể: 1) Tạm thời tắt "Chế độ chạy ngầm" trên giao diện để mở Chrome đăng nhập 1 lần lưu phiên, hoặc 2) Dán Cookie Facebook vào ô Nạp Cookie để Bot lưu phiên mà không cần mở Chrome.'
+          : 'Trình duyệt đã mở. Vui lòng đăng nhập tài khoản Facebook của bạn để Bot tự động lưu phiên và thực hiện đăng bài!';
         return {
           success: false,
           requiresLogin: true,
-          message: 'Trình duyệt đã mở. Vui lòng đăng nhập tài khoản Facebook của bạn để Bot tự động lưu phiên và thực hiện đăng bài!',
+          message: loginHint,
           logs
         };
       }

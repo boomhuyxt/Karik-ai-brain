@@ -35,20 +35,21 @@ class TiktokBrowserBotService {
   /**
    * Khởi chạy hoặc tái sử dụng trình duyệt Chrome đang mở sẵn
    */
-  async launchOrReuseBrowser(puppeteer, { executablePath, userDataDir, addLog }) {
+  async launchOrReuseBrowser(puppeteer, { executablePath, userDataDir, addLog, headless = null }) {
     return browserPlatformHelper.launchOrReuseBrowser(puppeteer, {
       executablePath,
       userDataDir,
       fallbackSessionName: 'TikTokSession',
-      addLog
+      addLog,
+      headless
     });
   }
 
   /**
    * Tự động khởi chạy trình duyệt & đăng bài lên TikTok Creator Studio
-   * @param {Object} options { caption, hashtags, mediaUrls, autoClickPost, executablePath }
+   * @param {Object} options { caption, hashtags, mediaUrls, autoClickPost, executablePath, headless, cookieString }
    */
-  async runTiktokAutoPost({ caption = '', hashtags = [], mediaUrls = [], autoClickPost = true, executablePath: customExecutablePath = null }) {
+  async runTiktokAutoPost({ caption = '', hashtags = [], mediaUrls = [], autoClickPost = true, executablePath: customExecutablePath = null, headless = true, cookieString = null }) {
     const logs = [];
     const addLog = (msg) => {
       console.log(`[TT-Browser-Bot] ${msg}`);
@@ -88,7 +89,10 @@ class TiktokBrowserBotService {
       addLog(`Đã chuẩn bị file media sản phẩm: ${path.basename(localMediaFile)}`);
     }
 
-    addLog('Đang mở hoặc kết nối trình duyệt Chrome trong chế độ giao diện thực tế...');
+    const isHeadless = Boolean(headless);
+    addLog(isHeadless 
+      ? 'Đang khởi chạy Chrome ngầm (Headless Mode - hoàn toàn không hiện cửa sổ)...' 
+      : 'Đang mở trình duyệt Chrome trong chế độ giao diện thực tế...');
 
     let browser = null;
     try {
@@ -97,12 +101,28 @@ class TiktokBrowserBotService {
       const launchResult = await this.launchOrReuseBrowser(puppeteer, {
         executablePath,
         userDataDir,
-        addLog
+        addLog,
+        headless: isHeadless
       });
       browser = launchResult.browser;
 
       const pages = await browser.pages();
       const page = pages.length > 0 ? pages[pages.length - 1] : await browser.newPage();
+
+      // Stealth & anti-detection cho Headless Chrome
+      try {
+        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36');
+        await page.setViewport({ width: 1366, height: 768 });
+        await page.evaluateOnNewDocument(() => {
+          Object.defineProperty(navigator, 'webdriver', { get: () => false });
+        });
+      } catch (stErr) {}
+
+      const activeCookie = cookieString || process.env.TIKTOK_COOKIES;
+      if (activeCookie) {
+        addLog('Đang nạp Cookie phiên đăng nhập TikTok vào trình duyệt...');
+        await browserPlatformHelper.injectCookieString(page, activeCookie, 'tiktok');
+      }
 
       try {
         const context = browser.defaultBrowserContext();
@@ -128,10 +148,13 @@ class TiktokBrowserBotService {
 
       if (isLoginPage) {
         addLog('⚠️ Phát hiện chưa đăng nhập tài khoản TikTok trên phiên trình duyệt của Bot.');
+        const loginHint = isHeadless
+          ? 'Bot đang chạy ở chế độ ngầm (Headless) nhưng tài khoản TikTok chưa đăng nhập. Bạn có thể: 1) Tạm thời tắt "Chế độ chạy ngầm" trên giao diện để mở Chrome đăng nhập 1 lần lưu phiên, hoặc 2) Dán Cookie TikTok vào ô Nạp Cookie để Bot lưu phiên mà không cần mở Chrome.'
+          : 'Trình duyệt đã mở trang TikTok Creator Studio. Vui lòng đăng nhập tài khoản TikTok của bạn một lần để Bot lưu phiên làm việc và tự động đăng bài!';
         return {
           success: false,
           requiresLogin: true,
-          message: 'Trình duyệt đã mở trang TikTok Creator Studio. Vui lòng đăng nhập tài khoản TikTok của bạn một lần để Bot lưu phiên làm việc và tự động đăng bài!',
+          message: loginHint,
           logs
         };
       }

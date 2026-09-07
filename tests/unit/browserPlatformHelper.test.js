@@ -116,3 +116,104 @@ test('Facebook & TikTok Browser Bot Services - integrate seamlessly with browser
   assert.ok(typeof ttUserData === 'string' && ttUserData.length > 0);
   assert.ok(fs.existsSync(ttUserData));
 });
+
+test('BrowserPlatformHelper - getBrowserNotFoundHelp gives clear OS-tailored guidance', () => {
+  const macHelp = browserPlatformHelper.getBrowserNotFoundHelp('darwin');
+  assert.ok(macHelp.includes('macOS') || macHelp.includes('Mac'));
+  assert.ok(macHelp.includes('CHROME_PATH'));
+
+  const linuxHelp = browserPlatformHelper.getBrowserNotFoundHelp('linux');
+  assert.ok(linuxHelp.includes('Linux') || linuxHelp.includes('VPS'));
+  assert.ok(linuxHelp.includes('apt') || linuxHelp.includes('chromium-browser'));
+
+  const winHelp = browserPlatformHelper.getBrowserNotFoundHelp('win32');
+  assert.ok(winHelp.includes('Windows'));
+  assert.ok(winHelp.includes('CHROME_PATH'));
+});
+
+test('BrowserPlatformHelper - injectCookieString parses and applies session cookies', async () => {
+  // Empty or invalid input
+  const emptyRes = await browserPlatformHelper.injectCookieString({}, null);
+  assert.strictEqual(emptyRes, false);
+
+  const blankRes = await browserPlatformHelper.injectCookieString({}, '');
+  assert.strictEqual(blankRes, false);
+
+  // Facebook cookie injection
+  let fbInjectedCookies = null;
+  const mockFbPage = {
+    setCookie: async (...cookies) => {
+      fbInjectedCookies = cookies;
+      return true;
+    }
+  };
+
+  const fbCookieStr = 'c_user=1000123456789; xs=2%3Aabc123%3A2%3A123456; datr=fooBarZ_123';
+  const fbResult = await browserPlatformHelper.injectCookieString(mockFbPage, fbCookieStr, 'facebook');
+  assert.strictEqual(fbResult, true);
+  assert.strictEqual(fbInjectedCookies.length, 3);
+  assert.strictEqual(fbInjectedCookies[0].name, 'c_user');
+  assert.strictEqual(fbInjectedCookies[0].value, '1000123456789');
+  assert.strictEqual(fbInjectedCookies[0].domain, '.facebook.com');
+  assert.strictEqual(fbInjectedCookies[0].secure, true);
+
+  // TikTok cookie injection
+  let ttInjectedCookies = null;
+  const mockTtPage = {
+    setCookie: async (...cookies) => {
+      ttInjectedCookies = cookies;
+      return true;
+    }
+  };
+
+  const ttCookieStr = 'sessionid=9876543210fedcba; ttwid=1%7Cdummy_token';
+  const ttResult = await browserPlatformHelper.injectCookieString(mockTtPage, ttCookieStr, 'tiktok');
+  assert.strictEqual(ttResult, true);
+  assert.strictEqual(ttInjectedCookies.length, 2);
+  assert.strictEqual(ttInjectedCookies[0].name, 'sessionid');
+  assert.strictEqual(ttInjectedCookies[0].domain, '.tiktok.com');
+
+  // Error handling test
+  const failingPage = {
+    setCookie: async () => {
+      throw new Error('Target closed');
+    }
+  };
+  const failRes = await browserPlatformHelper.injectCookieString(failingPage, 'test=val', 'facebook');
+  assert.strictEqual(failRes, false);
+});
+
+test('BrowserPlatformHelper - launchOrReuseBrowser respects headless flag', async () => {
+  let capturedLaunchOptions = null;
+  const mockPuppeteer = {
+    connect: async () => {
+      throw new Error('Connection refused');
+    },
+    launch: async (opts) => {
+      capturedLaunchOptions = opts;
+      return {
+        pages: async () => [{ setUserAgent: async () => {}, setViewport: async () => {} }],
+        close: async () => {}
+      };
+    }
+  };
+
+  // Test headless: true
+  await browserPlatformHelper.launchOrReuseBrowser(mockPuppeteer, {
+    executablePath: 'dummy-chrome',
+    userDataDir: os.tmpdir(),
+    headless: true,
+    addLog: () => {}
+  });
+  assert.strictEqual(capturedLaunchOptions.headless, 'new');
+
+  // Test headless: false
+  await browserPlatformHelper.launchOrReuseBrowser(mockPuppeteer, {
+    executablePath: 'dummy-chrome',
+    userDataDir: os.tmpdir(),
+    headless: false,
+    addLog: () => {}
+  });
+  assert.strictEqual(capturedLaunchOptions.headless, false);
+});
+

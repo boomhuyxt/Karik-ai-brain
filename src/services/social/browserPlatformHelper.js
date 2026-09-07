@@ -372,9 +372,46 @@ class BrowserPlatformHelper {
   }
 
   /**
+   * Nạp chuỗi Cookie (từ giao diện người dùng hoặc .env) vào phiên làm việc của Puppeteer
+   */
+  async injectCookieString(page, cookieString, platform = 'facebook') {
+    if (!cookieString || typeof cookieString !== 'string') return false;
+    const domain = platform === 'facebook' ? '.facebook.com' : '.tiktok.com';
+    const rawPairs = cookieString.split(';');
+    const cookies = [];
+
+    for (const pair of rawPairs) {
+      const idx = pair.indexOf('=');
+      if (idx === -1) continue;
+      const name = pair.slice(0, idx).trim();
+      const value = pair.slice(idx + 1).trim();
+      if (!name || !value) continue;
+
+      cookies.push({
+        name,
+        value,
+        domain,
+        path: '/',
+        secure: true,
+        httpOnly: false
+      });
+    }
+
+    if (cookies.length > 0) {
+      try {
+        await page.setCookie(...cookies);
+        return true;
+      } catch (err) {
+        console.warn(`[BrowserPlatformHelper] Lỗi nạp cookie:`, err.message);
+      }
+    }
+    return false;
+  }
+
+  /**
    * Khởi chạy hoặc tái sử dụng trình duyệt Chrome đang mở sẵn qua Remote Debugging Port
    */
-  async launchOrReuseBrowser(puppeteer, { executablePath, userDataDir, fallbackSessionName = 'FallbackSession', addLog = console.log }) {
+  async launchOrReuseBrowser(puppeteer, { executablePath, userDataDir, fallbackSessionName = 'FallbackSession', addLog = console.log, headless = null }) {
     const debuggingPort = 9222;
     const debuggingUrl = `http://127.0.0.1:${debuggingPort}`;
 
@@ -388,10 +425,10 @@ class BrowserPlatformHelper {
     }
 
     const launchArgs = this.getLaunchArgs({ debuggingPort });
-    const isHeadless = this.isHeadlessRequired();
+    const isHeadless = headless !== null ? Boolean(headless) : this.isHeadlessRequired();
 
     if (isHeadless) {
-      addLog('ℹ️ Môi trường không phát hiện màn hình đồ họa (hoặc cấu hình PUPPETEER_HEADLESS=true), chạy ở chế độ headless...');
+      addLog('ℹ️ Đang chạy ở chế độ ngầm (Headless Mode - hoàn toàn không hiển thị cửa sổ Chrome)...');
     }
 
     try {
