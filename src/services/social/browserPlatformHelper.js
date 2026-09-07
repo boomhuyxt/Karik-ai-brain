@@ -17,10 +17,39 @@ class BrowserPlatformHelper {
   }
 
   /**
-   * Tự động dò tìm đường dẫn thực thi của trình duyệt (Chrome, Chromium, Edge, Brave)
-   * trên Windows, macOS và Linux. Hỗ trợ biến môi trường CHROME_PATH / CHROME_BIN / PUPPETEER_EXECUTABLE_PATH.
+   * Tra cứu đường dẫn trình duyệt trong Windows Registry (HKLM & HKCU App Paths)
+   * @private
    */
-  findBrowserExecutable(customPlatform = process.platform) {
+  _findInWindowsRegistry(appName) {
+    if (process.platform !== 'win32') return null;
+    const hives = ['HKLM', 'HKCU'];
+    for (const hive of hives) {
+      try {
+        const cmd = `reg query "${hive}\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\${appName}" /ve`;
+        const stdout = execSync(cmd, { stdio: ['pipe', 'pipe', 'ignore'], encoding: 'utf8' });
+        const match = stdout.match(/REG_SZ\s+(.+)$/m);
+        if (match && match[1]) {
+          const regPath = match[1].trim();
+          if (fs.existsSync(regPath)) {
+            return regPath;
+          }
+        }
+      } catch (e) {}
+    }
+    return null;
+  }
+
+  /**
+   * Tự động dò tìm đường dẫn thực thi của trình duyệt (Chrome, Chromium, Edge, Brave, Cốc Cốc, Opera)
+   * trên Windows, macOS và Linux. Hỗ trợ biến môi trường CHROME_PATH / CHROME_BIN / PUPPETEER_EXECUTABLE_PATH
+   * hoặc đường dẫn do người dùng truyền vào trực tiếp.
+   */
+  findBrowserExecutable(customPlatform = process.platform, explicitPath = null) {
+    // 0. Kiểm tra nếu có đường dẫn do caller truyền vào trực tiếp
+    if (explicitPath && typeof explicitPath === 'string' && fs.existsSync(explicitPath)) {
+      return explicitPath;
+    }
+
     // 1. Kiểm tra biến môi trường người dùng thiết lập ưu tiên cao nhất
     const envPath = process.env.CHROME_BIN || process.env.CHROME_PATH || process.env.PUPPETEER_EXECUTABLE_PATH;
     if (envPath && fs.existsSync(envPath)) {
@@ -31,17 +60,42 @@ class BrowserPlatformHelper {
     const candidatePaths = [];
 
     if (customPlatform === 'darwin') {
-      // macOS candidates
+      // macOS candidates (Google Chrome, Chromium, Edge, Brave, Arc, Cốc Cốc, Opera, Vivaldi)
       candidatePaths.push(
         '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
         path.join(home, 'Applications/Google Chrome.app/Contents/MacOS/Google Chrome'),
+        '/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary',
+        path.join(home, 'Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary'),
         '/Applications/Chromium.app/Contents/MacOS/Chromium',
         path.join(home, 'Applications/Chromium.app/Contents/MacOS/Chromium'),
         '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge',
         path.join(home, 'Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge'),
         '/Applications/Brave Browser.app/Contents/MacOS/Brave Browser',
-        path.join(home, 'Applications/Brave Browser.app/Contents/MacOS/Brave Browser')
+        path.join(home, 'Applications/Brave Browser.app/Contents/MacOS/Brave Browser'),
+        '/Applications/Arc.app/Contents/MacOS/Arc',
+        path.join(home, 'Applications/Arc.app/Contents/MacOS/Arc'),
+        '/Applications/CocCoc.app/Contents/MacOS/CocCoc',
+        path.join(home, 'Applications/CocCoc.app/Contents/MacOS/CocCoc'),
+        '/Applications/Opera.app/Contents/MacOS/Opera',
+        path.join(home, 'Applications/Opera.app/Contents/MacOS/Opera'),
+        '/Applications/Vivaldi.app/Contents/MacOS/Vivaldi',
+        path.join(home, 'Applications/Vivaldi.app/Contents/MacOS/Vivaldi')
       );
+
+      for (const p of candidatePaths) {
+        if (fs.existsSync(p)) return p;
+      }
+
+      // Spotlight search fallback trên macOS
+      try {
+        const spotLightOut = execSync('mdfind "kMDItemCFBundleIdentifier == \'com.google.Chrome\'"', { stdio: ['pipe', 'pipe', 'ignore'], encoding: 'utf8' }).trim();
+        if (spotLightOut) {
+          const firstApp = spotLightOut.split('\n')[0].trim();
+          const binary = path.join(firstApp, 'Contents/MacOS/Google Chrome');
+          if (fs.existsSync(binary)) return binary;
+        }
+      } catch (e) {}
+
     } else if (customPlatform === 'linux') {
       // Linux candidates
       candidatePaths.push(
@@ -55,8 +109,45 @@ class BrowserPlatformHelper {
         '/usr/bin/microsoft-edge-stable',
         '/usr/bin/brave-browser',
         '/usr/local/bin/google-chrome',
-        '/usr/local/bin/chromium'
+        '/usr/local/bin/chromium',
+        '/opt/google/chrome/chrome',
+        '/opt/google/chrome/google-chrome',
+        '/opt/microsoft/msedge/msedge',
+        '/var/lib/flatpak/exports/bin/com.google.Chrome',
+        '/var/lib/flatpak/exports/bin/org.chromium.Chromium',
+        path.join(home, '.local/share/flatpak/exports/bin/com.google.Chrome'),
+        path.join(home, '.local/share/flatpak/exports/bin/org.chromium.Chromium')
       );
+
+      // Nếu đang chạy trong môi trường WSL trên Windows
+      try {
+        const isWSL = fs.existsSync('/proc/version') && fs.readFileSync('/proc/version', 'utf8').toLowerCase().includes('microsoft');
+        if (isWSL) {
+          candidatePaths.push(
+            '/mnt/c/Program Files/Google/Chrome/Application/chrome.exe',
+            '/mnt/c/Program Files (x86)/Google/Chrome/Application/chrome.exe',
+            '/mnt/c/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
+            '/mnt/c/Program Files/Microsoft/Edge/Application/msedge.exe',
+            '/mnt/c/Program Files/BraveSoftware/Brave-Browser/Application/brave.exe'
+          );
+        }
+      } catch (e) {}
+
+      for (const p of candidatePaths) {
+        if (fs.existsSync(p)) return p;
+      }
+
+      // CLI command locator fallback trên Linux (command -v, which, whereis)
+      const binaries = ['google-chrome', 'google-chrome-stable', 'chromium', 'chromium-browser', 'microsoft-edge-stable', 'microsoft-edge', 'brave-browser'];
+      for (const bin of binaries) {
+        try {
+          const stdout = execSync(`command -v ${bin} || which ${bin}`, { stdio: ['pipe', 'pipe', 'ignore'], encoding: 'utf8' }).trim();
+          if (stdout && fs.existsSync(stdout)) {
+            return stdout;
+          }
+        } catch (e) {}
+      }
+
     } else {
       // Windows (win32) candidates
       const localAppData = process.env.LOCALAPPDATA || path.join(home, 'AppData', 'Local');
@@ -72,6 +163,14 @@ class BrowserPlatformHelper {
         path.join(localAppData, 'Microsoft', 'Edge', 'Application', 'msedge.exe'),
         path.join(programFiles, 'BraveSoftware', 'Brave-Browser', 'Application', 'brave.exe'),
         path.join(localAppData, 'BraveSoftware', 'Brave-Browser', 'Application', 'brave.exe'),
+        // Cốc Cốc (Browser phổ biến tại Việt Nam)
+        path.join(programFiles, 'CocCoc', 'Browser', 'Application', 'browser.exe'),
+        path.join(programFilesX86, 'CocCoc', 'Browser', 'Application', 'browser.exe'),
+        path.join(localAppData, 'CocCoc', 'Browser', 'Application', 'browser.exe'),
+        // Chromium & Opera
+        path.join(localAppData, 'Chromium', 'Application', 'chrome.exe'),
+        path.join(localAppData, 'Programs', 'Opera', 'launcher.exe'),
+        path.join(localAppData, 'Programs', 'Opera GX', 'launcher.exe'),
         // Backward compatibility hardcoded fallbacks
         'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
         'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
@@ -79,28 +178,54 @@ class BrowserPlatformHelper {
         'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
         'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe'
       );
-    }
 
-    for (const p of candidatePaths) {
-      if (fs.existsSync(p)) {
-        return p;
+      for (const p of candidatePaths) {
+        if (fs.existsSync(p)) return p;
       }
-    }
 
-    // Fallback trên Linux: Thử tìm qua lệnh `which` nếu không thấy ở đường dẫn thông dụng
-    if (customPlatform === 'linux') {
-      const binaries = ['google-chrome', 'google-chrome-stable', 'chromium', 'chromium-browser', 'microsoft-edge-stable'];
-      for (const bin of binaries) {
+      // Windows Registry fallback (tìm chính xác kể cả cài ở ổ D, E...)
+      const regBrowsers = ['chrome.exe', 'msedge.exe', 'brave.exe', 'browser.exe'];
+      for (const bin of regBrowsers) {
+        const foundReg = this._findInWindowsRegistry(bin);
+        if (foundReg) return foundReg;
+      }
+
+      // where.exe CLI search fallback trên Windows
+      for (const bin of ['chrome', 'msedge', 'brave']) {
         try {
-          const stdout = execSync(`which ${bin}`, { stdio: ['pipe', 'pipe', 'ignore'], encoding: 'utf8' }).trim();
-          if (stdout && fs.existsSync(stdout)) {
-            return stdout;
-          }
+          const stdout = execSync(`where.exe ${bin}`, { stdio: ['pipe', 'pipe', 'ignore'], encoding: 'utf8' }).trim();
+          const firstLine = stdout.split('\r\n')[0].split('\n')[0].trim();
+          if (firstLine && fs.existsSync(firstLine)) return firstLine;
         } catch (e) {}
       }
     }
 
     return null;
+  }
+
+  /**
+   * Tạo thông báo hướng dẫn chi tiết khi không tìm thấy trình duyệt
+   */
+  getBrowserNotFoundHelp(customPlatform = process.platform) {
+    if (customPlatform === 'darwin') {
+      return 'Không tìm thấy trình duyệt Chromium (Google Chrome, Microsoft Edge, Brave, Cốc Cốc, Arc) trên máy Mac của bạn.\n' +
+        '👉 Hướng dẫn khắc phục:\n' +
+        '1. Cài đặt Google Chrome từ: https://www.google.com/chrome/ (hoặc chạy lệnh: brew install --cask google-chrome)\n' +
+        '2. Hoặc cấu hình biến CHROME_PATH trong file .env (VD: CHROME_PATH="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome")';
+    } else if (customPlatform === 'linux') {
+      return 'Không tìm thấy trình duyệt Chromium (Google Chrome, Chromium, Edge, Brave) trên hệ điều hành Linux/VPS của bạn.\n' +
+        '👉 Hướng dẫn khắc phục:\n' +
+        '1. Cài đặt trình duyệt qua Terminal:\n' +
+        '   - Ubuntu/Debian: sudo apt update && sudo apt install -y chromium-browser (hoặc google-chrome-stable)\n' +
+        '   - Fedora: sudo dnf install -y chromium\n' +
+        '   - Arch Linux: sudo pacman -S chromium\n' +
+        '2. Hoặc cấu hình biến CHROME_PATH trong file .env (VD: CHROME_PATH="/usr/bin/chromium-browser")';
+    } else {
+      return 'Không tìm thấy trình duyệt Google Chrome, Edge, Brave hoặc Cốc Cốc trên máy tính Windows của bạn.\n' +
+        '👉 Hướng dẫn khắc phục:\n' +
+        '1. Cài đặt Google Chrome từ: https://www.google.com/chrome/ hoặc Microsoft Edge.\n' +
+        '2. Nếu bạn cài Chrome ở ổ đĩa tùy biến (D:\\, E:\\), hãy thêm CHROME_PATH vào file .env (VD: CHROME_PATH="D:\\Chrome\\chrome.exe")';
+    }
   }
 
   /**

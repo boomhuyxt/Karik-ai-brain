@@ -349,13 +349,14 @@ class SocialController {
   async runFacebookBrowserBot(req, res, next) {
     try {
       const facebookBrowserBotService = require('../services/social/facebookBrowserBot.service');
-      const { caption = '', hashtags = [], mediaUrls = [], autoClickPost = true } = req.body;
+      const { caption = '', hashtags = [], mediaUrls = [], autoClickPost = true, executablePath = null } = req.body;
 
       const botResult = await facebookBrowserBotService.runFacebookAutoPost({
         caption,
         hashtags,
         mediaUrls,
-        autoClickPost
+        autoClickPost,
+        executablePath
       });
 
       res.status(200).json({
@@ -374,13 +375,14 @@ class SocialController {
   async runTiktokBrowserBot(req, res, next) {
     try {
       const tiktokBrowserBotService = require('../services/social/tiktokBrowserBot.service');
-      const { caption = '', hashtags = [], mediaUrls = [], autoClickPost = true } = req.body;
+      const { caption = '', hashtags = [], mediaUrls = [], autoClickPost = true, executablePath = null } = req.body;
 
       const botResult = await tiktokBrowserBotService.runTiktokAutoPost({
         caption,
         hashtags,
         mediaUrls,
-        autoClickPost
+        autoClickPost,
+        executablePath
       });
 
       res.status(200).json({

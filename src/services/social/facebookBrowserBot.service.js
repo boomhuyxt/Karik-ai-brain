@@ -14,8 +14,8 @@ class FacebookBrowserBotService {
   /**
    * Tự động dò tìm đường dẫn Chrome hoặc Edge trên máy tính (Windows, macOS, Linux)
    */
-  findBrowserExecutable() {
-    return browserPlatformHelper.findBrowserExecutable();
+  findBrowserExecutable(explicitPath = null) {
+    return browserPlatformHelper.findBrowserExecutable(process.platform, explicitPath);
   }
 
   /**
@@ -46,18 +46,19 @@ class FacebookBrowserBotService {
 
   /**
    * Tự động khởi chạy trình duyệt & đăng bài lên Facebook
-   * @param {Object} options { caption, hashtags, mediaUrls, autoClickPost }
+   * @param {Object} options { caption, hashtags, mediaUrls, autoClickPost, executablePath }
    */
-  async runFacebookAutoPost({ caption = '', hashtags = [], mediaUrls = [], autoClickPost = true }) {
+  async runFacebookAutoPost({ caption = '', hashtags = [], mediaUrls = [], autoClickPost = true, executablePath: customExecutablePath = null }) {
     const logs = [];
     const addLog = (msg) => {
       console.log(`[FB-Browser-Bot] ${msg}`);
       logs.push(`[${new Date().toLocaleTimeString('vi-VN')}] ${msg}`);
     };
 
-    const executablePath = this.findBrowserExecutable();
+    const executablePath = this.findBrowserExecutable(customExecutablePath);
     if (!executablePath) {
-      throw new Error('Không tìm thấy trình duyệt Google Chrome hoặc Edge trên máy tính của bạn.');
+      const helpMsg = browserPlatformHelper.getBrowserNotFoundHelp();
+      throw new Error(helpMsg);
     }
 
     addLog(`Đã tìm thấy trình duyệt: ${path.basename(executablePath)}`);
