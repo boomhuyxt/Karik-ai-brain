@@ -349,6 +349,11 @@
         modal.classList.add('flex');
         modal.style.display = 'flex';
         modal.style.zIndex = '9999';
+
+        // Tự động nạp thông tin tài khoản đã lưu nếu có
+        try {
+            loadSavedCredentials();
+        } catch (e) {}
     }
 
     /**
@@ -455,6 +460,10 @@
         } else {
             updateLivePreview();
         }
+
+        try {
+            loadSavedCredentials(platform);
+        } catch (e) {}
     }
 
     /**
@@ -657,11 +666,10 @@
 
         const headlessToggle = document.getElementById('chkHeadlessMode');
         const isHeadless = headlessToggle ? headlessToggle.checked : true;
-        const cookieInput = document.getElementById('socialCookieInput');
-        const cookieString = cookieInput ? cookieInput.value.trim() : '';
+        const credentials = getCredentialsPayload();
 
         showStatusAlert(isHeadless 
-            ? '🤖 **Đang khởi chạy Browser Bot chạy ngầm (Headless Mode)...**\nChrome đang truy cập Facebook trong nền hệ thống (không mở cửa sổ) để nạp ảnh & đăng bài...'
+            ? '🤖 **Đang khởi chạy Browser Bot chạy ngầm (Headless Mode)...**\nChrome đang truy cập Facebook trong nền hệ thống (không mở cửa sổ). Nếu cần đăng nhập, Bot sẽ tự động điền tài khoản & mật khẩu...'
             : '🤖 **Đang khởi chạy Browser Bot...**\nĐang mở trình duyệt Chrome/Edge và truy cập Facebook để tự động tải ảnh sản phẩm từ Studio & đăng bài...', 
             'info'
         );
@@ -674,7 +682,7 @@
                 mediaType: activeMediaData.mediaType || (mediaUrl?.endsWith('.mp4') ? 'video' : 'image'),
                 autoClickPost: true,
                 headless: isHeadless,
-                cookieString: cookieString || undefined
+                credentials
             };
 
             const res = await fetch('/api/social/browser-bot/facebook', {
@@ -693,12 +701,19 @@
                     'success'
                 );
             } else {
-                if (result.data?.requiresLogin) {
+                if (result.data?.requiresLogin || result.data?.requires2FA) {
                     showStatusAlert(
-                        `⚠️ **Yêu Cầu Đăng Nhập Facebook**\n` +
-                        (result.message || 'Chưa phát hiện phiên đăng nhập Facebook. Bạn có thể tạm tắt "Chế độ chạy ngầm" để đăng nhập 1 lần, hoặc bấm "Nạp Cookie" để dán Cookie đăng nhập.'),
+                        `⚠️ **Yêu Cầu Thông Tin Đăng Nhập Facebook**\n` +
+                        (result.message || 'Vui lòng nhập Tài khoản (Email/SĐT) và Mật khẩu ở mục "Tài khoản & Mật khẩu" bên dưới để Bot tự động đăng nhập!'),
                         'error'
                     );
+                    // Tự động mở form đăng nhập để người dùng tiện điền
+                    const drawer = document.getElementById('credentialsDrawerContainer');
+                    if (drawer && drawer.classList.contains('hidden')) {
+                        drawer.classList.remove('hidden');
+                    }
+                    const userInput = document.getElementById('socialUsernameInput');
+                    if (userInput && !userInput.value) userInput.focus();
                 } else {
                     showStatusAlert(`⚠️ Bot báo lỗi: ${result.message || 'Không thể thực thi'}`, 'error');
                 }
@@ -749,11 +764,10 @@
 
         const headlessToggle = document.getElementById('chkHeadlessMode');
         const isHeadless = headlessToggle ? headlessToggle.checked : true;
-        const cookieInput = document.getElementById('socialCookieInput');
-        const cookieString = cookieInput ? cookieInput.value.trim() : '';
+        const credentials = getCredentialsPayload();
 
         showStatusAlert(isHeadless
-            ? '🤖 **Đang khởi chạy TikTok Browser Bot chạy ngầm (Headless Mode)...**\nChrome đang truy cập TikTok Creator Studio trong nền để tự động nạp ảnh/video và xuất bản...'
+            ? '🤖 **Đang khởi chạy TikTok Browser Bot chạy ngầm (Headless Mode)...**\nChrome đang truy cập TikTok Creator Studio trong nền. Nếu cần đăng nhập, Bot sẽ tự động điền tài khoản & mật khẩu...'
             : '🤖 **Đang khởi chạy TikTok Browser Bot...**\nĐang mở trình duyệt Chrome/Edge và truy cập TikTok Creator Studio để tự động nạp ảnh/video từ Studio, chuyển tab Photos và xuất bản bài đăng...',
             'info'
         );
@@ -766,7 +780,7 @@
                 mediaType: activeMediaData.mediaType || (mediaUrl?.endsWith('.mp4') ? 'video' : 'image'),
                 autoClickPost: true,
                 headless: isHeadless,
-                cookieString: cookieString || undefined
+                credentials
             };
 
             const res = await fetch('/api/social/browser-bot/tiktok', {
@@ -785,12 +799,18 @@
                     'success'
                 );
             } else {
-                if (result.data?.requiresLogin) {
+                if (result.data?.requiresLogin || result.data?.requires2FA) {
                     showStatusAlert(
-                        `⚠️ **Yêu Cầu Đăng Nhập TikTok**\n` +
-                        (result.message || 'Chưa phát hiện phiên đăng nhập TikTok Creator Studio. Bạn có thể tạm tắt "Chế độ chạy ngầm" để đăng nhập 1 lần, hoặc bấm "Nạp Cookie" để dán Cookie đăng nhập.'),
+                        `⚠️ **Yêu Cầu Thông Tin Đăng Nhập TikTok**\n` +
+                        (result.message || 'Vui lòng nhập Tài khoản (Email/Username) và Mật khẩu ở mục "Tài khoản & Mật khẩu" bên dưới để Bot tự động đăng nhập!'),
                         'error'
                     );
+                    const drawer = document.getElementById('credentialsDrawerContainer');
+                    if (drawer && drawer.classList.contains('hidden')) {
+                        drawer.classList.remove('hidden');
+                    }
+                    const userInput = document.getElementById('socialUsernameInput');
+                    if (userInput && !userInput.value) userInput.focus();
                 } else {
                     showStatusAlert(`⚠️ Bot báo lỗi: ${result.message || 'Không thể thực thi'}`, 'error');
                 }
@@ -865,14 +885,78 @@
         if (alertBox) alertBox.classList.add('hidden');
     }
 
-    function toggleCookieDrawer() {
-        const drawer = document.getElementById('cookieDrawerContainer');
+    /**
+     * Lấy thông tin tài khoản & mật khẩu từ form và lưu vào localStorage nếu được chọn
+     */
+    function getCredentialsPayload() {
+        const usernameInput = document.getElementById('socialUsernameInput');
+        const passwordInput = document.getElementById('socialPasswordInput');
+        const twoFactorInput = document.getElementById('socialTwoFactorInput');
+        const rememberCheckbox = document.getElementById('chkRememberCredentials');
+
+        const username = usernameInput ? usernameInput.value.trim() : '';
+        const password = passwordInput ? passwordInput.value : '';
+        const twoFactorCode = twoFactorInput ? twoFactorInput.value.trim() : '';
+
+        if (rememberCheckbox && rememberCheckbox.checked && username) {
+            try {
+                localStorage.setItem(`karik_bot_creds_${currentPlatform}`, JSON.stringify({ username, password }));
+            } catch (e) {}
+        } else if (rememberCheckbox && !rememberCheckbox.checked) {
+            try {
+                localStorage.removeItem(`karik_bot_creds_${currentPlatform}`);
+            } catch (e) {}
+        }
+
+        if (username && password) {
+            return { username, password, twoFactorCode: twoFactorCode || undefined };
+        }
+        return undefined;
+    }
+
+    /**
+     * Tự động điền tài khoản & mật khẩu đã lưu trước đó
+     */
+    function loadSavedCredentials(platform = currentPlatform) {
+        try {
+            const raw = localStorage.getItem(`karik_bot_creds_${platform}`) || localStorage.getItem('karik_bot_creds_facebook') || localStorage.getItem('karik_bot_creds_tiktok');
+            if (raw) {
+                const data = JSON.parse(raw);
+                const usernameInput = document.getElementById('socialUsernameInput');
+                const passwordInput = document.getElementById('socialPasswordInput');
+                if (usernameInput && data.username && !usernameInput.value) usernameInput.value = data.username;
+                if (passwordInput && data.password && !passwordInput.value) passwordInput.value = data.password;
+            }
+        } catch (e) {}
+    }
+
+    /**
+     * Đóng/mở ngăn nhập tài khoản & mật khẩu
+     */
+    function toggleCredentialsDrawer() {
+        const drawer = document.getElementById('credentialsDrawerContainer');
         if (drawer) {
             drawer.classList.toggle('hidden');
             if (!drawer.classList.contains('hidden')) {
-                const input = document.getElementById('socialCookieInput');
+                const input = document.getElementById('socialUsernameInput');
                 if (input) input.focus();
             }
+        }
+    }
+
+    /**
+     * Ẩn/Hiện mật khẩu
+     */
+    function togglePasswordVisibility() {
+        const passInput = document.getElementById('socialPasswordInput');
+        const icon = document.getElementById('passwordVisibilityIcon');
+        if (!passInput) return;
+        if (passInput.type === 'password') {
+            passInput.type = 'text';
+            if (icon) icon.textContent = 'visibility_off';
+        } else {
+            passInput.type = 'password';
+            if (icon) icon.textContent = 'visibility';
         }
     }
 
@@ -893,6 +977,10 @@
         toggleViewMode,
         autoFormatFacebookText,
         updateLivePreview,
-        toggleCookieDrawer
+        toggleCredentialsDrawer,
+        toggleCookieDrawer: toggleCredentialsDrawer,
+        togglePasswordVisibility,
+        loadSavedCredentials,
+        getCredentialsPayload
     };
 })();

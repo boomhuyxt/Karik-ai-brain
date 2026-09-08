@@ -47,9 +47,9 @@ class TiktokBrowserBotService {
 
   /**
    * Tự động khởi chạy trình duyệt & đăng bài lên TikTok Creator Studio
-   * @param {Object} options { caption, hashtags, mediaUrls, autoClickPost, executablePath, headless, cookieString }
+   * @param {Object} options { caption, hashtags, mediaUrls, autoClickPost, executablePath, headless, credentials, cookieString }
    */
-  async runTiktokAutoPost({ caption = '', hashtags = [], mediaUrls = [], autoClickPost = true, executablePath: customExecutablePath = null, headless = true, cookieString = null }) {
+  async runTiktokAutoPost({ caption = '', hashtags = [], mediaUrls = [], autoClickPost = true, executablePath: customExecutablePath = null, headless = true, credentials = null, cookieString = null }) {
     const logs = [];
     const addLog = (msg) => {
       console.log(`[TT-Browser-Bot] ${msg}`);
@@ -138,7 +138,7 @@ class TiktokBrowserBotService {
       const currentUrl = page.url();
 
       // Kiểm tra xem có đang ở trang login hay bị chuyển hướng đăng nhập không
-      const isLoginPage = await page.evaluate((url) => {
+      let isLoginPage = await page.evaluate((url) => {
         if (url.includes('/login')) return true;
         const loginBtn = document.querySelector('button[data-e2e="login-button"], a[href*="/login"], div[data-e2e="login-icon"]');
         const loginForm = document.querySelector('#loginContainer, form[action*="login"]');
@@ -147,16 +147,72 @@ class TiktokBrowserBotService {
       }, currentUrl);
 
       if (isLoginPage) {
-        addLog('⚠️ Phát hiện chưa đăng nhập tài khoản TikTok trên phiên trình duyệt của Bot.');
-        const loginHint = isHeadless
-          ? 'Bot đang chạy ở chế độ ngầm (Headless) nhưng tài khoản TikTok chưa đăng nhập. Bạn có thể: 1) Tạm thời tắt "Chế độ chạy ngầm" trên giao diện để mở Chrome đăng nhập 1 lần lưu phiên, hoặc 2) Dán Cookie TikTok vào ô Nạp Cookie để Bot lưu phiên mà không cần mở Chrome.'
-          : 'Trình duyệt đã mở trang TikTok Creator Studio. Vui lòng đăng nhập tài khoản TikTok của bạn một lần để Bot lưu phiên làm việc và tự động đăng bài!';
-        return {
-          success: false,
-          requiresLogin: true,
-          message: loginHint,
-          logs
-        };
+        // 1. Nếu có tài khoản & mật khẩu, tự động đăng nhập TikTok
+        if (credentials && credentials.username && credentials.password) {
+          addLog(`Đang tự động đăng nhập TikTok với tài khoản: ${credentials.username}...`);
+
+          try {
+            // Chuyển trực tiếp đến form đăng nhập Email/Username của TikTok
+            await page.goto('https://www.tiktok.com/login/phone-or-email/email', { waitUntil: 'networkidle2', timeout: 35000 });
+            await new Promise(r => setTimeout(r, 2000));
+
+            const userSelector = 'input[name="username"], input[type="text"]';
+            const passSelector = 'input[type="password"]';
+            const submitSelector = 'button[type="submit"]';
+
+            const userInput = await page.$(userSelector);
+            const passInput = await page.$(passSelector);
+
+            if (userInput && passInput) {
+              await userInput.click({ clickCount: 3 }).catch(() => {});
+              await userInput.press('Backspace').catch(() => {});
+              await userInput.type(credentials.username, { delay: 40 });
+
+              await passInput.click({ clickCount: 3 }).catch(() => {});
+              await passInput.press('Backspace').catch(() => {});
+              await passInput.type(credentials.password, { delay: 40 });
+
+              addLog('Đã điền thông tin đăng nhập TikTok. Đang nhấn nút Đăng nhập...');
+              const submitBtn = await page.$(submitSelector);
+              if (submitBtn) {
+                await Promise.all([
+                  page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 30000 }).catch(() => {}),
+                  submitBtn.click()
+                ]);
+              } else {
+                await passInput.press('Enter');
+              }
+
+              await new Promise(r => setTimeout(r, 3500));
+
+              // Quay lại trang Creator Studio upload
+              await page.goto('https://www.tiktok.com/tiktokstudio/upload', { waitUntil: 'networkidle2', timeout: 45000 });
+              await new Promise(r => setTimeout(r, 2500));
+
+              const afterUrl = page.url();
+              isLoginPage = afterUrl.includes('/login');
+
+              if (!isLoginPage) {
+                addLog('✅ Đăng nhập TikTok thành công! Phiên đã được lưu vào profile trình duyệt.');
+              }
+            }
+          } catch (loginErr) {
+            addLog(`⚠️ Quá trình tự động đăng nhập TikTok gặp lỗi: ${loginErr.message}`);
+          }
+        }
+
+        if (isLoginPage) {
+          addLog('⚠️ Phát hiện chưa đăng nhập tài khoản TikTok trên phiên trình duyệt của Bot.');
+          const loginHint = isHeadless
+            ? 'Bot đang chạy ở chế độ ngầm (Headless) nhưng tài khoản TikTok chưa đăng nhập. Vui lòng nhập "Tài khoản (Email/Username)" và "Mật khẩu" ở mục Tài khoản & Mật khẩu trên giao diện để Bot tự động đăng nhập và đăng bài!'
+            : 'Trình duyệt đã mở trang TikTok Creator Studio. Vui lòng đăng nhập tài khoản TikTok của bạn một lần để Bot lưu phiên làm việc và tự động đăng bài!';
+          return {
+            success: false,
+            requiresLogin: true,
+            message: loginHint,
+            logs
+          };
+        }
       }
 
       addLog('Đã vào giao diện TikTok Creator Studio.');

@@ -47,9 +47,9 @@ class FacebookBrowserBotService {
 
   /**
    * Tự động khởi chạy trình duyệt & đăng bài lên Facebook
-   * @param {Object} options { caption, hashtags, mediaUrls, autoClickPost, executablePath, headless, cookieString }
+   * @param {Object} options { caption, hashtags, mediaUrls, autoClickPost, executablePath, headless, credentials, cookieString }
    */
-  async runFacebookAutoPost({ caption = '', hashtags = [], mediaUrls = [], autoClickPost = true, executablePath: customExecutablePath = null, headless = true, cookieString = null }) {
+  async runFacebookAutoPost({ caption = '', hashtags = [], mediaUrls = [], autoClickPost = true, executablePath: customExecutablePath = null, headless = true, credentials = null, cookieString = null }) {
     const logs = [];
     const addLog = (msg) => {
       console.log(`[FB-Browser-Bot] ${msg}`);
@@ -142,16 +142,102 @@ class FacebookBrowserBotService {
       });
 
       if (isLoginPage) {
-        addLog('⚠️ Phát hiện chưa đăng nhập Facebook trên phiên trình duyệt của Bot.');
-        const loginHint = isHeadless
-          ? 'Bot đang chạy ở chế độ ngầm (Headless) nhưng tài khoản Facebook chưa đăng nhập. Bạn có thể: 1) Tạm thời tắt "Chế độ chạy ngầm" trên giao diện để mở Chrome đăng nhập 1 lần lưu phiên, hoặc 2) Dán Cookie Facebook vào ô Nạp Cookie để Bot lưu phiên mà không cần mở Chrome.'
-          : 'Trình duyệt đã mở. Vui lòng đăng nhập tài khoản Facebook của bạn để Bot tự động lưu phiên và thực hiện đăng bài!';
-        return {
-          success: false,
-          requiresLogin: true,
-          message: loginHint,
-          logs
-        };
+        // 1. Nếu người dùng cung cấp tài khoản & mật khẩu, tự động điền và đăng nhập
+        if (credentials && credentials.username && credentials.password) {
+          addLog(`Đang tự động đăng nhập Facebook với tài khoản: ${credentials.username}...`);
+
+          const emailSelector = '#email, input[name="email"], input[type="email"]';
+          const passSelector = '#pass, input[name="pass"], input[type="password"]';
+          const loginBtnSelector = 'button[name="login"], button[type="submit"], input[type="submit"]';
+
+          const emailInput = await page.$(emailSelector);
+          const passInput = await page.$(passSelector);
+
+          if (emailInput && passInput) {
+            await emailInput.click({ clickCount: 3 }).catch(() => {});
+            await emailInput.press('Backspace').catch(() => {});
+            await emailInput.type(credentials.username, { delay: 40 });
+
+            await passInput.click({ clickCount: 3 }).catch(() => {});
+            await passInput.press('Backspace').catch(() => {});
+            await passInput.type(credentials.password, { delay: 40 });
+
+            addLog('Đã nhập thông tin tài khoản & mật khẩu. Đang gửi yêu cầu đăng nhập...');
+            const loginBtn = await page.$(loginBtnSelector);
+            if (loginBtn) {
+              await Promise.all([
+                page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 30000 }).catch(() => {}),
+                loginBtn.click()
+              ]);
+            } else {
+              await Promise.all([
+                page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 30000 }).catch(() => {}),
+                passInput.press('Enter')
+              ]);
+            }
+
+            await new Promise(r => setTimeout(r, 3000));
+
+            // Kiểm tra bảo mật 2 lớp (2FA)
+            const is2FA = await page.evaluate(() => {
+              const hasCodeInput = Boolean(document.querySelector('input#approvals_code, input[name="approvals_code"], input[name="code"]'));
+              const bodyText = (document.body?.innerText || '').toLowerCase();
+              return hasCodeInput || bodyText.includes('xác thực hai yếu tố') || bodyText.includes('two-factor') || bodyText.includes('mã đăng nhập');
+            });
+
+            if (is2FA) {
+              if (credentials.twoFactorCode) {
+                addLog(`Đang nạp mã 2FA xác thực: ${credentials.twoFactorCode}...`);
+                const codeInput = await page.$('input#approvals_code, input[name="approvals_code"], input[name="code"]');
+                if (codeInput) {
+                  await codeInput.type(credentials.twoFactorCode, { delay: 40 });
+                  const submit2FA = await page.$('button[type="submit"], button#checkpointSubmitButton');
+                  if (submit2FA) await submit2FA.click();
+                  await new Promise(r => setTimeout(r, 4000));
+                }
+              } else {
+                addLog('⚠️ Facebook yêu cầu mã bảo mật 2 lớp (2FA).');
+                return {
+                  success: false,
+                  requires2FA: true,
+                  message: 'Tài khoản Facebook của bạn đang bật Xác thực 2 yếu tố (2FA). Vui lòng nhập mã OTP 6 số vào ô "Mã 2FA" trên giao diện hoặc tạm tắt Chế độ chạy ngầm để xác nhận!',
+                  logs
+                };
+              }
+            }
+
+            // Kiểm tra nếu vẫn còn ở trang login
+            const checkStatus = await page.evaluate(() => {
+              const hasEmail = Boolean(document.querySelector('#email') || document.querySelector('input[name="email"]'));
+              const errorText = document.querySelector('#error_box, [role="alert"]')?.innerText || '';
+              return { hasEmail, errorText };
+            });
+
+            if (checkStatus.hasEmail) {
+              addLog(`⚠️ Đăng nhập Facebook không thành công: ${checkStatus.errorText || 'Sai tài khoản hoặc mật khẩu'}`);
+              return {
+                success: false,
+                requiresLogin: true,
+                message: `Đăng nhập Facebook thất bại: ${checkStatus.errorText || 'Mật khẩu hoặc tài khoản bạn nhập không chính xác. Vui lòng kiểm tra lại!'}`,
+                logs
+              };
+            }
+
+            addLog('✅ Đăng nhập Facebook thành công! Phiên đã được lưu vào profile trình duyệt.');
+          }
+        } else {
+          // Chưa đăng nhập và chưa có credentials
+          addLog('⚠️ Phát hiện chưa đăng nhập Facebook trên phiên trình duyệt của Bot.');
+          const loginHint = isHeadless
+            ? 'Bot đang chạy ở chế độ ngầm (Headless) nhưng tài khoản Facebook chưa đăng nhập. Vui lòng nhập "Tài khoản (Email/SĐT)" và "Mật khẩu" ở mục Tài khoản & Mật khẩu trên giao diện để Bot tự động đăng nhập và đăng bài!'
+            : 'Trình duyệt đã mở. Vui lòng đăng nhập tài khoản Facebook của bạn để Bot tự động lưu phiên và thực hiện đăng bài!';
+          return {
+            success: false,
+            requiresLogin: true,
+            message: loginHint,
+            logs
+          };
+        }
       }
 
       addLog('Đã vào trang chủ Facebook. Đang tìm khung tạo bài viết ("Bạn đang nghĩ gì thế?")...');

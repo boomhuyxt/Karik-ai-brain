@@ -349,7 +349,22 @@ class SocialController {
   async runFacebookBrowserBot(req, res, next) {
     try {
       const facebookBrowserBotService = require('../services/social/facebookBrowserBot.service');
-      const { caption = '', hashtags = [], mediaUrls = [], autoClickPost = true, executablePath = null, headless = true, cookieString = null } = req.body;
+      const { 
+        caption = '', 
+        hashtags = [], 
+        mediaUrls = [], 
+        autoClickPost = true, 
+        executablePath = null, 
+        headless = true, 
+        credentials = null, 
+        username = null, 
+        password = null, 
+        twoFactorCode = null, 
+        cookieString = null 
+      } = req.body;
+
+      // Hỗ trợ cả object credentials hoặc các trường username/password trực tiếp
+      const resolvedCredentials = credentials || (username && password ? { username, password, twoFactorCode } : null);
 
       const botResult = await facebookBrowserBotService.runFacebookAutoPost({
         caption,
@@ -358,6 +373,7 @@ class SocialController {
         autoClickPost,
         executablePath,
         headless,
+        credentials: resolvedCredentials,
         cookieString
       });
 
@@ -377,7 +393,21 @@ class SocialController {
   async runTiktokBrowserBot(req, res, next) {
     try {
       const tiktokBrowserBotService = require('../services/social/tiktokBrowserBot.service');
-      const { caption = '', hashtags = [], mediaUrls = [], autoClickPost = true, executablePath = null, headless = true, cookieString = null } = req.body;
+      const { 
+        caption = '', 
+        hashtags = [], 
+        mediaUrls = [], 
+        autoClickPost = true, 
+        executablePath = null, 
+        headless = true, 
+        credentials = null, 
+        username = null, 
+        password = null, 
+        twoFactorCode = null, 
+        cookieString = null 
+      } = req.body;
+
+      const resolvedCredentials = credentials || (username && password ? { username, password, twoFactorCode } : null);
 
       const botResult = await tiktokBrowserBotService.runTiktokAutoPost({
         caption,
@@ -386,6 +416,7 @@ class SocialController {
         autoClickPost,
         executablePath,
         headless,
+        credentials: resolvedCredentials,
         cookieString
       });
 
