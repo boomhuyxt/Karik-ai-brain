@@ -239,6 +239,34 @@
         border: 1px solid rgba(219, 39, 119, 0.6) !important;
         box-shadow: 0 4px 15px rgba(219, 39, 119, 0.3) !important;
     }
+
+    /* In-App Browser Modal Styles */
+    html:not(.dark) #inAppBrowserModal #inAppBrowserCard,
+    html.light #inAppBrowserModal #inAppBrowserCard {
+        background: #ffffff !important;
+        color: #0f172a !important;
+        border: 1.5px solid #cbd5e1 !important;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+    }
+    html:not(.dark) #inAppBrowserModal .browser-titlebar,
+    html.light #inAppBrowserModal .browser-titlebar,
+    html:not(.dark) #inAppBrowserModal .browser-toolbar,
+    html.light #inAppBrowserModal .browser-toolbar,
+    html:not(.dark) #inAppBrowserModal .browser-statusbar,
+    html.light #inAppBrowserModal .browser-statusbar {
+        background-color: #f8fafc !important;
+        border-color: #e2e8f0 !important;
+    }
+    html:not(.dark) #inAppBrowserModal .browser-urlbar,
+    html.light #inAppBrowserModal .browser-urlbar {
+        background-color: #ffffff !important;
+        border-color: #cbd5e1 !important;
+        color: #0f172a !important;
+    }
+    html:not(.dark) #inAppBrowserModal #inAppBrowserUrlDisplay,
+    html.light #inAppBrowserModal #inAppBrowserUrlDisplay {
+        color: #0f172a !important;
+    }
 </style>
 <div id="socialPublishModal" style="display: none;" class="fixed inset-0 z-[9999] hidden items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md transition-all duration-300">
     <div class="relative w-full max-w-2xl max-h-[92vh] flex flex-col rounded-2xl glass-panel bg-slate-900/95 border border-purple-500/40 shadow-[0_0_50px_rgba(168,85,247,0.25)] overflow-hidden animate-fadeIn">
@@ -605,10 +633,15 @@
         <div class="modal-footer-bar flex flex-col sm:flex-row items-center justify-between gap-2.5 px-5 py-3.5 border-t border-slate-200 dark:border-white/10 bg-slate-100/90 dark:bg-slate-950/80 flex-shrink-0">
             <!-- Left Actions -->
             <div class="flex items-center gap-2 w-full sm:w-auto">
-                <button type="button" id="btnOpenBrowserFallback" onclick="window.socialPublish.openBrowserDirectLink()"
-                    class="bg-white hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-300 border border-slate-300 dark:border-white/10 px-3.5 py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs active:scale-95" title="Mở web thủ công">
-                    <span class="material-symbols-outlined text-sm text-slate-600 dark:text-slate-300">open_in_new</span>
-                    <span>Mở Tab Thủ Công</span>
+                <button type="button" id="btnOpenInAppBrowserModal" onclick="window.socialPublish.openInAppBrowser()"
+                    class="bg-gradient-to-r from-cyan-600/20 via-blue-600/20 to-indigo-600/20 hover:from-cyan-600/30 hover:to-indigo-600/30 text-cyan-800 dark:text-cyan-300 border border-cyan-400/40 dark:border-cyan-500/40 px-3.5 py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs active:scale-95" title="Mở trình duyệt trực tiếp ngay trên trang web">
+                    <span class="material-symbols-outlined text-sm text-cyan-600 dark:text-cyan-400">language</span>
+                    <span>🌐 Mở Trình Duyệt Trên Web</span>
+                </button>
+                <button type="button" id="btnOpenBrowserFallback" onclick="window.socialPublish.openBrowserDirectLink(true)"
+                    class="bg-white hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-white/10 px-2.5 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1 transition-all cursor-pointer shadow-xs active:scale-95" title="Mở trong tab trình duyệt ngoài">
+                    <span class="material-symbols-outlined text-sm text-slate-500 dark:text-slate-400">open_in_new</span>
+                    <span class="hidden sm:inline">Tab Rời</span>
                 </button>
             </div>
 
@@ -622,6 +655,221 @@
                     class="w-full sm:w-auto bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-bold border border-blue-400/50 px-5 py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition-all shadow-md active:scale-95 cursor-pointer">
                     <span class="material-symbols-outlined text-sm text-cyan-200">smart_toy</span>
                     <span id="btnBrowserBotText">🤖 Đồng Ý & Cho AI Vào Facebook Đăng Bài</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- In-App Browser Modal (Khung Trình Duyệt Nhúng Ngay Trên Web AI Karik) -->
+<div id="inAppBrowserModal" style="display: none;" class="fixed inset-0 z-[10000] hidden items-center justify-center p-2 sm:p-4 bg-black/85 backdrop-blur-md transition-all duration-300">
+    <div id="inAppBrowserCard" class="relative w-full max-w-5xl h-[90vh] flex flex-col rounded-2xl glass-panel bg-slate-900 border border-cyan-500/40 shadow-[0_0_60px_rgba(6,182,212,0.25)] overflow-hidden transition-all duration-200">
+        
+        <!-- Browser Window Title Bar & Tabs -->
+        <div class="browser-titlebar flex items-center justify-between px-4 py-2.5 bg-slate-950/90 border-b border-white/10 select-none flex-shrink-0">
+            <!-- Window control dots -->
+            <div class="flex items-center gap-2">
+                <button type="button" onclick="window.socialPublish.closeInAppBrowser()" class="w-3.5 h-3.5 rounded-full bg-rose-500 hover:bg-rose-600 transition-colors cursor-pointer flex items-center justify-center group" title="Đóng trình duyệt nhúng">
+                    <span class="material-symbols-outlined text-[10px] text-rose-950 opacity-0 group-hover:opacity-100 font-black">close</span>
+                </button>
+                <button type="button" onclick="window.socialPublish.openWebviewPopup()" class="w-3.5 h-3.5 rounded-full bg-amber-500 hover:bg-amber-600 transition-colors cursor-pointer flex items-center justify-center group" title="Mở thành cửa sổ popup nổi">
+                    <span class="material-symbols-outlined text-[10px] text-amber-950 opacity-0 group-hover:opacity-100 font-black">open_in_new</span>
+                </button>
+                <button type="button" onclick="window.socialPublish.toggleInAppBrowserFullscreen()" class="w-3.5 h-3.5 rounded-full bg-emerald-500 hover:bg-emerald-600 transition-colors cursor-pointer flex items-center justify-center group" title="Phóng to / Thu nhỏ">
+                    <span class="material-symbols-outlined text-[10px] text-emerald-950 opacity-0 group-hover:opacity-100 font-black">aspect_ratio</span>
+                </button>
+                
+                <span class="text-slate-600 dark:text-slate-500 text-xs font-mono ml-2">|</span>
+                <span class="text-[11px] font-bold text-cyan-400 flex items-center gap-1.5 ml-1">
+                    <span class="material-symbols-outlined text-sm">public</span>
+                    <span>AI Karik In-App Browser</span>
+                </span>
+            </div>
+
+            <!-- Browser Platform Tabs -->
+            <div class="flex items-center gap-1.5 bg-slate-900/90 p-1 rounded-xl border border-white/10">
+                <button type="button" id="inAppTabFb" onclick="window.socialPublish.switchInAppPlatform('facebook')"
+                    class="flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all bg-blue-600 text-white shadow-sm cursor-pointer">
+                    <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                    <span>Facebook</span>
+                </button>
+                <button type="button" id="inAppTabTt" onclick="window.socialPublish.switchInAppPlatform('tiktok')"
+                    class="flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition-all cursor-pointer">
+                    <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>
+                    <span>TikTok Studio</span>
+                </button>
+            </div>
+
+            <!-- Top Right Action Controls -->
+            <div class="flex items-center gap-1.5">
+                <button type="button" onclick="window.socialPublish.backToEditorModal()" class="text-xs text-slate-400 hover:text-white px-2.5 py-1 rounded-lg hover:bg-white/10 transition-all flex items-center gap-1 cursor-pointer" title="Quay lại bảng soạn thảo bài đăng">
+                    <span class="material-symbols-outlined text-sm">edit_square</span>
+                    <span class="hidden sm:inline">Soạn Thảo</span>
+                </button>
+                <button type="button" onclick="window.socialPublish.closeInAppBrowser()" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors cursor-pointer" title="Đóng">
+                    <span class="material-symbols-outlined text-lg">close</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Browser Navigation Bar & Address Bar -->
+        <div class="browser-toolbar flex flex-wrap sm:flex-nowrap items-center justify-between gap-2 px-4 py-2.5 bg-slate-950/70 border-b border-white/10 flex-shrink-0">
+            <!-- Nav buttons -->
+            <div class="flex items-center gap-1 text-slate-400">
+                <button type="button" onclick="window.socialPublish.reloadInAppBrowser()" class="p-1 rounded-lg hover:bg-white/10 hover:text-white transition-all cursor-pointer" title="Tải lại trang">
+                    <span class="material-symbols-outlined text-base">refresh</span>
+                </button>
+            </div>
+
+            <!-- Address Bar (URL Bar) -->
+            <div class="browser-urlbar flex-1 min-w-[200px] flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900 border border-white/10 text-xs font-mono text-slate-300">
+                <span class="material-symbols-outlined text-sm text-emerald-400" title="Bảo mật SSL">lock</span>
+                <input type="text" id="inAppBrowserUrlDisplay" readonly value="https://www.facebook.com/"
+                    class="bg-transparent text-xs text-slate-200 font-mono flex-1 outline-none truncate select-all cursor-text">
+                <button type="button" onclick="window.socialPublish.copyInAppUrl()" class="text-slate-400 hover:text-cyan-300 p-0.5 rounded cursor-pointer transition-colors" title="Sao chép URL">
+                    <span class="material-symbols-outlined text-xs">content_copy</span>
+                </button>
+            </div>
+
+            <!-- Quick Action Buttons on Toolbar -->
+            <div class="flex items-center gap-1.5 flex-shrink-0 flex-wrap sm:flex-nowrap">
+                <button type="button" id="btnInAppAutoFill" onclick="window.socialPublish.autoFillLoginInBrowser()"
+                    class="text-[11px] text-amber-200 hover:text-white bg-amber-900/60 hover:bg-amber-800 border border-amber-500/40 px-2.5 py-1.5 rounded-xl flex items-center gap-1 transition-all cursor-pointer font-bold shadow-xs active:scale-95" title="Tự động điền tài khoản & mật khẩu vào form đăng nhập">
+                    <span class="material-symbols-outlined text-xs text-amber-300">key</span>
+                    <span>🔑 Điền Tài Khoản</span>
+                </button>
+
+                <button type="button" id="btnInAppAutoPaste" onclick="window.socialPublish.pasteCaptionInBrowser()"
+                    class="text-[11px] text-emerald-200 hover:text-white bg-emerald-900/60 hover:bg-emerald-800 border border-emerald-500/40 px-2.5 py-1.5 rounded-xl flex items-center gap-1 transition-all cursor-pointer font-bold shadow-xs active:scale-95" title="Tự động dán nội dung Caption vào ô tạo bài viết">
+                    <span class="material-symbols-outlined text-xs text-emerald-300">post_add</span>
+                    <span>📝 Dán Caption</span>
+                </button>
+
+                <button type="button" id="btnInAppCopyCaption" onclick="window.socialPublish.copyCaptionToClipboard(true)"
+                    class="text-[11px] text-cyan-200 hover:text-white bg-cyan-900/60 hover:bg-cyan-800 border border-cyan-500/40 px-2.5 py-1.5 rounded-xl flex items-center gap-1 transition-all cursor-pointer font-bold shadow-xs active:scale-95" title="Copy Caption & Hashtags để dán nhanh (Ctrl+V)">
+                    <span class="material-symbols-outlined text-xs text-cyan-300">content_copy</span>
+                    <span>📋 Copy</span>
+                </button>
+
+                <button type="button" id="btnInAppDownloadMedia" onclick="window.socialPublish.downloadCurrentMedia()"
+                    class="text-[11px] text-purple-200 hover:text-white bg-purple-900/60 hover:bg-purple-800 border border-purple-500/40 px-2.5 py-1.5 rounded-xl flex items-center gap-1 transition-all cursor-pointer font-bold shadow-xs active:scale-95" title="Tải ảnh Studio về máy để sẵn sàng đăng">
+                    <span class="material-symbols-outlined text-xs text-purple-300">download</span>
+                    <span>💾 Tải Ảnh</span>
+                </button>
+
+                <button type="button" id="btnInAppLaunchDesktop" onclick="window.socialPublish.launchDesktopChrome()"
+                    class="text-[11px] text-white bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 border border-blue-400/40 px-3 py-1.5 rounded-xl flex items-center gap-1 transition-all cursor-pointer font-bold shadow-sm active:scale-95" title="Mở cửa sổ Chrome desktop độc lập ngoài máy tính để đăng nhập nếu thích">
+                    <span class="material-symbols-outlined text-xs">desktop_windows</span>
+                    <span>Mở Chrome Desktop</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Browser Body: Viewport & Side Assist Dock -->
+        <div class="flex-1 flex flex-col md:flex-row overflow-hidden relative bg-slate-950">
+            <!-- Left: Browser Viewport (Live Interactive Canvas with CDP Screencast) -->
+            <div id="inAppBrowserScreenContainer" class="flex-1 relative flex flex-col items-center justify-center overflow-hidden bg-slate-950 select-none">
+                
+                <!-- Live Interactive Canvas -->
+                <canvas id="inAppBrowserCanvas" width="1280" height="720" tabindex="0"
+                    class="w-full h-full max-w-full max-h-full object-contain cursor-crosshair bg-slate-900 border border-white/5 focus:outline-none focus:ring-1 focus:ring-cyan-400/50 shadow-2xl transition-all"
+                    title="Bấm chuột hoặc gõ phím trực tiếp vào đây để thao tác trên trình duyệt!"></canvas>
+
+                <!-- Floating Live Stream Badge & Remote Helper -->
+                <div class="absolute top-3 left-3 z-20 flex items-center gap-2">
+                    <div id="inAppLiveBadge" class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-black/80 border border-emerald-500/40 text-[10px] font-bold text-emerald-300 backdrop-blur-md shadow-md">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span id="inAppLiveBadgeText">TRỰC TIẾP (LIVE)</span>
+                    </div>
+                    <div class="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-lg bg-black/80 border border-white/10 text-[10px] font-medium text-slate-300 backdrop-blur-md">
+                        <span class="material-symbols-outlined text-xs text-cyan-400">touch_app</span>
+                        <span>Click chuột & Gõ phím trực tiếp vào màn hình</span>
+                    </div>
+                </div>
+
+                <!-- Connecting / Loading Spinner Overlay -->
+                <div id="inAppBrowserLoadingOverlay" class="absolute inset-0 z-30 bg-slate-950/90 backdrop-blur-sm p-4 flex flex-col items-center justify-center text-center space-y-3">
+                    <div class="w-12 h-12 rounded-full border-4 border-cyan-500/20 border-t-cyan-400 animate-spin"></div>
+                    <div class="space-y-1">
+                        <h4 id="inAppLoadingTitle" class="text-sm font-bold text-white">Đang kết nối luồng trình duyệt trực tiếp...</h4>
+                        <p id="inAppLoadingSubtext" class="text-xs text-slate-400 max-w-sm">Hệ thống đang mở phiên Google Chrome bảo mật và truyền hình trực tiếp Facebook / TikTok lên giao diện web...</p>
+                    </div>
+                    <div class="pt-2 flex items-center gap-2">
+                        <button type="button" onclick="window.socialPublish.launchDesktopChrome()" class="text-xs text-cyan-300 hover:text-white px-3 py-1.5 rounded-lg border border-cyan-500/40 bg-cyan-950/50 hover:bg-cyan-900 transition-all font-bold cursor-pointer">
+                            🖥️ Mở Cửa Sổ Chrome Desktop Ngoài Máy Tính
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Side Post Assistant Dock (Preview & Fast Copy) -->
+            <div class="w-full md:w-80 border-t md:border-t-0 md:border-l border-white/10 bg-slate-900/90 p-3.5 flex flex-col justify-between space-y-3 flex-shrink-0 overflow-y-auto custom-scrollbar">
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between border-b border-white/10 pb-2">
+                        <span class="text-xs font-bold text-white flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-sm text-cyan-400">fact_check</span>
+                            <span>Trợ Lý Đăng Bài</span>
+                        </span>
+                        <span id="inAppPlatformBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30">
+                            Facebook
+                        </span>
+                    </div>
+
+                    <!-- Media Thumbnail Card -->
+                    <div class="rounded-xl border border-white/10 bg-black/40 p-2 flex items-center gap-2.5">
+                        <div id="inAppMediaThumbBox" class="w-14 h-14 rounded-lg bg-slate-950 border border-white/10 overflow-hidden flex items-center justify-center flex-shrink-0">
+                            <span class="material-symbols-outlined text-slate-500">image</span>
+                        </div>
+                        <div class="min-w-0 flex-1 space-y-1">
+                            <div class="text-xs font-bold text-slate-200 truncate" id="inAppMediaThumbTitle">Ảnh Studio Đã Chuẩn Bị</div>
+                            <button type="button" onclick="window.socialPublish.downloadCurrentMedia()" class="text-[10px] text-cyan-300 hover:text-cyan-200 font-bold flex items-center gap-1 cursor-pointer">
+                                <span class="material-symbols-outlined text-xs">download</span>
+                                <span>Tải ảnh về máy</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Caption Preview Box -->
+                    <div class="space-y-1">
+                        <div class="flex items-center justify-between text-[11px] text-slate-400">
+                            <span class="font-bold">Nội dung Caption:</span>
+                            <span id="inAppCharCounter" class="font-mono text-[10px]">0 ký tự</span>
+                        </div>
+                        <div id="inAppCaptionBox" class="text-xs text-slate-200 bg-black/50 border border-white/10 rounded-xl p-2.5 max-h-48 overflow-y-auto custom-scrollbar font-sans leading-relaxed select-all">
+                            Chưa có nội dung.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom Dock Actions -->
+                <div class="pt-2 border-t border-white/10 space-y-2">
+                    <button type="button" onclick="window.socialPublish.copyCaptionToClipboard(true)"
+                        class="w-full py-2 px-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm active:scale-95 cursor-pointer">
+                        <span class="material-symbols-outlined text-sm">content_copy</span>
+                        <span>📋 Sao Chép Toàn Bộ Caption</span>
+                    </button>
+                    <button type="button" onclick="window.socialPublish.backToEditorModal()"
+                        class="w-full py-1.5 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white font-bold text-[11px] flex items-center justify-center gap-1 transition-all cursor-pointer">
+                        <span class="material-symbols-outlined text-xs">edit</span>
+                        <span>Chỉnh sửa lại nội dung</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Browser Footer Status Bar -->
+        <div class="browser-statusbar flex items-center justify-between px-4 py-1.5 bg-slate-950/90 border-t border-white/10 text-[11px] text-slate-400 flex-shrink-0 select-none">
+            <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span id="inAppStatusBarText">🟢 Trình duyệt nhúng sẵn sàng · Đã kết nối với phiên làm việc</span>
+            </div>
+            <div class="flex items-center gap-3">
+                <button type="button" onclick="window.socialPublish.openBrowserDirectLink(true)" class="hover:text-cyan-300 flex items-center gap-1 cursor-pointer transition-colors" title="Mở trong tab trình duyệt rời">
+                    <span class="material-symbols-outlined text-xs">open_in_browser</span>
+                    <span>Mở Tab Rời</span>
+                </button>
+                <button type="button" onclick="window.socialPublish.closeInAppBrowser()" class="hover:text-white font-bold cursor-pointer">
+                    Đóng
                 </button>
             </div>
         </div>

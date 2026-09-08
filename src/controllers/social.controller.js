@@ -429,6 +429,114 @@ class SocialController {
       next(err);
     }
   }
+
+  /**
+   * Truyền hình trực tiếp màn hình Chrome qua Server-Sent Events (SSE)
+   */
+  async streamLiveBrowser(req, res, next) {
+    try {
+      const liveBrowserService = require('../services/social/liveBrowserSession.service');
+      liveBrowserService.addStreamClient(res);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  /**
+   * Khởi động phiên tương tác trực tiếp
+   */
+  async startLiveBrowser(req, res, next) {
+    try {
+      const liveBrowserService = require('../services/social/liveBrowserSession.service');
+      const { platform = 'facebook', url = null, forceNew = false } = req.body || {};
+      const result = await liveBrowserService.startSession({ platform, url, forceNew });
+      res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  /**
+   * Tiếp nhận tương tác người dùng (Click chuột, Gõ phím, Cuộn trang)
+   */
+  async interactLiveBrowser(req, res, next) {
+    try {
+      const liveBrowserService = require('../services/social/liveBrowserSession.service');
+      const result = await liveBrowserService.handleInteraction(req.body);
+      res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  /**
+   * Tự động điền tài khoản & mật khẩu vào form đăng nhập
+   */
+  async autoFillLiveBrowser(req, res, next) {
+    try {
+      const liveBrowserService = require('../services/social/liveBrowserSession.service');
+      const { username, password } = req.body || {};
+      const result = await liveBrowserService.autoFillCredentials({ username, password });
+      res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  /**
+   * Tự động dán Caption bài viết vào khung tạo post
+   */
+  async autoPasteCaptionLiveBrowser(req, res, next) {
+    try {
+      const liveBrowserService = require('../services/social/liveBrowserSession.service');
+      const { caption = '' } = req.body || {};
+      const result = await liveBrowserService.autoPasteCaption(caption);
+      res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  /**
+   * Mở cửa sổ Chrome desktop độc lập ngoài màn hình máy tính
+   */
+  async launchDesktopChrome(req, res, next) {
+    try {
+      const liveBrowserService = require('../services/social/liveBrowserSession.service');
+      const { platform = 'facebook' } = req.body || {};
+      const result = await liveBrowserService.launchDesktopChrome({ platform });
+      res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  /**
+   * Điều hướng URL
+   */
+  async navigateLiveBrowser(req, res, next) {
+    try {
+      const liveBrowserService = require('../services/social/liveBrowserSession.service');
+      const { url } = req.body || {};
+      const result = await liveBrowserService.navigate(url);
+      res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  /**
+   * Tạm dừng session
+   */
+  async stopLiveBrowser(req, res, next) {
+    try {
+      const liveBrowserService = require('../services/social/liveBrowserSession.service');
+      const result = await liveBrowserService.stopSession();
+      res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 module.exports = new SocialController();

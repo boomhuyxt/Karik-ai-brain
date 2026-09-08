@@ -100,3 +100,30 @@ test('Facebook & TikTok Bot Services - method interfaces accept credentials para
   assert.strictEqual(typeof facebookBrowserBotService.runFacebookAutoPost, 'function');
   assert.strictEqual(typeof tiktokBrowserBotService.runTiktokAutoPost, 'function');
 });
+
+test('In-App Browser Modal - HTML elements for embedded browser exist', () => {
+  const modalHtmlPath = path.join(__dirname, '../../public/components/socialPublishModal.html');
+  const htmlContent = fs.readFileSync(modalHtmlPath, 'utf8');
+
+  assert.ok(htmlContent.includes('id="inAppBrowserModal"'), 'Must have #inAppBrowserModal');
+  assert.ok(htmlContent.includes('id="inAppBrowserCard"'), 'Must have #inAppBrowserCard');
+  assert.ok(htmlContent.includes('id="inAppBrowserUrlDisplay"'), 'Must have #inAppBrowserUrlDisplay');
+  assert.ok(htmlContent.includes('id="btnOpenInAppBrowserModal"'), 'Must have #btnOpenInAppBrowserModal');
+  assert.ok(htmlContent.includes('id="inAppTabFb"'), 'Must have #inAppTabFb');
+  assert.ok(htmlContent.includes('id="inAppTabTt"'), 'Must have #inAppTabTt');
+  assert.ok(htmlContent.includes('id="btnInAppCopyCaption"'), 'Must have #btnInAppCopyCaption');
+  assert.ok(htmlContent.includes('id="inAppCaptionBox"'), 'Must have #inAppCaptionBox');
+});
+
+test('Social Publish JS - contains in-app browser functions and exports', () => {
+  const jsPath = path.join(__dirname, '../../public/js/socialPublish.js');
+  const jsContent = fs.readFileSync(jsPath, 'utf8');
+
+  assert.ok(jsContent.includes('openInAppBrowser'), 'Must have openInAppBrowser');
+  assert.ok(jsContent.includes('closeInAppBrowser'), 'Must have closeInAppBrowser');
+  assert.ok(jsContent.includes('openWebviewPopup'), 'Must have openWebviewPopup');
+  assert.ok(jsContent.includes('toggleInAppBrowserFullscreen'), 'Must have toggleInAppBrowserFullscreen');
+  assert.ok(jsContent.includes('switchInAppPlatform'), 'Must have switchInAppPlatform');
+  assert.ok(jsContent.includes('updateInAppBrowserContent'), 'Must have updateInAppBrowserContent');
+});
+
