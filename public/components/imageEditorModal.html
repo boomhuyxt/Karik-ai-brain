@@ -183,8 +183,12 @@
         <!-- ========================================================================= -->
         <aside class="w-80 bg-slate-950/95 border-r border-purple-500/30 flex flex-col flex-shrink-0 z-10">
             <!-- Sidebar Navigation Tabs -->
-            <div class="grid grid-cols-6 border-b border-purple-500/20 bg-slate-900/70 p-1 gap-1 flex-shrink-0">
-                <button data-tab="tab-upload" title="Ảnh & Upload" class="studio-tab-btn active flex flex-col items-center justify-center p-1.5 rounded-lg border border-transparent text-slate-400 hover:text-purple-200 transition-all">
+            <div class="grid grid-cols-7 border-b border-purple-500/20 bg-slate-900/70 p-1 gap-1 flex-shrink-0">
+                <button data-tab="tab-styles" title="Preset Phong Cách & Bố Cục" class="studio-tab-btn active flex flex-col items-center justify-center p-1.5 rounded-lg border border-transparent text-slate-400 hover:text-cyan-200 transition-all">
+                    <span class="material-symbols-outlined text-base text-cyan-400">auto_awesome</span>
+                    <span class="text-[9px] font-bold mt-0.5 text-cyan-300">Style</span>
+                </button>
+                <button data-tab="tab-upload" title="Ảnh & Upload" class="studio-tab-btn flex flex-col items-center justify-center p-1.5 rounded-lg border border-transparent text-slate-400 hover:text-purple-200 transition-all">
                     <span class="material-symbols-outlined text-base">image</span>
                     <span class="text-[9px] font-medium mt-0.5">Ảnh</span>
                 </button>
@@ -212,9 +216,148 @@
 
             <!-- Tab Contents Container (Scrollable) -->
             <div class="flex-1 overflow-y-auto studio-scrollbar p-3.5 space-y-4">
+
+                <!-- TAB 0: PRESET PHONG CÁCH & BẢNG MÀU CHUYÊN NGHIỆP -->
+                <div id="tab-styles" class="studio-tab-pane space-y-4">
+                    <!-- Quick Style Presets 1-Click -->
+                    <div class="space-y-2">
+                        <label class="text-xs font-bold text-cyan-300 flex items-center justify-between">
+                            <span class="flex items-center gap-1.5">
+                                <span class="material-symbols-outlined text-sm text-cyan-400">palette</span>
+                                6 Phong Cách Thiết Kế 1-Click
+                            </span>
+                            <span class="text-[9px] bg-cyan-500/20 text-cyan-300 border border-cyan-400/30 px-1.5 py-0.2 rounded font-mono">PRO</span>
+                        </label>
+                        <p class="text-[10px] text-slate-400">Bấm để tự động đổi bố cục, backdrop shape, màu sắc và typography ngay tức thì.</p>
+                        
+                        <div class="grid grid-cols-2 gap-2 pt-1">
+                            <!-- 1. Cyberpunk -->
+                            <button onclick="window.applyStudioPreset('cyberpunk')" data-apply-preset="cyberpunk" class="preset-card-btn group p-2.5 rounded-xl bg-gradient-to-br from-slate-900 to-indigo-950/80 border border-cyan-500/40 hover:border-cyan-300 transition-all hover:scale-[1.02] text-left flex flex-col justify-between shadow-md cursor-pointer">
+                                <div class="flex items-center justify-between w-full">
+                                    <span class="text-base">⚡</span>
+                                    <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 shadow-[0_0_8px_#00F0FF]"></span>
+                                </div>
+                                <div class="mt-2">
+                                    <div class="text-xs font-bold text-white group-hover:text-cyan-300">Cyber Tech</div>
+                                    <div class="text-[9px] text-slate-400">Tối neon vị lai</div>
+                                </div>
+                            </button>
+
+                            <!-- 2. Luxury Gold -->
+                            <button onclick="window.applyStudioPreset('luxury')" data-apply-preset="luxury" class="preset-card-btn group p-2.5 rounded-xl bg-gradient-to-br from-neutral-900 to-amber-950/80 border border-amber-500/40 hover:border-amber-300 transition-all hover:scale-[1.02] text-left flex flex-col justify-between shadow-md cursor-pointer">
+                                <div class="flex items-center justify-between w-full">
+                                    <span class="text-base">✨</span>
+                                    <span class="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-[0_0_8px_#D4AF37]"></span>
+                                </div>
+                                <div class="mt-2">
+                                    <div class="text-xs font-bold text-white group-hover:text-amber-300">Luxury Gold</div>
+                                    <div class="text-[9px] text-slate-400">Sang trọng quý phái</div>
+                                </div>
+                            </button>
+
+                            <!-- 3. Minimalist Fresh -->
+                            <button onclick="window.applyStudioPreset('minimal')" data-apply-preset="minimal" class="preset-card-btn group p-2.5 rounded-xl bg-gradient-to-br from-emerald-950/60 to-slate-900 border border-emerald-500/40 hover:border-emerald-300 transition-all hover:scale-[1.02] text-left flex flex-col justify-between shadow-md cursor-pointer">
+                                <div class="flex items-center justify-between w-full">
+                                    <span class="text-base">🌿</span>
+                                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#34D399]"></span>
+                                </div>
+                                <div class="mt-2">
+                                    <div class="text-xs font-bold text-white group-hover:text-emerald-300">Minimal Sáng</div>
+                                    <div class="text-[9px] text-slate-400">Pastel thanh lịch</div>
+                                </div>
+                            </button>
+
+                            <!-- 4. Bold Commercial -->
+                            <button onclick="window.applyStudioPreset('bold_sale')" data-apply-preset="bold_sale" class="preset-card-btn group p-2.5 rounded-xl bg-gradient-to-br from-rose-950/60 to-slate-900 border border-rose-500/40 hover:border-rose-300 transition-all hover:scale-[1.02] text-left flex flex-col justify-between shadow-md cursor-pointer">
+                                <div class="flex items-center justify-between w-full">
+                                    <span class="text-base">🔥</span>
+                                    <span class="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-[0_0_8px_#EF4444]"></span>
+                                </div>
+                                <div class="mt-2">
+                                    <div class="text-xs font-bold text-white group-hover:text-rose-300">Bold Hot Sale</div>
+                                    <div class="text-[9px] text-slate-400">Khuyến mãi giật gân</div>
+                                </div>
+                            </button>
+
+                            <!-- 5. Warm Vintage -->
+                            <button onclick="window.applyStudioPreset('vintage')" data-apply-preset="vintage" class="preset-card-btn group p-2.5 rounded-xl bg-gradient-to-br from-amber-950/60 to-stone-900 border border-orange-500/40 hover:border-orange-300 transition-all hover:scale-[1.02] text-left flex flex-col justify-between shadow-md cursor-pointer">
+                                <div class="flex items-center justify-between w-full">
+                                    <span class="text-base">☕</span>
+                                    <span class="w-2.5 h-2.5 rounded-full bg-amber-600 shadow-[0_0_8px_#D97706]"></span>
+                                </div>
+                                <div class="mt-2">
+                                    <div class="text-xs font-bold text-white group-hover:text-orange-300">Warm Retro</div>
+                                    <div class="text-[9px] text-slate-400">Cổ điển ấm áp</div>
+                                </div>
+                            </button>
+
+                            <!-- 6. Split Left Hero -->
+                            <button onclick="window.applyStudioPreset('split_left')" data-apply-preset="split_left" class="preset-card-btn group p-2.5 rounded-xl bg-gradient-to-br from-blue-950/60 to-slate-900 border border-blue-500/40 hover:border-blue-300 transition-all hover:scale-[1.02] text-left flex flex-col justify-between shadow-md cursor-pointer">
+                                <div class="flex items-center justify-between w-full">
+                                    <span class="text-base">📐</span>
+                                    <span class="w-2.5 h-2.5 rounded-full bg-blue-400 shadow-[0_0_8px_#60A5FA]"></span>
+                                </div>
+                                <div class="mt-2">
+                                    <div class="text-xs font-bold text-white group-hover:text-blue-300">Split Magazine</div>
+                                    <div class="text-[9px] text-slate-400">Chia đôi hiện đại</div>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Color Palettes Section -->
+                    <div class="p-3 bg-slate-900/80 border border-purple-500/30 rounded-xl space-y-2.5">
+                        <label class="text-xs font-bold text-purple-300 flex items-center justify-between">
+                            <span>Bảng Màu Đề Xuất (Palettes)</span>
+                            <span class="text-[10px] text-slate-400">1-Click</span>
+                        </label>
+                        <div class="space-y-1.5">
+                            <button onclick="window.applyColorPalette('cyber')" data-apply-palette="cyber" class="w-full flex items-center justify-between p-2 rounded-lg bg-slate-950 border border-slate-800 hover:border-cyan-400 transition-all cursor-pointer">
+                                <span class="text-xs text-slate-200 font-medium">Dark Cyber</span>
+                                <div class="flex items-center gap-1">
+                                    <span class="w-4 h-4 rounded-full bg-[#0B0F19] border border-white/20"></span>
+                                    <span class="w-4 h-4 rounded-full bg-[#1E1B4B]"></span>
+                                    <span class="w-4 h-4 rounded-full bg-[#00F0FF]"></span>
+                                </div>
+                            </button>
+                            <button onclick="window.applyColorPalette('gold')" data-apply-palette="gold" class="w-full flex items-center justify-between p-2 rounded-lg bg-slate-950 border border-slate-800 hover:border-amber-400 transition-all cursor-pointer">
+                                <span class="text-xs text-slate-200 font-medium">Luxury Gold</span>
+                                <div class="flex items-center gap-1">
+                                    <span class="w-4 h-4 rounded-full bg-[#121212] border border-white/20"></span>
+                                    <span class="w-4 h-4 rounded-full bg-[#2A2218]"></span>
+                                    <span class="w-4 h-4 rounded-full bg-[#D4AF37]"></span>
+                                </div>
+                            </button>
+                            <button onclick="window.applyColorPalette('mint')" data-apply-palette="mint" class="w-full flex items-center justify-between p-2 rounded-lg bg-slate-950 border border-slate-800 hover:border-emerald-400 transition-all cursor-pointer">
+                                <span class="text-xs text-slate-200 font-medium">Fresh Mint</span>
+                                <div class="flex items-center gap-1">
+                                    <span class="w-4 h-4 rounded-full bg-[#F4F7EE] border border-black/20"></span>
+                                    <span class="w-4 h-4 rounded-full bg-[#C4D5B7]"></span>
+                                    <span class="w-4 h-4 rounded-full bg-[#203628]"></span>
+                                </div>
+                            </button>
+                            <button onclick="window.applyColorPalette('sunset')" data-apply-palette="sunset" class="w-full flex items-center justify-between p-2 rounded-lg bg-slate-950 border border-slate-800 hover:border-orange-400 transition-all cursor-pointer">
+                                <span class="text-xs text-slate-200 font-medium">Sunset Orange</span>
+                                <div class="flex items-center gap-1">
+                                    <span class="w-4 h-4 rounded-full bg-[#1F130E] border border-white/20"></span>
+                                    <span class="w-4 h-4 rounded-full bg-[#7C2D12]"></span>
+                                    <span class="w-4 h-4 rounded-full bg-[#F59E0B]"></span>
+                                </div>
+                            </button>
+                            <button onclick="window.applyColorPalette('ruby')" data-apply-palette="ruby" class="w-full flex items-center justify-between p-2 rounded-lg bg-slate-950 border border-slate-800 hover:border-rose-400 transition-all cursor-pointer">
+                                <span class="text-xs text-slate-200 font-medium">Ruby Power</span>
+                                <div class="flex items-center gap-1">
+                                    <span class="w-4 h-4 rounded-full bg-[#1A0B0B] border border-white/20"></span>
+                                    <span class="w-4 h-4 rounded-full bg-[#881337]"></span>
+                                    <span class="w-4 h-4 rounded-full bg-[#EF4444]"></span>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
                 
                 <!-- TAB 1: ẢNH & UPLOAD & AI TẠO ẢNH -->
-                <div id="tab-upload" class="studio-tab-pane space-y-4">
+                <div id="tab-upload" class="studio-tab-pane hidden space-y-4">
                     <!-- Upload Box -->
                     <div class="space-y-2">
                         <label class="text-xs font-semibold text-slate-200 flex items-center justify-between">
@@ -636,12 +779,27 @@
                 <span id="canvasDimensionDisplay">1080 x 1350 px</span>
             </div>
 
+            <!-- Quick Preset Style Floating Switcher -->
+            <div class="absolute top-4 right-4 z-10 hidden lg:flex items-center gap-1.5 bg-slate-950/90 backdrop-blur-md border border-purple-500/40 p-1.5 rounded-2xl shadow-2xl">
+                <span class="text-[10px] text-purple-300 font-bold px-2 flex items-center gap-1">
+                    <span class="material-symbols-outlined text-xs text-cyan-400">auto_awesome</span> Style:
+                </span>
+                <button onclick="window.applyStudioPreset('cyberpunk')" data-quick-style="cyberpunk" class="btn-quick-style px-2.5 py-1 rounded-xl bg-slate-900 hover:bg-cyan-950/80 border border-cyan-500/40 text-[10px] text-cyan-300 font-semibold transition-all active:scale-95 flex items-center gap-1 shadow-sm cursor-pointer" title="Phong cách Cyber Tech">⚡ Cyber</button>
+                <button onclick="window.applyStudioPreset('luxury')" data-quick-style="luxury" class="btn-quick-style px-2.5 py-1 rounded-xl bg-slate-900 hover:bg-amber-950/80 border border-amber-500/40 text-[10px] text-amber-300 font-semibold transition-all active:scale-95 flex items-center gap-1 shadow-sm cursor-pointer" title="Phong cách Luxury Gold">✨ Luxury</button>
+                <button onclick="window.applyStudioPreset('minimal')" data-quick-style="minimal" class="btn-quick-style px-2.5 py-1 rounded-xl bg-slate-900 hover:bg-emerald-950/80 border border-emerald-500/40 text-[10px] text-emerald-300 font-semibold transition-all active:scale-95 flex items-center gap-1 shadow-sm cursor-pointer" title="Phong cách Minimalist Sáng">🌿 Minimal</button>
+                <button onclick="window.applyStudioPreset('bold_sale')" data-quick-style="bold_sale" class="btn-quick-style px-2.5 py-1 rounded-xl bg-slate-900 hover:bg-red-950/80 border border-red-500/40 text-[10px] text-red-300 font-semibold transition-all active:scale-95 flex items-center gap-1 shadow-sm cursor-pointer" title="Phong cách Hot Sale">🔥 Bold Sale</button>
+                <button onclick="window.applyStudioPreset('vintage')" data-quick-style="vintage" class="btn-quick-style px-2.5 py-1 rounded-xl bg-slate-900 hover:bg-orange-950/80 border border-orange-500/40 text-[10px] text-orange-300 font-semibold transition-all active:scale-95 flex items-center gap-1 shadow-sm cursor-pointer" title="Phong cách Warm Retro">☕ Retro</button>
+                <button onclick="window.applyStudioPreset('split_left')" data-quick-style="split_left" class="btn-quick-style px-2.5 py-1 rounded-xl bg-slate-900 hover:bg-blue-950/80 border border-blue-500/40 text-[10px] text-blue-300 font-semibold transition-all active:scale-95 flex items-center gap-1 shadow-sm cursor-pointer" title="Bố cục Chia Đôi Split">📐 Split</button>
+            </div>
+
             <!-- Canvas Center Wrapper (Main Stage with Drop & Drag support) -->
-            <div id="canvasViewportWrapper" class="relative shadow-[0_0_50px_rgba(0,0,0,0.9)] border border-purple-500/30 rounded-lg overflow-hidden transition-transform duration-75 ease-out">
-                <!-- Checkerboard / Background Box -->
-                <div id="canvasBackgroundSurface" class="w-full h-full canvas-checkerboard relative">
-                    <!-- Primary Fabric.js Canvas Element -->
-                    <canvas id="fabricCanvas"></canvas>
+            <div id="canvasViewportWrapper" class="relative m-auto shadow-[0_0_50px_rgba(0,0,0,0.9)] border border-purple-500/30 rounded-lg overflow-hidden flex-shrink-0 transition-all duration-75 ease-out">
+                <div id="canvasScaledContainer" style="transform-origin: 0 0;">
+                    <!-- Checkerboard / Background Box -->
+                    <div id="canvasBackgroundSurface" class="w-full h-full canvas-checkerboard relative">
+                        <!-- Primary Fabric.js Canvas Element -->
+                        <canvas id="fabricCanvas"></canvas>
+                    </div>
                 </div>
             </div>
 
@@ -684,8 +842,12 @@
             <div class="flex-1 overflow-y-auto studio-scrollbar p-2.5 space-y-1.5" id="studioLayersList">
                 <!-- Empty State -->
                 <div id="emptyLayersPlaceholder" class="p-6 text-center text-slate-500 space-y-2">
-                    <span class="material-symbols-outlined text-3xl opacity-50">layers</span>
+                    <span class="material-symbols-outlined text-3xl opacity-50 text-purple-400">layers</span>
                     <p class="text-xs">Chưa có Layer nào trên Canvas.<br>Tải ảnh hoặc thêm Text để bắt đầu!</p>
+                    <button onclick="document.getElementById('studioFileInput').click()" class="mt-2 px-3 py-1.5 rounded-lg bg-purple-600/70 hover:bg-purple-500 text-white text-xs font-semibold flex items-center justify-center gap-1.5 mx-auto transition-all cursor-pointer shadow-md active:scale-95">
+                        <span class="material-symbols-outlined text-sm">cloud_upload</span>
+                        <span>Tải ảnh lên ngay</span>
+                    </button>
                 </div>
             </div>
 

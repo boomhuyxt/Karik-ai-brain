@@ -36,8 +36,15 @@ async function chat(prompt, options = {}) {
         contents: [{ parts: [{ text: prompt }] }]
       };
 
+      const isImageAgent = options.agent && options.agent.id === 'image';
+      const defaultGenConfig = {
+        temperature: isImageAgent ? 0.85 : 0.4,
+        topP: 0.95
+      };
+
       if (isTTS) {
         payload.generationConfig = {
+          ...defaultGenConfig,
           responseModalities: ["AUDIO"],
           speechConfig: {
             voiceConfig: {
@@ -47,6 +54,8 @@ async function chat(prompt, options = {}) {
             }
           }
         };
+      } else {
+        payload.generationConfig = defaultGenConfig;
       }
       return payload;
     };

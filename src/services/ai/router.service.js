@@ -94,13 +94,13 @@ class RouterService {
     }
 
     if (agent.id === 'image') {
-      return `[CHỈ THỊ ĐIỀU PHỐI TỪ AI KARIK ORCHESTRATOR -> AGENT STUDIO ẢNH & POSTER DESIGNER (Model: ${agent.model})]:
-- Mục tiêu: Phân tích yêu cầu và thiết kế bộ Concept Visual, bảng màu, typography và cấu trúc Layers chi tiết cho AI Karik Studio.
+      return `[CHỈ THỊ ĐIỀU PHỐI TỪ AI KARIK ORCHESTRATOR -> AGENT STUDIO ẢNH & POSTER DESIGNER / ART DIRECTOR (Model: ${agent.model})]:
+- Mục tiêu: Phân tích sâu yêu cầu của người dùng, sản phẩm và tự do sáng tạo bộ Concept Visual, bảng màu, typography và cấu trúc Layers độc bản cho AI Karik Studio.
 - Yêu cầu ban đầu của người dùng: "${prompt}"
 - Hướng dẫn thực thi:
-  1. Phân tích Concept & Bố cục Visual (Mục tiêu, phong cách, tỷ lệ Canvas khuyến nghị: Poster 4:5, Instagram 1:1, Story 9:16, Banner 16:9).
-  2. Xây dựng Bảng màu (Color Palette với mã HEX) và Phông chữ đề xuất (Sora, Inter, Playfair Display, Montserrat, Oswald, Lobster...).
-  3. Lập Bảng phân lớp thiết kế (Layer Specifications: Nền, Hình ảnh, Typography H1/H2/Body, Shapes/Huy hiệu, Hiệu ứng Filters, Tách nền Magic Cut).
+  1. Phân tích Concept & Bố cục Visual: Phân tích ngành hàng và chọn 1 phong cách thiết kế phù hợp (Minimalist Fresh, Cyberpunk Tech, Luxury Editorial, Bold Commercial, Warm Vintage...). Tuyệt đối không rập khuôn một kiểu màu/bố cục.
+  2. Xây dựng Bảng màu (Color Palette 60-30-10) và Phông chữ đề xuất tương ứng với cảm xúc của sản phẩm.
+  3. Lập Bảng phân lớp thiết kế (Layer Specifications: Nền, Hình ảnh, Typography, Shapes/Huy hiệu, Hiệu ứng Filters, Tách nền Magic Cut) và xuất cấu hình json:poster-config chuẩn xác.
   4. Hướng dẫn người dùng thao tác trực tiếp trên AI Karik Studio (bấm nút Studio Ảnh trên khung chat).
   5. Tuân thủ nghiêm ngặt quy chuẩn tại image.prompt.md.`;
     }

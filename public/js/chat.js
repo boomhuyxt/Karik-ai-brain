@@ -419,23 +419,38 @@ function initAIChat() {
             if (targetImageUrl && isImageEditingIntent) {
                 const escapedConfigAttr = parsedPosterConfig ? escapeHtml(JSON.stringify(parsedPosterConfig)) : '';
                 const posterTitleHint = parsedPosterConfig && parsedPosterConfig.title ? `Tiêu đề: "${parsedPosterConfig.title}"` : 'Đã nạp bố cục vào Studio';
+                const safeConfigJson = parsedPosterConfig ? JSON.stringify(parsedPosterConfig).replace(/"/g, '&quot;') : '{}';
 
                 studioActionCardHtml = `
-                    <div class="my-3 p-3 rounded-2xl bg-gradient-to-r from-purple-950/80 via-slate-900 to-indigo-950/80 border border-purple-400/50 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-3 w-full">
-                        <div class="flex items-center gap-3 min-w-0 w-full sm:w-auto">
-                            <img src="${targetImageUrl}" alt="Ảnh cần chỉnh sửa" class="w-12 h-12 rounded-xl object-cover border-2 border-purple-400/60 shadow flex-shrink-0 cursor-pointer" onclick="window.openImageEditor('${targetImageUrl}', ${parsedPosterConfig ? JSON.stringify(parsedPosterConfig).replace(/"/g, '&quot;') : 'null'})" />
-                            <div class="min-w-0 flex-1">
-                                <div class="text-xs font-bold text-purple-200 flex items-center gap-1.5 truncate">
-                                    <span class="material-symbols-outlined text-sm text-cyan-400">auto_awesome</span>
-                                    <span>Poster Tự Động Đã Sẵn Sàng</span>
+                    <div class="my-3 p-3.5 rounded-2xl bg-gradient-to-br from-purple-950/90 via-slate-900 to-indigo-950/90 border border-purple-400/50 shadow-2xl flex flex-col gap-3 w-full">
+                        <div class="flex flex-col sm:flex-row items-center justify-between gap-3 w-full">
+                            <div class="flex items-center gap-3 min-w-0 w-full sm:w-auto">
+                                <img src="${targetImageUrl}" alt="Ảnh cần chỉnh sửa" class="w-12 h-12 rounded-xl object-cover border-2 border-purple-400/60 shadow flex-shrink-0 cursor-pointer hover:scale-105 transition-transform" onclick="window.openImageEditor('${targetImageUrl}', ${safeConfigJson})" />
+                                <div class="min-w-0 flex-1">
+                                    <div class="text-xs font-bold text-purple-200 flex items-center gap-1.5 truncate">
+                                        <span class="material-symbols-outlined text-sm text-cyan-400">auto_awesome</span>
+                                        <span>Poster Tự Động Đã Sẵn Sàng</span>
+                                    </div>
+                                    <div class="text-[10px] text-slate-300 truncate">${escapeHtml(posterTitleHint)}</div>
                                 </div>
-                                <div class="text-[10px] text-slate-300 truncate">${escapeHtml(posterTitleHint)}</div>
                             </div>
+                            <button type="button" onclick="window.openImageEditor('${targetImageUrl}', ${safeConfigJson})" class="w-full sm:w-auto px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white font-bold text-xs shadow-lg transition-all active:scale-95 flex items-center justify-center gap-1.5 flex-shrink-0 cursor-pointer border border-purple-300/40">
+                                <span class="material-symbols-outlined text-sm text-cyan-200">palette</span>
+                                <span>Mở Studio & Xem Poster</span>
+                            </button>
                         </div>
-                        <button type="button" onclick="window.openImageEditor('${targetImageUrl}', ${parsedPosterConfig ? JSON.stringify(parsedPosterConfig).replace(/"/g, '&quot;') : 'null'})" class="w-full sm:w-auto px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white font-bold text-xs shadow-lg transition-all active:scale-95 flex items-center justify-center gap-1.5 flex-shrink-0 cursor-pointer border border-purple-300/40">
-                            <span class="material-symbols-outlined text-sm text-cyan-200">palette</span>
-                            <span>Mở Studio & Xem Poster Ngay</span>
-                        </button>
+
+                        <!-- 1-Click Quick Style Switcher Chips -->
+                        <div class="pt-2 border-t border-purple-500/25 flex flex-wrap items-center gap-1.5 w-full">
+                            <span class="text-[10px] text-purple-300 font-bold flex items-center gap-1 mr-1">
+                                <span class="material-symbols-outlined text-xs text-cyan-400">auto_awesome</span> Đổi kiểu nhanh:
+                            </span>
+                            <button type="button" onclick="window.switchAndRebuildPoster('cyberpunk', '${targetImageUrl}', ${safeConfigJson})" class="px-2.5 py-1 rounded-lg bg-slate-950/90 hover:bg-cyan-950/90 border border-cyan-500/40 hover:border-cyan-300 text-[10px] text-cyan-300 font-semibold transition-all active:scale-95 flex items-center gap-1 shadow-sm">⚡ Cyber Tech</button>
+                            <button type="button" onclick="window.switchAndRebuildPoster('luxury', '${targetImageUrl}', ${safeConfigJson})" class="px-2.5 py-1 rounded-lg bg-slate-950/90 hover:bg-amber-950/90 border border-amber-500/40 hover:border-amber-300 text-[10px] text-amber-300 font-semibold transition-all active:scale-95 flex items-center gap-1 shadow-sm">✨ Luxury Gold</button>
+                            <button type="button" onclick="window.switchAndRebuildPoster('minimal', '${targetImageUrl}', ${safeConfigJson})" class="px-2.5 py-1 rounded-lg bg-slate-950/90 hover:bg-emerald-950/90 border border-emerald-500/40 hover:border-emerald-300 text-[10px] text-emerald-300 font-semibold transition-all active:scale-95 flex items-center gap-1 shadow-sm">🌿 Minimal Sáng</button>
+                            <button type="button" onclick="window.switchAndRebuildPoster('bold_sale', '${targetImageUrl}', ${safeConfigJson})" class="px-2.5 py-1 rounded-lg bg-slate-950/90 hover:bg-rose-950/90 border border-rose-500/40 hover:border-rose-300 text-[10px] text-rose-300 font-semibold transition-all active:scale-95 flex items-center gap-1 shadow-sm">🔥 Bold Hot Sale</button>
+                            <button type="button" onclick="window.switchAndRebuildPoster('split_left', '${targetImageUrl}', ${safeConfigJson})" class="px-2.5 py-1 rounded-lg bg-slate-950/90 hover:bg-blue-950/90 border border-blue-500/40 hover:border-blue-300 text-[10px] text-blue-300 font-semibold transition-all active:scale-95 flex items-center gap-1 shadow-sm">📐 Split Magazine</button>
+                        </div>
                     </div>
                 `;
 
