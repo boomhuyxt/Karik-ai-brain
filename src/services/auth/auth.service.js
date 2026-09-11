@@ -110,9 +110,13 @@ class AuthService {
     // Send email via mail service
     const mailResult = await mailService.sendOtpEmail(user.email, otpCode);
 
+    const { maskEmail } = require('../../utils/helper');
+    const maskedEmail = maskEmail(user.email);
+
     return {
       success: true,
-      message: 'Mã OTP đặt lại mật khẩu đã được gửi tới email của bạn!',
+      maskedEmail,
+      message: `Mã OTP đặt lại mật khẩu đã được gửi tới email ${maskedEmail}!`,
       devOtp: mailResult.sentViaSmtp ? null : (mailResult.devOtp || otpCode)
     };
   }

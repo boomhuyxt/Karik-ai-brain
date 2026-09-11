@@ -349,13 +349,32 @@ class SocialController {
   async runFacebookBrowserBot(req, res, next) {
     try {
       const facebookBrowserBotService = require('../services/social/facebookBrowserBot.service');
-      const { caption = '', hashtags = [], mediaUrls = [], autoClickPost = true } = req.body;
+      const { 
+        caption = '', 
+        hashtags = [], 
+        mediaUrls = [], 
+        autoClickPost = true, 
+        executablePath = null, 
+        headless = true, 
+        credentials = null, 
+        username = null, 
+        password = null, 
+        twoFactorCode = null, 
+        cookieString = null 
+      } = req.body;
+
+      // Hỗ trợ cả object credentials hoặc các trường username/password trực tiếp
+      const resolvedCredentials = credentials || (username && password ? { username, password, twoFactorCode } : null);
 
       const botResult = await facebookBrowserBotService.runFacebookAutoPost({
         caption,
         hashtags,
         mediaUrls,
-        autoClickPost
+        autoClickPost,
+        executablePath,
+        headless,
+        credentials: resolvedCredentials,
+        cookieString
       });
 
       res.status(200).json({
@@ -374,13 +393,31 @@ class SocialController {
   async runTiktokBrowserBot(req, res, next) {
     try {
       const tiktokBrowserBotService = require('../services/social/tiktokBrowserBot.service');
-      const { caption = '', hashtags = [], mediaUrls = [], autoClickPost = true } = req.body;
+      const { 
+        caption = '', 
+        hashtags = [], 
+        mediaUrls = [], 
+        autoClickPost = true, 
+        executablePath = null, 
+        headless = true, 
+        credentials = null, 
+        username = null, 
+        password = null, 
+        twoFactorCode = null, 
+        cookieString = null 
+      } = req.body;
+
+      const resolvedCredentials = credentials || (username && password ? { username, password, twoFactorCode } : null);
 
       const botResult = await tiktokBrowserBotService.runTiktokAutoPost({
         caption,
         hashtags,
         mediaUrls,
-        autoClickPost
+        autoClickPost,
+        executablePath,
+        headless,
+        credentials: resolvedCredentials,
+        cookieString
       });
 
       res.status(200).json({
@@ -388,6 +425,114 @@ class SocialController {
         message: botResult.message || botResult.error,
         data: botResult
       });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  /**
+   * Truyền hình trực tiếp màn hình Chrome qua Server-Sent Events (SSE)
+   */
+  async streamLiveBrowser(req, res, next) {
+    try {
+      const liveBrowserService = require('../services/social/liveBrowserSession.service');
+      liveBrowserService.addStreamClient(res);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  /**
+   * Khởi động phiên tương tác trực tiếp
+   */
+  async startLiveBrowser(req, res, next) {
+    try {
+      const liveBrowserService = require('../services/social/liveBrowserSession.service');
+      const { platform = 'facebook', url = null, forceNew = false } = req.body || {};
+      const result = await liveBrowserService.startSession({ platform, url, forceNew });
+      res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  /**
+   * Tiếp nhận tương tác người dùng (Click chuột, Gõ phím, Cuộn trang)
+   */
+  async interactLiveBrowser(req, res, next) {
+    try {
+      const liveBrowserService = require('../services/social/liveBrowserSession.service');
+      const result = await liveBrowserService.handleInteraction(req.body);
+      res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  /**
+   * Tự động điền tài khoản & mật khẩu vào form đăng nhập
+   */
+  async autoFillLiveBrowser(req, res, next) {
+    try {
+      const liveBrowserService = require('../services/social/liveBrowserSession.service');
+      const { username, password } = req.body || {};
+      const result = await liveBrowserService.autoFillCredentials({ username, password });
+      res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  /**
+   * Tự động dán Caption bài viết vào khung tạo post
+   */
+  async autoPasteCaptionLiveBrowser(req, res, next) {
+    try {
+      const liveBrowserService = require('../services/social/liveBrowserSession.service');
+      const { caption = '' } = req.body || {};
+      const result = await liveBrowserService.autoPasteCaption(caption);
+      res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  /**
+   * Mở cửa sổ Chrome desktop độc lập ngoài màn hình máy tính
+   */
+  async launchDesktopChrome(req, res, next) {
+    try {
+      const liveBrowserService = require('../services/social/liveBrowserSession.service');
+      const { platform = 'facebook' } = req.body || {};
+      const result = await liveBrowserService.launchDesktopChrome({ platform });
+      res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  /**
+   * Điều hướng URL
+   */
+  async navigateLiveBrowser(req, res, next) {
+    try {
+      const liveBrowserService = require('../services/social/liveBrowserSession.service');
+      const { url } = req.body || {};
+      const result = await liveBrowserService.navigate(url);
+      res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  /**
+   * Tạm dừng session
+   */
+  async stopLiveBrowser(req, res, next) {
+    try {
+      const liveBrowserService = require('../services/social/liveBrowserSession.service');
+      const result = await liveBrowserService.stopSession();
+      res.json(result);
     } catch (err) {
       next(err);
     }

@@ -349,6 +349,11 @@
         modal.classList.add('flex');
         modal.style.display = 'flex';
         modal.style.zIndex = '9999';
+
+        // Tự động nạp thông tin tài khoản đã lưu nếu có
+        try {
+            loadSavedCredentials();
+        } catch (e) {}
     }
 
     /**
@@ -455,6 +460,10 @@
         } else {
             updateLivePreview();
         }
+
+        try {
+            loadSavedCredentials(platform);
+        } catch (e) {}
     }
 
     /**
@@ -654,7 +663,16 @@
             submitBtn.disabled = true;
             submitBtn.classList.add('opacity-70');
         }
-        showStatusAlert('🤖 **Đang khởi chạy Browser Bot...**\nĐang mở trình duyệt Chrome/Edge và truy cập Facebook để tự động tải ảnh sản phẩm từ Studio & đăng bài...', 'info');
+
+        const headlessToggle = document.getElementById('chkHeadlessMode');
+        const isHeadless = headlessToggle ? headlessToggle.checked : true;
+        const credentials = getCredentialsPayload();
+
+        showStatusAlert(isHeadless 
+            ? '🤖 **Đang khởi chạy Browser Bot chạy ngầm (Headless Mode)...**\nChrome đang truy cập Facebook trong nền hệ thống (không mở cửa sổ). Nếu cần đăng nhập, Bot sẽ tự động điền tài khoản & mật khẩu...'
+            : '🤖 **Đang khởi chạy Browser Bot...**\nĐang mở trình duyệt Chrome/Edge và truy cập Facebook để tự động tải ảnh sản phẩm từ Studio & đăng bài...', 
+            'info'
+        );
 
         try {
             const payload = {
@@ -662,7 +680,9 @@
                 hashtags,
                 mediaUrls: mediaUrl ? [mediaUrl] : [],
                 mediaType: activeMediaData.mediaType || (mediaUrl?.endsWith('.mp4') ? 'video' : 'image'),
-                autoClickPost: true
+                autoClickPost: true,
+                headless: isHeadless,
+                credentials
             };
 
             const res = await fetch('/api/social/browser-bot/facebook', {
@@ -681,12 +701,19 @@
                     'success'
                 );
             } else {
-                if (result.data?.requiresLogin) {
+                if (result.data?.requiresLogin || result.data?.requires2FA) {
                     showStatusAlert(
-                        `⚠️ **Yêu Cầu Đăng Nhập Facebook Trên Trình Duyệt**\n` +
-                        `Bot đã mở sẵn cửa sổ trình duyệt Facebook. Bạn chỉ cần đăng nhập tài khoản một lần để lưu phiên làm việc, sau đó nhấn lại nút Bot!`,
+                        `⚠️ **Yêu Cầu Thông Tin Đăng Nhập Facebook**\n` +
+                        (result.message || 'Vui lòng nhập Tài khoản (Email/SĐT) và Mật khẩu ở mục "Tài khoản & Mật khẩu" bên dưới để Bot tự động đăng nhập!'),
                         'error'
                     );
+                    // Tự động mở form đăng nhập để người dùng tiện điền
+                    const drawer = document.getElementById('credentialsDrawerContainer');
+                    if (drawer && drawer.classList.contains('hidden')) {
+                        drawer.classList.remove('hidden');
+                    }
+                    const userInput = document.getElementById('socialUsernameInput');
+                    if (userInput && !userInput.value) userInput.focus();
                 } else {
                     showStatusAlert(`⚠️ Bot báo lỗi: ${result.message || 'Không thể thực thi'}`, 'error');
                 }
@@ -734,7 +761,16 @@
             submitBtn.disabled = true;
             submitBtn.classList.add('opacity-70');
         }
-        showStatusAlert('🤖 **Đang khởi chạy TikTok Browser Bot...**\nĐang mở trình duyệt Chrome/Edge và truy cập TikTok Creator Studio để tự động nạp ảnh/video từ Studio, chuyển tab Photos và xuất bản bài đăng...', 'info');
+
+        const headlessToggle = document.getElementById('chkHeadlessMode');
+        const isHeadless = headlessToggle ? headlessToggle.checked : true;
+        const credentials = getCredentialsPayload();
+
+        showStatusAlert(isHeadless
+            ? '🤖 **Đang khởi chạy TikTok Browser Bot chạy ngầm (Headless Mode)...**\nChrome đang truy cập TikTok Creator Studio trong nền. Nếu cần đăng nhập, Bot sẽ tự động điền tài khoản & mật khẩu...'
+            : '🤖 **Đang khởi chạy TikTok Browser Bot...**\nĐang mở trình duyệt Chrome/Edge và truy cập TikTok Creator Studio để tự động nạp ảnh/video từ Studio, chuyển tab Photos và xuất bản bài đăng...',
+            'info'
+        );
 
         try {
             const payload = {
@@ -742,7 +778,9 @@
                 hashtags,
                 mediaUrls: mediaUrl ? [mediaUrl] : [],
                 mediaType: activeMediaData.mediaType || (mediaUrl?.endsWith('.mp4') ? 'video' : 'image'),
-                autoClickPost: true
+                autoClickPost: true,
+                headless: isHeadless,
+                credentials
             };
 
             const res = await fetch('/api/social/browser-bot/tiktok', {
@@ -761,12 +799,18 @@
                     'success'
                 );
             } else {
-                if (result.data?.requiresLogin) {
+                if (result.data?.requiresLogin || result.data?.requires2FA) {
                     showStatusAlert(
-                        `⚠️ **Yêu Cầu Đăng Nhập TikTok Trên Trình Duyệt**\n` +
-                        `Bot đã mở sẵn cửa sổ trình duyệt TikTok Creator Studio. Bạn chỉ cần đăng nhập tài khoản một lần để lưu phiên làm việc, sau đó nhấn lại nút Bot!`,
+                        `⚠️ **Yêu Cầu Thông Tin Đăng Nhập TikTok**\n` +
+                        (result.message || 'Vui lòng nhập Tài khoản (Email/Username) và Mật khẩu ở mục "Tài khoản & Mật khẩu" bên dưới để Bot tự động đăng nhập!'),
                         'error'
                     );
+                    const drawer = document.getElementById('credentialsDrawerContainer');
+                    if (drawer && drawer.classList.contains('hidden')) {
+                        drawer.classList.remove('hidden');
+                    }
+                    const userInput = document.getElementById('socialUsernameInput');
+                    if (userInput && !userInput.value) userInput.focus();
                 } else {
                     showStatusAlert(`⚠️ Bot báo lỗi: ${result.message || 'Không thể thực thi'}`, 'error');
                 }
@@ -793,16 +837,493 @@
     }
 
     /**
-     * Mở đường dẫn trình duyệt (Facebook hoặc TikTok Studio) nếu người dùng muốn
+     * Mở đường dẫn trình duyệt (Mặc định mở Khung Trình Duyệt Nhúng ngay trên web)
      */
-    function openBrowserDirectLink() {
+    function openBrowserDirectLink(forceExternal = false) {
+        if (!forceExternal) {
+            return openInAppBrowser();
+        }
+
         const targetUrl = currentPlatform === 'tiktok' 
             ? 'https://www.tiktok.com/tiktokstudio/upload' 
             : 'https://www.facebook.com/';
         
         copyCaptionToClipboard(false);
         window.open(targetUrl, '_blank', 'noopener,noreferrer');
-        showStatusAlert(`🚀 Đã mở ${currentPlatform.toUpperCase()} trên trình duyệt!`, 'success');
+        showStatusAlert(`🚀 Đã mở ${currentPlatform.toUpperCase()} trên tab trình duyệt rời!`, 'success');
+    }
+
+    let liveEventSource = null;
+    let isCanvasBound = false;
+
+    /**
+     * 🌐 Mở Khung Trình Duyệt Nhúng (Live In-App Interactive Browser) trực tiếp ngay trên web AI Karik
+     */
+    async function openInAppBrowser(platform = null) {
+        if (platform) {
+            currentPlatform = platform;
+        }
+
+        let browserModal = document.getElementById('inAppBrowserModal');
+        if (!browserModal) {
+            let container = document.getElementById('socialPublishModalContainer');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'socialPublishModalContainer';
+                document.body.appendChild(container);
+            }
+            try {
+                const res = await fetch('/components/socialPublishModal.html');
+                if (res.ok) {
+                    container.innerHTML = await res.text();
+                    initSocialPublishModule();
+                    browserModal = document.getElementById('inAppBrowserModal');
+                }
+            } catch (err) {
+                console.error('[SocialPublish] Load in-app browser modal error:', err);
+            }
+        }
+
+        if (!browserModal) {
+            console.warn('[SocialPublish] Fallback to direct link because #inAppBrowserModal not found');
+            return openBrowserDirectLink(true);
+        }
+
+        // Tự động sao chép Caption vào Clipboard để sẵn sàng dán
+        try {
+            await copyCaptionToClipboard(false);
+        } catch (e) {}
+
+        // Cập nhật giao diện In-App Browser theo nền tảng hiện tại
+        updateInAppBrowserContent();
+
+        // Ẩn modal soạn thảo nếu đang mở để tránh trùng lặp
+        const editorModal = document.getElementById('socialPublishModal');
+        if (editorModal && !editorModal.classList.contains('hidden') && editorModal.style.display !== 'none') {
+            editorModal.dataset.wasOpen = 'true';
+            editorModal.style.display = 'none';
+        }
+
+        // Hiển thị In-App Browser Modal
+        browserModal.removeAttribute('style');
+        browserModal.classList.remove('hidden');
+        browserModal.classList.add('flex');
+        browserModal.style.display = 'flex';
+        browserModal.style.zIndex = '10000';
+
+        // Gắn sự kiện click/phím cho Canvas nếu chưa gắn
+        bindCanvasInteractions();
+
+        // Khởi động phiên trình duyệt tương tác và kết nối stream SSE
+        const loadingOverlay = document.getElementById('inAppBrowserLoadingOverlay');
+        if (loadingOverlay) loadingOverlay.classList.remove('hidden');
+
+        try {
+            await fetch('/api/social/browser-session/start', {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({ platform: currentPlatform })
+            });
+        } catch (err) {
+            console.warn('[SocialPublish] Start live session non-fatal warning:', err.message);
+        }
+
+        connectLiveStream();
+
+        showStatusAlert('🌐 **Đã mở Trình duyệt tương tác trực tiếp ngay trên web!** Bạn có thể xem, click chuột hoặc đăng nhập tài khoản ngay tại đây.', 'success');
+    }
+
+    /**
+     * Kết nối luồng phát hình ảnh trình duyệt thời gian thực (SSE)
+     */
+    function connectLiveStream() {
+        if (liveEventSource) {
+            try {
+                liveEventSource.close();
+            } catch (e) {}
+            liveEventSource = null;
+        }
+
+        const canvas = document.getElementById('inAppBrowserCanvas');
+        const ctx = canvas ? canvas.getContext('2d') : null;
+        const loadingOverlay = document.getElementById('inAppBrowserLoadingOverlay');
+
+        try {
+            liveEventSource = new EventSource('/api/social/browser-session/stream');
+
+            const img = new Image();
+            img.onload = () => {
+                if (ctx && canvas) {
+                    ctx.drawImage(img, 0, 0, canvas.width || 1280, canvas.height || 720);
+                }
+                if (loadingOverlay && !loadingOverlay.classList.contains('hidden')) {
+                    loadingOverlay.classList.add('hidden');
+                }
+            };
+
+            liveEventSource.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    if (data.type === 'frame' && data.frame) {
+                        img.src = 'data:image/jpeg;base64,' + data.frame;
+                        if (data.url) {
+                            const urlInput = document.getElementById('inAppBrowserUrlDisplay');
+                            if (urlInput && data.url.startsWith('http')) {
+                                urlInput.value = data.url;
+                            }
+                        }
+                    } else if (data.type === 'url_change' && data.url) {
+                        const urlInput = document.getElementById('inAppBrowserUrlDisplay');
+                        if (urlInput) urlInput.value = data.url;
+                    }
+                } catch (e) {}
+            };
+
+            liveEventSource.onerror = () => {
+                console.warn('[SocialPublish] SSE stream connection waiting...');
+            };
+        } catch (err) {
+            console.error('[SocialPublish] SSE stream error:', err);
+        }
+    }
+
+    /**
+     * Gắn kết các sự kiện tương tác chuột, bàn phím và con lăn trên Canvas
+     */
+    function bindCanvasInteractions() {
+        const canvas = document.getElementById('inAppBrowserCanvas');
+        if (!canvas || isCanvasBound) return;
+        isCanvasBound = true;
+
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = 1280 / rect.width;
+            const scaleY = 720 / rect.height;
+            const x = Math.round((e.clientX - rect.left) * scaleX);
+            const y = Math.round((e.clientY - rect.top) * scaleY);
+            sendLiveInteraction({ action: 'click', x, y });
+        });
+
+        canvas.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            sendLiveInteraction({ action: 'scroll', deltaY: e.deltaY });
+        }, { passive: false });
+
+        canvas.addEventListener('keydown', (e) => {
+            if (e.key === 'Tab') e.preventDefault();
+            if (['Enter', 'Backspace', 'Tab', 'Escape', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+                sendLiveInteraction({ action: 'press', key: e.key });
+            } else if (e.key && e.key.length === 1) {
+                sendLiveInteraction({ action: 'type', text: e.key });
+            }
+        });
+    }
+
+    /**
+     * Gửi tương tác trực tiếp tới phiên trình duyệt
+     */
+    async function sendLiveInteraction(payload) {
+        try {
+            await fetch('/api/social/browser-session/interact', {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify(payload)
+            });
+        } catch (e) {}
+    }
+
+    /**
+     * Tự động điền thông tin tài khoản & mật khẩu vào trang đăng nhập
+     */
+    async function autoFillLoginInBrowser() {
+        let creds = getCredentialsPayload();
+        if (!creds || !creds.username || !creds.password) {
+            try {
+                const raw = localStorage.getItem(`karik_bot_creds_${currentPlatform}`) || localStorage.getItem('karik_bot_creds_facebook') || localStorage.getItem('karik_bot_creds_tiktok');
+                if (raw) creds = JSON.parse(raw);
+            } catch (e) {}
+        }
+
+        if (!creds || !creds.username || !creds.password) {
+            showStatusAlert('⚠️ Chưa có tài khoản & mật khẩu đã lưu. Bạn có thể nhập thông tin trong form "Tài khoản & Mật khẩu" ở màn hình soạn thảo hoặc click trực tiếp vào ô đăng nhập trên màn hình để gõ!', 'error');
+            return;
+        }
+
+        showStatusAlert('🔑 Đang tự động điền tài khoản & mật khẩu vào form đăng nhập trên trình duyệt...', 'info');
+        try {
+            const res = await fetch('/api/social/browser-session/autofill', {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({ username: creds.username, password: creds.password })
+            });
+            const result = await parseJsonResponse(res);
+            showStatusAlert(result.message || 'Đã gửi thông tin đăng nhập!', result.success ? 'success' : 'error');
+        } catch (err) {
+            showStatusAlert('⚠️ Lỗi tự động điền: ' + err.message, 'error');
+        }
+    }
+
+    /**
+     * Tự động dán Caption bài viết vào ô tạo post
+     */
+    async function pasteCaptionInBrowser() {
+        const caption = getFullPostText();
+        if (!caption) {
+            showStatusAlert('⚠️ Chưa có nội dung Caption để dán. Hãy soạn bài viết trước!', 'error');
+            return;
+        }
+
+        showStatusAlert('📝 Đang tự động dán Caption vào khung bài viết...', 'info');
+        try {
+            const res = await fetch('/api/social/browser-session/autopaste', {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({ caption })
+            });
+            const result = await parseJsonResponse(res);
+            showStatusAlert(result.message || 'Đã dán Caption!', result.success ? 'success' : 'error');
+        } catch (err) {
+            showStatusAlert('⚠️ Lỗi dán bài: ' + err.message, 'error');
+        }
+    }
+
+    /**
+     * Mở cửa sổ Chrome desktop độc lập trên màn hình máy tính nếu người dùng muốn
+     */
+    async function launchDesktopChrome() {
+        showStatusAlert('🖥️ Đang khởi chạy cửa sổ Google Chrome trên máy tính của bạn...', 'info');
+        try {
+            const res = await fetch('/api/social/browser-session/launch-desktop', {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({ platform: currentPlatform })
+            });
+            const result = await parseJsonResponse(res);
+            showStatusAlert(result.message || 'Đã mở Chrome ngoài desktop!', result.success ? 'success' : 'error');
+        } catch (err) {
+            showStatusAlert('⚠️ Lỗi mở Chrome desktop: ' + err.message, 'error');
+        }
+    }
+
+    /**
+     * Cập nhật nội dung hiển thị của Trình Duyệt Nhúng (URL, Caption, Media, Badges)
+     */
+    function updateInAppBrowserContent() {
+        const targetUrl = currentPlatform === 'tiktok' 
+            ? 'https://www.tiktok.com/tiktokstudio/upload' 
+            : 'https://www.facebook.com/';
+        const platformTitle = currentPlatform === 'tiktok' ? 'TikTok Studio' : 'Facebook';
+
+        const urlInput = document.getElementById('inAppBrowserUrlDisplay');
+        const platformBadge = document.getElementById('inAppPlatformBadge');
+        const captionBox = document.getElementById('inAppCaptionBox');
+        const charCounter = document.getElementById('inAppCharCounter');
+        const thumbBox = document.getElementById('inAppMediaThumbBox');
+        const thumbTitle = document.getElementById('inAppMediaThumbTitle');
+        const tabFb = document.getElementById('inAppTabFb');
+        const tabTt = document.getElementById('inAppTabTt');
+        const statusText = document.getElementById('inAppStatusBarText');
+
+        if (urlInput) urlInput.value = targetUrl;
+        if (statusText) statusText.textContent = `🟢 Trình duyệt tương tác trực tiếp · Đang mở ${platformTitle} trên web`;
+
+        // Update Tab Buttons
+        if (tabFb && tabTt) {
+            if (currentPlatform === 'facebook') {
+                tabFb.className = 'flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all bg-blue-600 text-white shadow-sm cursor-pointer';
+                tabTt.className = 'flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition-all cursor-pointer';
+                if (platformBadge) {
+                    platformBadge.textContent = 'Facebook';
+                    platformBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30';
+                }
+            } else {
+                tabTt.className = 'flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all bg-pink-600 text-white shadow-sm cursor-pointer';
+                tabFb.className = 'flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition-all cursor-pointer';
+                if (platformBadge) {
+                    platformBadge.textContent = 'TikTok Studio';
+                    platformBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-pink-500/20 text-pink-300 border border-pink-400/30';
+                }
+            }
+        }
+
+        // Update Caption Box
+        const fullText = getFullPostText();
+        if (captionBox) {
+            captionBox.textContent = fullText || 'Chưa có nội dung Caption. Bạn có thể bấm nút "Soạn Thảo" ở góc trên để nhập hoặc yêu cầu AI tạo!';
+        }
+        if (charCounter) {
+            charCounter.textContent = `${fullText.length} ký tự`;
+        }
+
+        // Update Media Thumbnail
+        const mediaUrlInput = document.getElementById('socialMediaUrlInput');
+        const resolvedMediaUrl = (mediaUrlInput ? mediaUrlInput.value.trim() : '') || activeMediaData.url || window.lastStudioEditedImage || window.lastUploadedImageUrl || '';
+        
+        if (thumbBox) {
+            if (resolvedMediaUrl) {
+                if (activeMediaData.mediaType === 'video' || resolvedMediaUrl.endsWith('.mp4')) {
+                    thumbBox.innerHTML = `<video src="${resolvedMediaUrl}" class="w-full h-full object-cover"></video>`;
+                    if (thumbTitle) thumbTitle.textContent = 'Video Sản Phẩm Studio';
+                } else {
+                    thumbBox.innerHTML = `<img src="${resolvedMediaUrl}" alt="Media Thumb" class="w-full h-full object-cover" />`;
+                    if (thumbTitle) thumbTitle.textContent = 'Ảnh Thiết Kế Karik Studio';
+                }
+            } else {
+                thumbBox.innerHTML = `<span class="material-symbols-outlined text-slate-500 text-xl">image</span>`;
+                if (thumbTitle) thumbTitle.textContent = 'Chưa có file ảnh/video';
+            }
+        }
+    }
+
+    /**
+     * Chuyển đổi nền tảng Facebook <-> TikTok ngay trong Trình duyệt nhúng
+     */
+    async function switchInAppPlatform(platform) {
+        currentPlatform = platform;
+        updateInAppBrowserContent();
+
+        const loadingOverlay = document.getElementById('inAppBrowserLoadingOverlay');
+        if (loadingOverlay) loadingOverlay.classList.remove('hidden');
+
+        try {
+            await fetch('/api/social/browser-session/start', {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({ platform: currentPlatform })
+            });
+        } catch (e) {}
+
+        try {
+            switchPlatform(platform);
+        } catch (e) {}
+    }
+
+    /**
+     * Đóng Khung Trình Duyệt Nhúng
+     */
+    function closeInAppBrowser() {
+        if (liveEventSource) {
+            try {
+                liveEventSource.close();
+            } catch (e) {}
+            liveEventSource = null;
+        }
+
+        try {
+            fetch('/api/social/browser-session/stop', {
+                method: 'POST',
+                headers: getAuthHeaders()
+            }).catch(() => {});
+        } catch (e) {}
+
+        const browserModal = document.getElementById('inAppBrowserModal');
+        if (browserModal) {
+            browserModal.classList.add('hidden');
+            browserModal.classList.remove('flex');
+            browserModal.style.display = 'none';
+        }
+
+        // Phục hồi lại modal soạn thảo nếu người dùng chưa hoàn tất
+        const editorModal = document.getElementById('socialPublishModal');
+        if (editorModal && editorModal.dataset.wasOpen === 'true') {
+            editorModal.dataset.wasOpen = 'false';
+            editorModal.style.display = 'flex';
+        }
+    }
+
+    /**
+     * Quay lại Modal Soạn thảo từ Trình duyệt nhúng
+     */
+    function backToEditorModal() {
+        const browserModal = document.getElementById('inAppBrowserModal');
+        if (browserModal) {
+            browserModal.classList.add('hidden');
+            browserModal.classList.remove('flex');
+            browserModal.style.display = 'none';
+        }
+
+        const editorModal = document.getElementById('socialPublishModal');
+        if (editorModal) {
+            editorModal.removeAttribute('style');
+            editorModal.classList.remove('hidden');
+            editorModal.classList.add('flex');
+            editorModal.style.display = 'flex';
+            editorModal.style.zIndex = '9999';
+        }
+    }
+
+    /**
+     * Phóng to toàn màn hình / Thu nhỏ Trình duyệt nhúng
+     */
+    function toggleInAppBrowserFullscreen() {
+        const card = document.getElementById('inAppBrowserCard');
+        if (!card) return;
+
+        const isFull = card.classList.contains('max-w-full');
+        if (isFull) {
+            card.className = 'relative w-full max-w-5xl h-[90vh] flex flex-col rounded-2xl glass-panel bg-slate-900 border border-cyan-500/40 shadow-[0_0_60px_rgba(6,182,212,0.25)] overflow-hidden transition-all duration-200';
+        } else {
+            card.className = 'relative w-full h-full max-w-full rounded-none flex flex-col glass-panel bg-slate-900 border-none shadow-none overflow-hidden transition-all duration-200';
+        }
+    }
+
+    /**
+     * Mở cửa sổ Popup Webview nổi gọn gàng trên màn hình (đồng bộ với web)
+     */
+    function openWebviewPopup() {
+        const targetUrl = currentPlatform === 'tiktok' 
+            ? 'https://www.tiktok.com/tiktokstudio/upload' 
+            : 'https://www.facebook.com/';
+
+        copyCaptionToClipboard(false);
+
+        const width = 1120;
+        const height = 820;
+        const left = Math.max(0, Math.round((window.screen.width - width) / 2));
+        const top = Math.max(0, Math.round((window.screen.height - height) / 2));
+        const features = `width=${width},height=${height},left=${left},top=${top},menubar=no,toolbar=no,location=yes,status=no,resizable=yes,scrollbars=yes`;
+
+        const popupWin = window.open(targetUrl, 'KarikInAppWebview', features);
+        if (popupWin && popupWin.focus) {
+            popupWin.focus();
+        }
+
+        showStatusAlert(`🚀 **Đã mở Webview ${currentPlatform.toUpperCase()}!**\nCaption đã được copy sẵn, chỉ cần nhấn **Ctrl + V** để dán nội dung.`, 'success');
+    }
+
+    /**
+     * Tải lại Trình duyệt nhúng
+     */
+    async function reloadInAppBrowser() {
+        const targetUrl = currentPlatform === 'tiktok' 
+            ? 'https://www.tiktok.com/tiktokstudio/upload' 
+            : 'https://www.facebook.com/';
+
+        updateInAppBrowserContent();
+        showStatusAlert('🔄 Đang làm mới trang...', 'info');
+
+        try {
+            await fetch('/api/social/browser-session/navigate', {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({ url: targetUrl })
+            });
+        } catch (e) {}
+    }
+
+    /**
+     * Sao chép URL hiển thị trên thanh địa chỉ
+     */
+    async function copyInAppUrl() {
+        const urlInput = document.getElementById('inAppBrowserUrlDisplay');
+        if (urlInput && urlInput.value) {
+            try {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    await navigator.clipboard.writeText(urlInput.value);
+                }
+                showStatusAlert('🔗 Đã sao chép liên kết vào bộ nhớ tạm!', 'success');
+            } catch (e) {}
+        }
     }
 
     function showStatusAlert(msg, type = 'info') {
@@ -841,6 +1362,81 @@
         if (alertBox) alertBox.classList.add('hidden');
     }
 
+    /**
+     * Lấy thông tin tài khoản & mật khẩu từ form và lưu vào localStorage nếu được chọn
+     */
+    function getCredentialsPayload() {
+        const usernameInput = document.getElementById('socialUsernameInput');
+        const passwordInput = document.getElementById('socialPasswordInput');
+        const twoFactorInput = document.getElementById('socialTwoFactorInput');
+        const rememberCheckbox = document.getElementById('chkRememberCredentials');
+
+        const username = usernameInput ? usernameInput.value.trim() : '';
+        const password = passwordInput ? passwordInput.value : '';
+        const twoFactorCode = twoFactorInput ? twoFactorInput.value.trim() : '';
+
+        if (rememberCheckbox && rememberCheckbox.checked && username) {
+            try {
+                localStorage.setItem(`karik_bot_creds_${currentPlatform}`, JSON.stringify({ username, password }));
+            } catch (e) {}
+        } else if (rememberCheckbox && !rememberCheckbox.checked) {
+            try {
+                localStorage.removeItem(`karik_bot_creds_${currentPlatform}`);
+            } catch (e) {}
+        }
+
+        if (username && password) {
+            return { username, password, twoFactorCode: twoFactorCode || undefined };
+        }
+        return undefined;
+    }
+
+    /**
+     * Tự động điền tài khoản & mật khẩu đã lưu trước đó
+     */
+    function loadSavedCredentials(platform = currentPlatform) {
+        try {
+            const raw = localStorage.getItem(`karik_bot_creds_${platform}`) || localStorage.getItem('karik_bot_creds_facebook') || localStorage.getItem('karik_bot_creds_tiktok');
+            if (raw) {
+                const data = JSON.parse(raw);
+                const usernameInput = document.getElementById('socialUsernameInput');
+                const passwordInput = document.getElementById('socialPasswordInput');
+                if (usernameInput && data.username && !usernameInput.value) usernameInput.value = data.username;
+                if (passwordInput && data.password && !passwordInput.value) passwordInput.value = data.password;
+            }
+        } catch (e) {}
+    }
+
+    /**
+     * Đóng/mở ngăn nhập tài khoản & mật khẩu
+     */
+    function toggleCredentialsDrawer() {
+        const drawer = document.getElementById('credentialsDrawerContainer');
+        if (drawer) {
+            drawer.classList.toggle('hidden');
+            if (!drawer.classList.contains('hidden')) {
+                const input = document.getElementById('socialUsernameInput');
+                if (input) input.focus();
+            }
+        }
+    }
+
+    /**
+     * Ẩn/Hiện mật khẩu
+     */
+    function togglePasswordVisibility() {
+        const passInput = document.getElementById('socialPasswordInput');
+        const icon = document.getElementById('passwordVisibilityIcon');
+        if (!passInput) return;
+        if (passInput.type === 'password') {
+            passInput.type = 'text';
+            if (icon) icon.textContent = 'visibility_off';
+        } else {
+            passInput.type = 'password';
+            if (icon) icon.textContent = 'visibility';
+        }
+    }
+
     // Expose to global window object
     window.socialPublish = {
         init: initSocialPublishModule,
@@ -857,6 +1453,24 @@
         openBrowserDirectLink,
         toggleViewMode,
         autoFormatFacebookText,
-        updateLivePreview
+        updateLivePreview,
+        toggleCredentialsDrawer,
+        toggleCookieDrawer: toggleCredentialsDrawer,
+        togglePasswordVisibility,
+        loadSavedCredentials,
+        getCredentialsPayload,
+        openInAppBrowser,
+        closeInAppBrowser,
+        backToEditorModal,
+        toggleInAppBrowserFullscreen,
+        switchInAppPlatform,
+        openWebviewPopup,
+        reloadInAppBrowser,
+        copyInAppUrl,
+        updateInAppBrowserContent,
+        autoFillLoginInBrowser,
+        pasteCaptionInBrowser,
+        launchDesktopChrome,
+        sendLiveInteraction
     };
 })();

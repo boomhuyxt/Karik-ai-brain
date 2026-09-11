@@ -1,208 +1,65 @@
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const browserPlatformHelper = require('./browserPlatformHelper');
 
 class FacebookBrowserBotService {
   /**
    * Helper nạp Puppeteer-Core bằng Dynamic Import (Hỗ trợ thuần ECMAScript Module)
    */
   async getPuppeteer() {
-    const puppeteerModule = await import('puppeteer-core');
-    return puppeteerModule.default || puppeteerModule;
+    return browserPlatformHelper.getPuppeteer();
   }
 
   /**
-   * Tự động dò tìm đường dẫn Chrome hoặc Edge trên máy tính Windows
+   * Tự động dò tìm đường dẫn Chrome hoặc Edge trên máy tính (Windows, macOS, Linux)
    */
-  findBrowserExecutable() {
-    const candidatePaths = [
-      'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
-      'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
-      path.join(os.homedir(), 'AppData\\Local\\Google\\Chrome\\Application\\chrome.exe'),
-      'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
-      'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe'
-    ];
-
-    for (const p of candidatePaths) {
-      if (fs.existsSync(p)) {
-        return p;
-      }
-    }
-    return null;
+  findBrowserExecutable(explicitPath = null) {
+    return browserPlatformHelper.findBrowserExecutable(process.platform, explicitPath);
   }
 
   /**
-   * Đường dẫn thư mục Profile người dùng (để giữ phiên đăng nhập Facebook có sẵn)
+   * Đường dẫn thư mục Profile người dùng (để giữ phiên đăng nhập Facebook có sẵn trên Win, Mac, Linux)
    */
   getUserDataDir() {
-    const customDir = path.join(os.homedir(), 'AppData\\Local\\KarikAIBrain\\ChromeSession');
-    if (!fs.existsSync(customDir)) {
-      fs.mkdirSync(customDir, { recursive: true });
-    }
-    return customDir;
+    return browserPlatformHelper.getUserDataDir('ChromeSession');
   }
 
   /**
    * Tải / Lưu file media tạm ra ổ cứng để trình duyệt upload
    */
   async prepareLocalMediaFile(mediaUrl) {
-    if (!mediaUrl) return null;
-    const tempDir = path.join(os.tmpdir(), 'aikarik_social_uploads');
-    if (!fs.existsSync(tempDir)) {
-      fs.mkdirSync(tempDir, { recursive: true });
-    }
-
-    const isVideo = mediaUrl.endsWith('.mp4');
-    const isSvg = mediaUrl.startsWith('data:image/svg');
-    const ext = isVideo ? '.mp4' : (isSvg ? '.svg' : '.png');
-    const localFilePath = path.join(tempDir, `fb_upload_${Date.now()}${ext}`);
-
-    // 1. Base64 DataURL (Xuất trực tiếp từ Karik Studio Canvas)
-    if (mediaUrl.startsWith('data:')) {
-      const cleanBase64 = mediaUrl.replace(/^data:[^;]+;base64,/, '');
-      fs.writeFileSync(localFilePath, Buffer.from(cleanBase64, 'base64'));
-      return localFilePath;
-    }
-
-    // 2. Relative upload path (e.g. /uploads/filename.png)
-    if (typeof mediaUrl === 'string' && mediaUrl.startsWith('/uploads/')) {
-      const publicUploads = path.join(__dirname, '../../../public', mediaUrl);
-      if (fs.existsSync(publicUploads)) return publicUploads;
-
-      try {
-        const { uploadsPath } = require('../../storage');
-        const directUpload = path.join(uploadsPath, path.basename(mediaUrl));
-        if (fs.existsSync(directUpload)) return directUpload;
-      } catch (e) {}
-    }
-
-    // 3. Remote URL (http / https)
-    if (mediaUrl.startsWith('http://') || mediaUrl.startsWith('https://')) {
-      try {
-        const res = await fetch(mediaUrl);
-        const buffer = await res.arrayBuffer();
-        fs.writeFileSync(localFilePath, Buffer.from(buffer));
-        return localFilePath;
-      } catch (e) {
-        console.warn('[FacebookBrowserBot] Failed to download remote media:', e.message);
-      }
-    }
-
-    // 4. Direct absolute/relative file path
-    if (fs.existsSync(mediaUrl)) {
-      return mediaUrl;
-    }
-
-    return null;
+    return browserPlatformHelper.prepareLocalMediaFile(mediaUrl, 'fb_upload');
   }
 
   /**
    * Khởi chạy hoặc tái sử dụng trình duyệt Chrome đang mở sẵn
    */
-  async launchOrReuseBrowser(puppeteer, { executablePath, userDataDir, addLog }) {
-    const debuggingPort = 9222;
-    const debuggingUrl = `http://127.0.0.1:${debuggingPort}`;
-
-    // 1. Thử kết nối vào trình duyệt đang mở sẵn qua Remote Debugging Port
-    try {
-      const browser = await puppeteer.connect({ browserURL: debuggingUrl, defaultViewport: null });
-      addLog('✅ Đã kết nối vào cửa sổ trình duyệt Chrome đang mở!');
-      return { browser, isReused: true };
-    } catch (e) {
-      // Không có instance mở với port này, tiếp tục launch mới
-    }
-
-    const launchArgs = [
-      `--remote-debugging-port=${debuggingPort}`,
-      '--start-maximized',
-      '--disable-blink-features=AutomationControlled',
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-infobars'
-    ];
-
-    try {
-      const browser = await puppeteer.launch({
-        executablePath,
-        userDataDir,
-        headless: false,
-        defaultViewport: null,
-        args: launchArgs
-      });
-      return { browser, isReused: false };
-    } catch (launchErr) {
-      if (launchErr.message && (launchErr.message.includes('already running') || launchErr.message.includes('EBUSY') || launchErr.message.includes('locked'))) {
-        addLog('⚠️ Phát hiện trình duyệt đang chạy hoặc file lock chưa được giải phóng. Đang tự động dọn dẹp và kết nối lại...');
-
-        // Thử kết nối lại qua port
-        try {
-          const browser = await puppeteer.connect({ browserURL: debuggingUrl, defaultViewport: null });
-          addLog('✅ Đã kết nối thành công vào trình duyệt Chrome!');
-          return { browser, isReused: true };
-        } catch (connErr) {}
-
-        // Dọn dẹp lock files trong thư mục session
-        const lockFiles = ['SingletonLock', 'SingletonSocket', 'SingletonCookie', 'lockfile'];
-        for (const f of lockFiles) {
-          try {
-            const p = path.join(userDataDir, f);
-            if (fs.existsSync(p)) fs.unlinkSync(p);
-          } catch (delErr) {}
-        }
-
-        // Chờ 800ms
-        await new Promise(r => setTimeout(r, 800));
-
-        try {
-          const browser = await puppeteer.launch({
-            executablePath,
-            userDataDir,
-            headless: false,
-            defaultViewport: null,
-            args: launchArgs
-          });
-          return { browser, isReused: false };
-        } catch (retryErr) {
-          // Fallback an toàn: Dùng sub-profile để luôn đảm bảo mở được trình duyệt
-          addLog('ℹ️ Tạo phiên làm việc mới an toàn để tránh xung đột file lock...');
-          const fallbackDir = path.join(os.homedir(), `AppData\\Local\\KarikAIBrain\\FacebookSession`);
-          if (!fs.existsSync(fallbackDir)) fs.mkdirSync(fallbackDir, { recursive: true });
-
-          const browser = await puppeteer.launch({
-            executablePath,
-            userDataDir: fallbackDir,
-            headless: false,
-            defaultViewport: null,
-            args: [
-              '--start-maximized',
-              '--disable-blink-features=AutomationControlled',
-              '--no-sandbox',
-              '--disable-setuid-sandbox',
-              '--disable-infobars'
-            ]
-          });
-          return { browser, isReused: false };
-        }
-      }
-
-      throw launchErr;
-    }
+  async launchOrReuseBrowser(puppeteer, { executablePath, userDataDir, addLog, headless = null }) {
+    return browserPlatformHelper.launchOrReuseBrowser(puppeteer, {
+      executablePath,
+      userDataDir,
+      fallbackSessionName: 'FacebookSession',
+      addLog,
+      headless
+    });
   }
 
   /**
    * Tự động khởi chạy trình duyệt & đăng bài lên Facebook
-   * @param {Object} options { caption, hashtags, mediaUrls, autoClickPost }
+   * @param {Object} options { caption, hashtags, mediaUrls, autoClickPost, executablePath, headless, credentials, cookieString }
    */
-  async runFacebookAutoPost({ caption = '', hashtags = [], mediaUrls = [], autoClickPost = true }) {
+  async runFacebookAutoPost({ caption = '', hashtags = [], mediaUrls = [], autoClickPost = true, executablePath: customExecutablePath = null, headless = true, credentials = null, cookieString = null }) {
     const logs = [];
     const addLog = (msg) => {
       console.log(`[FB-Browser-Bot] ${msg}`);
       logs.push(`[${new Date().toLocaleTimeString('vi-VN')}] ${msg}`);
     };
 
-    const executablePath = this.findBrowserExecutable();
+    const executablePath = this.findBrowserExecutable(customExecutablePath);
     if (!executablePath) {
-      throw new Error('Không tìm thấy trình duyệt Google Chrome hoặc Edge trên máy tính của bạn.');
+      const helpMsg = browserPlatformHelper.getBrowserNotFoundHelp();
+      throw new Error(helpMsg);
     }
 
     addLog(`Đã tìm thấy trình duyệt: ${path.basename(executablePath)}`);
@@ -232,7 +89,10 @@ class FacebookBrowserBotService {
       addLog(`Đã chuẩn bị file ảnh sản phẩm từ Studio: ${path.basename(localMediaFile)}`);
     }
 
-    addLog('Đang mở hoặc kết nối trình duyệt Chrome trong chế độ giao diện thực tế...');
+    const isHeadless = Boolean(headless);
+    addLog(isHeadless 
+      ? 'Đang khởi chạy Chrome ngầm (Headless Mode - hoàn toàn không hiện cửa sổ)...' 
+      : 'Đang mở trình duyệt Chrome trong chế độ giao diện thực tế...');
 
     let browser = null;
     try {
@@ -241,12 +101,29 @@ class FacebookBrowserBotService {
       const launchResult = await this.launchOrReuseBrowser(puppeteer, {
         executablePath,
         userDataDir,
-        addLog
+        addLog,
+        headless: isHeadless
       });
       browser = launchResult.browser;
 
       const pages = await browser.pages();
       const page = pages.length > 0 ? pages[pages.length - 1] : await browser.newPage();
+
+      // Stealth & anti-detection cho Headless Chrome
+      try {
+        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36');
+        await page.setViewport({ width: 1366, height: 768 });
+        await page.evaluateOnNewDocument(() => {
+          Object.defineProperty(navigator, 'webdriver', { get: () => false });
+        });
+      } catch (stErr) {}
+
+      // Nếu có chuỗi Cookie được cung cấp, nạp vào page trước khi mở Facebook
+      const activeCookie = cookieString || process.env.FACEBOOK_COOKIES;
+      if (activeCookie) {
+        addLog('Đang nạp Cookie phiên đăng nhập vào trình duyệt...');
+        await browserPlatformHelper.injectCookieString(page, activeCookie, 'facebook');
+      }
 
       try {
         const context = browser.defaultBrowserContext();
@@ -265,13 +142,102 @@ class FacebookBrowserBotService {
       });
 
       if (isLoginPage) {
-        addLog('⚠️ Phát hiện chưa đăng nhập Facebook trên phiên trình duyệt của Bot.');
-        return {
-          success: false,
-          requiresLogin: true,
-          message: 'Trình duyệt đã mở. Vui lòng đăng nhập tài khoản Facebook của bạn để Bot tự động lưu phiên và thực hiện đăng bài!',
-          logs
-        };
+        // 1. Nếu người dùng cung cấp tài khoản & mật khẩu, tự động điền và đăng nhập
+        if (credentials && credentials.username && credentials.password) {
+          addLog(`Đang tự động đăng nhập Facebook với tài khoản: ${credentials.username}...`);
+
+          const emailSelector = '#email, input[name="email"], input[type="email"]';
+          const passSelector = '#pass, input[name="pass"], input[type="password"]';
+          const loginBtnSelector = 'button[name="login"], button[type="submit"], input[type="submit"]';
+
+          const emailInput = await page.$(emailSelector);
+          const passInput = await page.$(passSelector);
+
+          if (emailInput && passInput) {
+            await emailInput.click({ clickCount: 3 }).catch(() => {});
+            await emailInput.press('Backspace').catch(() => {});
+            await emailInput.type(credentials.username, { delay: 40 });
+
+            await passInput.click({ clickCount: 3 }).catch(() => {});
+            await passInput.press('Backspace').catch(() => {});
+            await passInput.type(credentials.password, { delay: 40 });
+
+            addLog('Đã nhập thông tin tài khoản & mật khẩu. Đang gửi yêu cầu đăng nhập...');
+            const loginBtn = await page.$(loginBtnSelector);
+            if (loginBtn) {
+              await Promise.all([
+                page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 30000 }).catch(() => {}),
+                loginBtn.click()
+              ]);
+            } else {
+              await Promise.all([
+                page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 30000 }).catch(() => {}),
+                passInput.press('Enter')
+              ]);
+            }
+
+            await new Promise(r => setTimeout(r, 3000));
+
+            // Kiểm tra bảo mật 2 lớp (2FA)
+            const is2FA = await page.evaluate(() => {
+              const hasCodeInput = Boolean(document.querySelector('input#approvals_code, input[name="approvals_code"], input[name="code"]'));
+              const bodyText = (document.body?.innerText || '').toLowerCase();
+              return hasCodeInput || bodyText.includes('xác thực hai yếu tố') || bodyText.includes('two-factor') || bodyText.includes('mã đăng nhập');
+            });
+
+            if (is2FA) {
+              if (credentials.twoFactorCode) {
+                addLog(`Đang nạp mã 2FA xác thực: ${credentials.twoFactorCode}...`);
+                const codeInput = await page.$('input#approvals_code, input[name="approvals_code"], input[name="code"]');
+                if (codeInput) {
+                  await codeInput.type(credentials.twoFactorCode, { delay: 40 });
+                  const submit2FA = await page.$('button[type="submit"], button#checkpointSubmitButton');
+                  if (submit2FA) await submit2FA.click();
+                  await new Promise(r => setTimeout(r, 4000));
+                }
+              } else {
+                addLog('⚠️ Facebook yêu cầu mã bảo mật 2 lớp (2FA).');
+                return {
+                  success: false,
+                  requires2FA: true,
+                  message: 'Tài khoản Facebook của bạn đang bật Xác thực 2 yếu tố (2FA). Vui lòng nhập mã OTP 6 số vào ô "Mã 2FA" trên giao diện hoặc tạm tắt Chế độ chạy ngầm để xác nhận!',
+                  logs
+                };
+              }
+            }
+
+            // Kiểm tra nếu vẫn còn ở trang login
+            const checkStatus = await page.evaluate(() => {
+              const hasEmail = Boolean(document.querySelector('#email') || document.querySelector('input[name="email"]'));
+              const errorText = document.querySelector('#error_box, [role="alert"]')?.innerText || '';
+              return { hasEmail, errorText };
+            });
+
+            if (checkStatus.hasEmail) {
+              addLog(`⚠️ Đăng nhập Facebook không thành công: ${checkStatus.errorText || 'Sai tài khoản hoặc mật khẩu'}`);
+              return {
+                success: false,
+                requiresLogin: true,
+                message: `Đăng nhập Facebook thất bại: ${checkStatus.errorText || 'Mật khẩu hoặc tài khoản bạn nhập không chính xác. Vui lòng kiểm tra lại!'}`,
+                logs
+              };
+            }
+
+            addLog('✅ Đăng nhập Facebook thành công! Phiên đã được lưu vào profile trình duyệt.');
+          }
+        } else {
+          // Chưa đăng nhập và chưa có credentials
+          addLog('⚠️ Phát hiện chưa đăng nhập Facebook trên phiên trình duyệt của Bot.');
+          const loginHint = isHeadless
+            ? 'Bot đang chạy ở chế độ ngầm (Headless) nhưng tài khoản Facebook chưa đăng nhập. Vui lòng nhập "Tài khoản (Email/SĐT)" và "Mật khẩu" ở mục Tài khoản & Mật khẩu trên giao diện để Bot tự động đăng nhập và đăng bài!'
+            : 'Trình duyệt đã mở. Vui lòng đăng nhập tài khoản Facebook của bạn để Bot tự động lưu phiên và thực hiện đăng bài!';
+          return {
+            success: false,
+            requiresLogin: true,
+            message: loginHint,
+            logs
+          };
+        }
       }
 
       addLog('Đã vào trang chủ Facebook. Đang tìm khung tạo bài viết ("Bạn đang nghĩ gì thế?")...');
@@ -401,9 +367,10 @@ class FacebookBrowserBotService {
               const textbox = await page.$('div[role="textbox"][contenteditable="true"]');
               if (textbox) {
                 await textbox.focus();
-                await page.keyboard.down('Control');
+                const modifierKey = browserPlatformHelper.getKeyboardModifier();
+                await page.keyboard.down(modifierKey);
                 await page.keyboard.press('KeyV');
-                await page.keyboard.up('Control');
+                await page.keyboard.up(modifierKey);
                 inserted = true;
               }
             }
@@ -477,15 +444,17 @@ class FacebookBrowserBotService {
         }
 
         if (!posted) {
-          // Thử phím tắt Ctrl + Enter để đăng bài
-          addLog('Đang thử kích hoạt lệnh đăng bài bằng phím tắt Ctrl+Enter...');
+          // Thử phím tắt Ctrl/Cmd + Enter để đăng bài
+          const modLabel = browserPlatformHelper.getModifierLabel();
+          addLog(`Đang thử kích hoạt lệnh đăng bài bằng phím tắt ${modLabel}+Enter...`);
           const textbox = await page.$('div[role="dialog"] div[role="textbox"][contenteditable="true"], div[role="textbox"][contenteditable="true"]');
           if (textbox) {
             await textbox.focus();
-            await page.keyboard.down('Control');
+            const modifierKey = browserPlatformHelper.getKeyboardModifier();
+            await page.keyboard.down(modifierKey);
             await page.keyboard.press('Enter');
-            await page.keyboard.up('Control');
-            addLog('🎉 Đã kích hoạt lệnh Đăng bài (Ctrl+Enter)!');
+            await page.keyboard.up(modifierKey);
+            addLog(`🎉 Đã kích hoạt lệnh Đăng bài (${modLabel}+Enter)!`);
             await new Promise(r => setTimeout(r, 4500));
           } else {
             addLog('⚠️ Đã đính kèm ảnh và điền caption đầy đủ. Bạn có thể nhấn nút "Đăng" trên trình duyệt.');

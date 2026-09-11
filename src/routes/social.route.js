@@ -25,4 +25,14 @@ router.post('/posts/:postId/publish-now', (req, res, next) => socialController.p
 router.get('/admin/pending', (req, res, next) => socialController.getPendingApprovals(req, res, next));
 router.post('/admin/posts/:postId/review', validateReviewPost, (req, res, next) => socialController.reviewPost(req, res, next));
 
+// 4. Khung Trình Duyệt Tương Tác Trực Tiếp (Live In-App Browser Stream & Remote Control)
+router.get('/browser-session/stream', (req, res, next) => socialController.streamLiveBrowser(req, res, next));
+router.post('/browser-session/start', (req, res, next) => socialController.startLiveBrowser(req, res, next));
+router.post('/browser-session/interact', (req, res, next) => socialController.interactLiveBrowser(req, res, next));
+router.post('/browser-session/autofill', (req, res, next) => socialController.autoFillLiveBrowser(req, res, next));
+router.post('/browser-session/autopaste', (req, res, next) => socialController.autoPasteCaptionLiveBrowser(req, res, next));
+router.post('/browser-session/launch-desktop', (req, res, next) => socialController.launchDesktopChrome(req, res, next));
+router.post('/browser-session/navigate', (req, res, next) => socialController.navigateLiveBrowser(req, res, next));
+router.post('/browser-session/stop', (req, res, next) => socialController.stopLiveBrowser(req, res, next));
+
 module.exports = router;

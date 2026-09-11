@@ -1,208 +1,65 @@
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const browserPlatformHelper = require('./browserPlatformHelper');
 
 class TiktokBrowserBotService {
   /**
    * Helper nạp Puppeteer-Core bằng Dynamic Import (Hỗ trợ thuần ECMAScript Module)
    */
   async getPuppeteer() {
-    const puppeteerModule = await import('puppeteer-core');
-    return puppeteerModule.default || puppeteerModule;
+    return browserPlatformHelper.getPuppeteer();
   }
 
   /**
-   * Tự động dò tìm đường dẫn Chrome hoặc Edge trên máy tính Windows
+   * Tự động dò tìm đường dẫn Chrome hoặc Edge trên máy tính (Windows, macOS, Linux)
    */
-  findBrowserExecutable() {
-    const candidatePaths = [
-      'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
-      'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
-      path.join(os.homedir(), 'AppData\\Local\\Google\\Chrome\\Application\\chrome.exe'),
-      'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
-      'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe'
-    ];
-
-    for (const p of candidatePaths) {
-      if (fs.existsSync(p)) {
-        return p;
-      }
-    }
-    return null;
+  findBrowserExecutable(explicitPath = null) {
+    return browserPlatformHelper.findBrowserExecutable(process.platform, explicitPath);
   }
 
   /**
-   * Đường dẫn thư mục Profile người dùng (để lưu và giữ phiên đăng nhập TikTok lâu dài)
+   * Đường dẫn thư mục Profile người dùng (để lưu và giữ phiên đăng nhập TikTok lâu dài trên Win, Mac, Linux)
    */
   getUserDataDir() {
-    const customDir = path.join(os.homedir(), 'AppData\\Local\\KarikAIBrain\\ChromeSession');
-    if (!fs.existsSync(customDir)) {
-      fs.mkdirSync(customDir, { recursive: true });
-    }
-    return customDir;
+    return browserPlatformHelper.getUserDataDir('ChromeSession');
   }
 
   /**
    * Tải / Lưu file media tạm ra ổ cứng để trình duyệt upload
    */
   async prepareLocalMediaFile(mediaUrl) {
-    if (!mediaUrl) return null;
-    const tempDir = path.join(os.tmpdir(), 'aikarik_social_uploads');
-    if (!fs.existsSync(tempDir)) {
-      fs.mkdirSync(tempDir, { recursive: true });
-    }
-
-    const isVideo = typeof mediaUrl === 'string' && (mediaUrl.endsWith('.mp4') || mediaUrl.endsWith('.webm') || mediaUrl.endsWith('.mov'));
-    const isSvg = typeof mediaUrl === 'string' && mediaUrl.startsWith('data:image/svg');
-    const ext = isVideo ? '.mp4' : (isSvg ? '.svg' : '.png');
-    const localFilePath = path.join(tempDir, `tt_upload_${Date.now()}${ext}`);
-
-    // 1. Base64 DataURL (Xuất trực tiếp từ Karik Studio Canvas)
-    if (typeof mediaUrl === 'string' && mediaUrl.startsWith('data:')) {
-      const cleanBase64 = mediaUrl.replace(/^data:[^;]+;base64,/, '');
-      fs.writeFileSync(localFilePath, Buffer.from(cleanBase64, 'base64'));
-      return localFilePath;
-    }
-
-    // 2. Relative upload path (e.g. /uploads/filename.png)
-    if (typeof mediaUrl === 'string' && mediaUrl.startsWith('/uploads/')) {
-      const publicUploads = path.join(__dirname, '../../../public', mediaUrl);
-      if (fs.existsSync(publicUploads)) return publicUploads;
-
-      try {
-        const { uploadsPath } = require('../../storage');
-        const directUpload = path.join(uploadsPath, path.basename(mediaUrl));
-        if (fs.existsSync(directUpload)) return directUpload;
-      } catch (e) {}
-    }
-
-    // 3. Remote URL (http / https)
-    if (typeof mediaUrl === 'string' && (mediaUrl.startsWith('http://') || mediaUrl.startsWith('https://'))) {
-      try {
-        const res = await fetch(mediaUrl);
-        const buffer = await res.arrayBuffer();
-        fs.writeFileSync(localFilePath, Buffer.from(buffer));
-        return localFilePath;
-      } catch (e) {
-        console.warn('[TiktokBrowserBot] Failed to download remote media:', e.message);
-      }
-    }
-
-    // 4. Direct absolute/relative file path
-    if (typeof mediaUrl === 'string' && fs.existsSync(mediaUrl)) {
-      return mediaUrl;
-    }
-
-    return null;
+    return browserPlatformHelper.prepareLocalMediaFile(mediaUrl, 'tt_upload');
   }
 
   /**
    * Khởi chạy hoặc tái sử dụng trình duyệt Chrome đang mở sẵn
    */
-  async launchOrReuseBrowser(puppeteer, { executablePath, userDataDir, addLog }) {
-    const debuggingPort = 9222;
-    const debuggingUrl = `http://127.0.0.1:${debuggingPort}`;
-
-    // 1. Thử kết nối vào trình duyệt đang mở sẵn qua Remote Debugging Port
-    try {
-      const browser = await puppeteer.connect({ browserURL: debuggingUrl, defaultViewport: null });
-      addLog('✅ Đã kết nối vào cửa sổ trình duyệt Chrome đang mở!');
-      return { browser, isReused: true };
-    } catch (e) {
-      // Không có instance mở với port này, tiếp tục launch mới
-    }
-
-    const launchArgs = [
-      `--remote-debugging-port=${debuggingPort}`,
-      '--start-maximized',
-      '--disable-blink-features=AutomationControlled',
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-infobars'
-    ];
-
-    try {
-      const browser = await puppeteer.launch({
-        executablePath,
-        userDataDir,
-        headless: false,
-        defaultViewport: null,
-        args: launchArgs
-      });
-      return { browser, isReused: false };
-    } catch (launchErr) {
-      if (launchErr.message && (launchErr.message.includes('already running') || launchErr.message.includes('EBUSY') || launchErr.message.includes('locked'))) {
-        addLog('⚠️ Phát hiện trình duyệt đang chạy hoặc file lock chưa được giải phóng. Đang tự động dọn dẹp và kết nối lại...');
-
-        // Thử kết nối lại qua port
-        try {
-          const browser = await puppeteer.connect({ browserURL: debuggingUrl, defaultViewport: null });
-          addLog('✅ Đã kết nối thành công vào trình duyệt Chrome!');
-          return { browser, isReused: true };
-        } catch (connErr) {}
-
-        // Dọn dẹp lock files trong thư mục session
-        const lockFiles = ['SingletonLock', 'SingletonSocket', 'SingletonCookie', 'lockfile'];
-        for (const f of lockFiles) {
-          try {
-            const p = path.join(userDataDir, f);
-            if (fs.existsSync(p)) fs.unlinkSync(p);
-          } catch (delErr) {}
-        }
-
-        // Chờ 800ms
-        await new Promise(r => setTimeout(r, 800));
-
-        try {
-          const browser = await puppeteer.launch({
-            executablePath,
-            userDataDir,
-            headless: false,
-            defaultViewport: null,
-            args: launchArgs
-          });
-          return { browser, isReused: false };
-        } catch (retryErr) {
-          // Fallback an toàn: Dùng sub-profile để luôn đảm bảo mở được trình duyệt
-          addLog('ℹ️ Tạo phiên làm việc mới an toàn để tránh xung đột file lock...');
-          const fallbackDir = path.join(os.homedir(), `AppData\\Local\\KarikAIBrain\\TikTokSession`);
-          if (!fs.existsSync(fallbackDir)) fs.mkdirSync(fallbackDir, { recursive: true });
-
-          const browser = await puppeteer.launch({
-            executablePath,
-            userDataDir: fallbackDir,
-            headless: false,
-            defaultViewport: null,
-            args: [
-              '--start-maximized',
-              '--disable-blink-features=AutomationControlled',
-              '--no-sandbox',
-              '--disable-setuid-sandbox',
-              '--disable-infobars'
-            ]
-          });
-          return { browser, isReused: false };
-        }
-      }
-
-      throw launchErr;
-    }
+  async launchOrReuseBrowser(puppeteer, { executablePath, userDataDir, addLog, headless = null }) {
+    return browserPlatformHelper.launchOrReuseBrowser(puppeteer, {
+      executablePath,
+      userDataDir,
+      fallbackSessionName: 'TikTokSession',
+      addLog,
+      headless
+    });
   }
 
   /**
    * Tự động khởi chạy trình duyệt & đăng bài lên TikTok Creator Studio
-   * @param {Object} options { caption, hashtags, mediaUrls, autoClickPost }
+   * @param {Object} options { caption, hashtags, mediaUrls, autoClickPost, executablePath, headless, credentials, cookieString }
    */
-  async runTiktokAutoPost({ caption = '', hashtags = [], mediaUrls = [], autoClickPost = true }) {
+  async runTiktokAutoPost({ caption = '', hashtags = [], mediaUrls = [], autoClickPost = true, executablePath: customExecutablePath = null, headless = true, credentials = null, cookieString = null }) {
     const logs = [];
     const addLog = (msg) => {
       console.log(`[TT-Browser-Bot] ${msg}`);
       logs.push(`[${new Date().toLocaleTimeString('vi-VN')}] ${msg}`);
     };
 
-    const executablePath = this.findBrowserExecutable();
+    const executablePath = this.findBrowserExecutable(customExecutablePath);
     if (!executablePath) {
-      throw new Error('Không tìm thấy trình duyệt Google Chrome hoặc Edge trên máy tính của bạn.');
+      const helpMsg = browserPlatformHelper.getBrowserNotFoundHelp();
+      throw new Error(helpMsg);
     }
 
     addLog(`Đã tìm thấy trình duyệt: ${path.basename(executablePath)}`);
@@ -232,7 +89,10 @@ class TiktokBrowserBotService {
       addLog(`Đã chuẩn bị file media sản phẩm: ${path.basename(localMediaFile)}`);
     }
 
-    addLog('Đang mở hoặc kết nối trình duyệt Chrome trong chế độ giao diện thực tế...');
+    const isHeadless = Boolean(headless);
+    addLog(isHeadless 
+      ? 'Đang khởi chạy Chrome ngầm (Headless Mode - hoàn toàn không hiện cửa sổ)...' 
+      : 'Đang mở trình duyệt Chrome trong chế độ giao diện thực tế...');
 
     let browser = null;
     try {
@@ -241,12 +101,28 @@ class TiktokBrowserBotService {
       const launchResult = await this.launchOrReuseBrowser(puppeteer, {
         executablePath,
         userDataDir,
-        addLog
+        addLog,
+        headless: isHeadless
       });
       browser = launchResult.browser;
 
       const pages = await browser.pages();
       const page = pages.length > 0 ? pages[pages.length - 1] : await browser.newPage();
+
+      // Stealth & anti-detection cho Headless Chrome
+      try {
+        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36');
+        await page.setViewport({ width: 1366, height: 768 });
+        await page.evaluateOnNewDocument(() => {
+          Object.defineProperty(navigator, 'webdriver', { get: () => false });
+        });
+      } catch (stErr) {}
+
+      const activeCookie = cookieString || process.env.TIKTOK_COOKIES;
+      if (activeCookie) {
+        addLog('Đang nạp Cookie phiên đăng nhập TikTok vào trình duyệt...');
+        await browserPlatformHelper.injectCookieString(page, activeCookie, 'tiktok');
+      }
 
       try {
         const context = browser.defaultBrowserContext();
@@ -262,7 +138,7 @@ class TiktokBrowserBotService {
       const currentUrl = page.url();
 
       // Kiểm tra xem có đang ở trang login hay bị chuyển hướng đăng nhập không
-      const isLoginPage = await page.evaluate((url) => {
+      let isLoginPage = await page.evaluate((url) => {
         if (url.includes('/login')) return true;
         const loginBtn = document.querySelector('button[data-e2e="login-button"], a[href*="/login"], div[data-e2e="login-icon"]');
         const loginForm = document.querySelector('#loginContainer, form[action*="login"]');
@@ -271,13 +147,72 @@ class TiktokBrowserBotService {
       }, currentUrl);
 
       if (isLoginPage) {
-        addLog('⚠️ Phát hiện chưa đăng nhập tài khoản TikTok trên phiên trình duyệt của Bot.');
-        return {
-          success: false,
-          requiresLogin: true,
-          message: 'Trình duyệt đã mở trang TikTok Creator Studio. Vui lòng đăng nhập tài khoản TikTok của bạn một lần để Bot lưu phiên làm việc và tự động đăng bài!',
-          logs
-        };
+        // 1. Nếu có tài khoản & mật khẩu, tự động đăng nhập TikTok
+        if (credentials && credentials.username && credentials.password) {
+          addLog(`Đang tự động đăng nhập TikTok với tài khoản: ${credentials.username}...`);
+
+          try {
+            // Chuyển trực tiếp đến form đăng nhập Email/Username của TikTok
+            await page.goto('https://www.tiktok.com/login/phone-or-email/email', { waitUntil: 'networkidle2', timeout: 35000 });
+            await new Promise(r => setTimeout(r, 2000));
+
+            const userSelector = 'input[name="username"], input[type="text"]';
+            const passSelector = 'input[type="password"]';
+            const submitSelector = 'button[type="submit"]';
+
+            const userInput = await page.$(userSelector);
+            const passInput = await page.$(passSelector);
+
+            if (userInput && passInput) {
+              await userInput.click({ clickCount: 3 }).catch(() => {});
+              await userInput.press('Backspace').catch(() => {});
+              await userInput.type(credentials.username, { delay: 40 });
+
+              await passInput.click({ clickCount: 3 }).catch(() => {});
+              await passInput.press('Backspace').catch(() => {});
+              await passInput.type(credentials.password, { delay: 40 });
+
+              addLog('Đã điền thông tin đăng nhập TikTok. Đang nhấn nút Đăng nhập...');
+              const submitBtn = await page.$(submitSelector);
+              if (submitBtn) {
+                await Promise.all([
+                  page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 30000 }).catch(() => {}),
+                  submitBtn.click()
+                ]);
+              } else {
+                await passInput.press('Enter');
+              }
+
+              await new Promise(r => setTimeout(r, 3500));
+
+              // Quay lại trang Creator Studio upload
+              await page.goto('https://www.tiktok.com/tiktokstudio/upload', { waitUntil: 'networkidle2', timeout: 45000 });
+              await new Promise(r => setTimeout(r, 2500));
+
+              const afterUrl = page.url();
+              isLoginPage = afterUrl.includes('/login');
+
+              if (!isLoginPage) {
+                addLog('✅ Đăng nhập TikTok thành công! Phiên đã được lưu vào profile trình duyệt.');
+              }
+            }
+          } catch (loginErr) {
+            addLog(`⚠️ Quá trình tự động đăng nhập TikTok gặp lỗi: ${loginErr.message}`);
+          }
+        }
+
+        if (isLoginPage) {
+          addLog('⚠️ Phát hiện chưa đăng nhập tài khoản TikTok trên phiên trình duyệt của Bot.');
+          const loginHint = isHeadless
+            ? 'Bot đang chạy ở chế độ ngầm (Headless) nhưng tài khoản TikTok chưa đăng nhập. Vui lòng nhập "Tài khoản (Email/Username)" và "Mật khẩu" ở mục Tài khoản & Mật khẩu trên giao diện để Bot tự động đăng nhập và đăng bài!'
+            : 'Trình duyệt đã mở trang TikTok Creator Studio. Vui lòng đăng nhập tài khoản TikTok của bạn một lần để Bot lưu phiên làm việc và tự động đăng bài!';
+          return {
+            success: false,
+            requiresLogin: true,
+            message: loginHint,
+            logs
+          };
+        }
       }
 
       addLog('Đã vào giao diện TikTok Creator Studio.');
@@ -431,12 +366,13 @@ class TiktokBrowserBotService {
             const editorHandle = await page.$('div[contenteditable="true"], .public-DraftEditor-content, textarea');
             if (editorHandle) {
               await editorHandle.focus();
-              await page.keyboard.down('Control');
+              const modifierKey = browserPlatformHelper.getKeyboardModifier();
+              await page.keyboard.down(modifierKey);
               await page.keyboard.press('KeyA');
-              await page.keyboard.up('Control');
-              await page.keyboard.down('Control');
+              await page.keyboard.up(modifierKey);
+              await page.keyboard.down(modifierKey);
               await page.keyboard.press('KeyV');
-              await page.keyboard.up('Control');
+              await page.keyboard.up(modifierKey);
               inserted = true;
             }
           } catch (clipErr) {}
