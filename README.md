@@ -59,7 +59,7 @@ npm test
 
 ## AI API Key Configuration
 
-The system manages all API Keys through an **environment configuration file `.env`** located in the **project root directory** (`ai-brain/.env`). When the application starts, [src/config/env.js](file:///c:/Users/boomh/OneDrive/Documents/Karik-ai-brain/src/config/env.js) automatically loads these keys.
+The system manages all API Keys through an **environment configuration file `.env`** located in the **project root directory** (`ai-brain/.env`). When the application starts, [src/config/env.js](Karik-ai-brain/src/config/env.js) automatically loads these keys.
 
 ### 1. File Location & Setup
 
@@ -131,6 +131,6 @@ TOKENROUTER_BASE_URL=https://api.tokenrouter.com/v1
 2. **Navigate to the target section** (e.g., `# AI Providers API Keys`).
 3. **Replace the placeholder value** (e.g., `your_gemini_api_key_here`) with your **actual API Key** obtained from the provider.
 4. **Save the `.env` file** (`Ctrl + S`).
-5. **Start the application** (`npm run dev`) - The system will automatically load the API Keys from `.env` via [src/config/env.js](file:///c:/Users/boomh/OneDrive/Documents/Karik-ai-brain/src/config/env.js).
+5. **Start the application** (`npm run dev`) - The system will automatically load the API Keys from `.env` via [src/config/env.js](Karik-ai-brain/src/config/env.js).
 
 > 💡 **Note**: You do not need to fill in every API Key. The **AI Multi-Model Router** system will automatically check which keys are available in `.env` and route requests to the corresponding AI providers.
