@@ -7,17 +7,19 @@ const socialController = require('../../src/controllers/social.controller');
 const facebookBrowserBotService = require('../../src/services/social/facebookBrowserBot.service');
 const tiktokBrowserBotService = require('../../src/services/social/tiktokBrowserBot.service');
 
-test('Social Publish Modal HTML - has Account & Password credentials elements', () => {
+test('Social Publish Modal HTML - has headless mode toggle and removed credentials drawer inputs', () => {
   const modalHtmlPath = path.join(__dirname, '../../public/components/socialPublishModal.html');
   const htmlContent = fs.readFileSync(modalHtmlPath, 'utf8');
 
-  // Must have username and password inputs
-  assert.ok(htmlContent.includes('id="socialUsernameInput"'), 'Must have #socialUsernameInput');
-  assert.ok(htmlContent.includes('id="socialPasswordInput"'), 'Must have #socialPasswordInput');
-  assert.ok(htmlContent.includes('id="socialTwoFactorInput"'), 'Must have #socialTwoFactorInput');
-  assert.ok(htmlContent.includes('id="chkRememberCredentials"'), 'Must have #chkRememberCredentials');
-  assert.ok(htmlContent.includes('id="btnToggleCredentialsDrawer"'), 'Must have #btnToggleCredentialsDrawer');
-  assert.ok(htmlContent.includes('id="btnTogglePasswordVisibility"'), 'Must have #btnTogglePasswordVisibility');
+  // Headless mode toggle must remain
+  assert.ok(htmlContent.includes('id="chkHeadlessMode"'), 'Must have #chkHeadlessMode');
+
+  // Credentials drawer inputs must be removed
+  assert.ok(!htmlContent.includes('id="socialUsernameInput"'), 'Must NOT have #socialUsernameInput');
+  assert.ok(!htmlContent.includes('id="socialPasswordInput"'), 'Must NOT have #socialPasswordInput');
+  assert.ok(!htmlContent.includes('id="socialTwoFactorInput"'), 'Must NOT have #socialTwoFactorInput');
+  assert.ok(!htmlContent.includes('id="btnToggleCredentialsDrawer"'), 'Must NOT have #btnToggleCredentialsDrawer');
+  assert.ok(!htmlContent.includes('id="credentialsDrawerContainer"'), 'Must NOT have #credentialsDrawerContainer');
 });
 
 test('Social Publish JS - contains credentials management and password visibility functions', () => {

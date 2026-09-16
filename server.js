@@ -1,7 +1,6 @@
 const app = require('./app');
 const env = require('./src/config/env');
 const logger = require('./src/utils/logger');
-const githubSyncJob = require('./src/jobs/githubSync.job');
 
 const PORT = env.port || 3000;
 
@@ -13,9 +12,6 @@ const startServer = (portToTry) => {
     console.log(`📡 API Endpoints: http://localhost:${portToTry}/api/dashboard`);
     console.log(`🎙️ Voice Engine: Pure JavaScript Web Speech & Live TTS`);
     console.log(`=======================================================`);
-
-    // Trigger initial background sync job in non-blocking fashion
-    githubSyncJob.run().catch((err) => logger.error('Initial sync error:', err.message));
   });
 
   server.on('error', (err) => {

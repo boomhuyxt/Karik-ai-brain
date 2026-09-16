@@ -1,5 +1,28 @@
 <!-- Authentic Obsidian Graph View Component -->
 <div id="graphContainer" class="flex-1 h-full w-full relative overflow-hidden flex items-center justify-center select-none">
+    <style>
+        .node-group {
+            will-change: transform;
+            cursor: grab;
+        }
+        .node-group:active {
+            cursor: grabbing;
+        }
+        #graphSvg {
+            contain: layout style;
+            touch-action: none;
+        }
+        .node-text {
+            user-select: none;
+            pointer-events: none;
+        }
+        .graph-link {
+            pointer-events: none;
+        }
+        .node-halo, .node-bloom, .node-core-white {
+            pointer-events: none;
+        }
+    </style>
     <!-- 2D SVG Graph Canvas -->
     <svg id="graphSvg" class="w-full h-full absolute inset-0 z-0 cursor-grab active:cursor-grabbing"></svg>
 
@@ -212,6 +235,18 @@
                     <span class="relative inline-flex items-center pointer-events-none">
                         <input id="toggleLabelsInput" type="checkbox" onchange="window.toggleGraphLabels(this.checked)" class="sr-only peer pointer-events-auto">
                         <div class="w-8 h-4 bg-slate-300 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3.5 after:transition-all peer-checked:bg-purple-600"></div>
+                    </span>
+                </label>
+
+                <!-- Toggle: Neon Glow (Phát sáng Neon) -->
+                <label class="flex items-center justify-between py-1.5 px-2.5 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/5 cursor-pointer hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-all">
+                    <span class="text-slate-700 dark:text-slate-300 font-medium flex items-center gap-2 select-none">
+                        <span class="material-symbols-outlined text-sm text-cyan-500 animate-pulse">flare</span>
+                        Phát sáng Neon (Neon Glow)
+                    </span>
+                    <span class="relative inline-flex items-center pointer-events-none">
+                        <input id="toggleNeonGlowInput" type="checkbox" checked onchange="window.toggleNeonGlow(this.checked)" class="sr-only peer pointer-events-auto">
+                        <div class="w-8 h-4 bg-slate-300 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3.5 after:transition-all peer-checked:bg-cyan-500"></div>
                     </span>
                 </label>
 

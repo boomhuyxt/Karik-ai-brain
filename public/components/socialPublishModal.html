@@ -327,14 +327,14 @@
 
             <!-- 2. Review & Confirmation Highlight Card -->
             <div class="review-highlight-card p-3.5 rounded-xl bg-gradient-to-r from-blue-950/70 via-slate-900/80 to-purple-950/70 border border-blue-500/40 flex items-start gap-3">
-                <span class="material-symbols-outlined text-xl text-blue-600 dark:text-cyan-400 flex-shrink-0 mt-0.5">verified</span>
+                <span class="material-symbols-outlined text-xl text-blue-600 dark:text-cyan-400 flex-shrink-0 mt-0.5">verified_user</span>
                 <div class="space-y-1">
                     <div class="banner-title text-xs font-bold text-white flex items-center gap-2">
-                        <span>Xem Trước & Tùy Chỉnh Nội Dung Trước Khi Xuất Bản</span>
-                        <span class="banner-badge text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 px-1.5 py-0.2 rounded-full font-mono font-bold">Bảo đảm an toàn</span>
+                        <span>🔍 Chế Độ Xem Trước & Phê Duyệt Bài Đăng</span>
+                        <span class="banner-badge text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 px-1.5 py-0.2 rounded-full font-mono font-bold">Chờ bạn duyệt</span>
                     </div>
                     <p class="text-[11px] text-slate-300 leading-relaxed">
-                        Bạn có thể kiểm tra hình ảnh từ Studio và chỉnh sửa Caption sản phẩm bên dưới. Sau khi xem xét và đồng ý, hãy bấm <strong class="text-cyan-300">"🤖 Đồng Ý & Cho AI Vào Trình Duyệt Đăng Bài"</strong> để Bot tự động mở Chrome đăng bài!
+                        Hãy kiểm tra kỹ hình ảnh và nội dung bài viết hiển thị thực tế bên dưới. Nếu cần chỉnh sửa, hãy bấm <strong class="text-cyan-300">"✏️ Sửa nội dung"</strong> hoặc chuyển sang tab <strong class="text-indigo-300">"Soạn Thảo"</strong>. Sau khi thấy bài đăng đã hoàn toàn ưng ý, bấm <strong class="text-emerald-300">"🤖 Đồng Ý & Cho AI Vào Trình Duyệt Đăng Bài"</strong> ở góc dưới để Bot tự động mở Chrome đăng bài!
                     </p>
                 </div>
             </div>
@@ -445,10 +445,16 @@
                                     <span>Công khai</span>
                                 </div>
                             </div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="window.socialPublish.toggleViewMode('editor')"
+                                class="flex items-center gap-1 text-[11px] text-blue-600 dark:text-cyan-300 hover:text-blue-700 dark:hover:text-white bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900/80 border border-blue-300 dark:border-blue-500/40 px-2 py-1 rounded-lg transition-all cursor-pointer font-bold shadow-xs active:scale-95" title="Chuyển sang tab Soạn Thảo để chỉnh sửa nội dung bài viết">
+                                <span class="material-symbols-outlined text-xs">edit_note</span>
+                                <span>Sửa nội dung</span>
+                            </button>
+                            <button type="button" class="text-slate-400 hover:text-slate-800 dark:hover:text-white p-1 rounded-full hover:bg-slate-100 dark:hover:bg-white/10">
+                                <span class="material-symbols-outlined text-lg">more_horiz</span>
+                            </button>
                         </div>
-                        <button type="button" class="text-slate-400 hover:text-slate-800 dark:hover:text-white p-1 rounded-full hover:bg-slate-100 dark:hover:bg-white/10">
-                            <span class="material-symbols-outlined text-lg">more_horiz</span>
-                        </button>
                     </div>
 
                     <!-- FB Body Text (Formatted with authentic white-space pre-wrap & spacing) -->
@@ -515,17 +521,24 @@
                         <!-- Right: TikTok Post Details & Caption -->
                         <div class="flex-1 flex flex-col justify-between space-y-3">
                             <div class="space-y-2">
-                                <div class="flex items-center gap-2">
-                                    <div class="w-7 h-7 rounded-full bg-gradient-to-r from-pink-500 via-rose-500 to-cyan-400 flex items-center justify-center font-bold text-xs shadow">
-                                        <span>K</span>
-                                    </div>
-                                    <div>
-                                        <div class="text-xs font-bold text-white flex items-center gap-1">
-                                            <span>@aikarik.studio</span>
-                                            <span class="material-symbols-outlined text-[13px] text-cyan-400">verified</span>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-7 h-7 rounded-full bg-gradient-to-r from-pink-500 via-rose-500 to-cyan-400 flex items-center justify-center font-bold text-xs shadow">
+                                            <span>K</span>
                                         </div>
-                                        <span class="text-[10px] text-slate-400">AI Karik Official · Creator Studio</span>
+                                        <div>
+                                            <div class="text-xs font-bold text-white flex items-center gap-1">
+                                                <span>@aikarik.studio</span>
+                                                <span class="material-symbols-outlined text-[13px] text-cyan-400">verified</span>
+                                            </div>
+                                            <span class="text-[10px] text-slate-400">AI Karik Official · Creator Studio</span>
+                                        </div>
                                     </div>
+                                    <button type="button" onclick="window.socialPublish.toggleViewMode('editor')"
+                                        class="flex items-center gap-1 text-[11px] text-pink-300 hover:text-white bg-pink-950/60 hover:bg-pink-900/80 border border-pink-500/40 px-2 py-1 rounded-lg transition-all cursor-pointer font-bold shadow-xs active:scale-95" title="Chuyển sang tab Soạn Thảo để chỉnh sửa nội dung bài viết">
+                                        <span class="material-symbols-outlined text-xs">edit_note</span>
+                                        <span>Sửa nội dung</span>
+                                    </button>
                                 </div>
 
                                 <!-- TikTok Caption Box -->
@@ -542,87 +555,21 @@
                 </div>
             </div>
 
-            <!-- Headless & Automated Login Credentials Section -->
-            <div class="rounded-xl border border-slate-300 dark:border-white/10 bg-slate-50 dark:bg-slate-900/60 p-3 space-y-2.5">
-                <div class="flex items-center justify-between">
-                    <label class="flex items-center gap-2.5 cursor-pointer select-none">
-                        <input type="checkbox" id="chkHeadlessMode" checked
-                            class="w-4 h-4 text-cyan-500 rounded border-slate-400 dark:border-slate-600 focus:ring-cyan-400 cursor-pointer">
-                        <div>
-                            <div class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                                <span class="material-symbols-outlined text-sm text-cyan-500">visibility_off</span>
-                                <span>Chạy ngầm ẩn trình duyệt (Headless Mode)</span>
-                            </div>
-                            <div class="text-[10px] text-slate-500 dark:text-slate-400">
-                                Chrome chạy ngầm 100% trong nền hệ thống, hoàn toàn không mở cửa sổ trên màn hình.
-                            </div>
+            <!-- Headless Mode Section -->
+            <div class="rounded-xl border border-slate-300 dark:border-white/10 bg-slate-50 dark:bg-slate-900/60 p-3">
+                <label class="flex items-center gap-2.5 cursor-pointer select-none">
+                    <input type="checkbox" id="chkHeadlessMode" checked
+                        class="w-4 h-4 text-cyan-500 rounded border-slate-400 dark:border-slate-600 focus:ring-cyan-400 cursor-pointer">
+                    <div>
+                        <div class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-sm text-cyan-500">visibility_off</span>
+                            <span>Chạy ngầm ẩn trình duyệt (Headless Mode)</span>
                         </div>
-                    </label>
-                    <button type="button" id="btnToggleCredentialsDrawer" onclick="window.socialPublish.toggleCredentialsDrawer()"
-                        class="text-[11px] text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-bold flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-indigo-300/40 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 cursor-pointer transition-all">
-                        <span class="material-symbols-outlined text-xs">account_circle</span>
-                        <span id="btnToggleCredentialsText">Tài khoản & Mật khẩu</span>
-                    </button>
-                </div>
-
-                <!-- Credentials Input Drawer (Username & Password) -->
-                <div id="credentialsDrawerContainer" class="pt-2 border-t border-slate-200 dark:border-white/10 space-y-2.5">
-                    <div class="flex items-center justify-between text-[11px] text-slate-600 dark:text-slate-400">
-                        <span class="flex items-center gap-1 font-medium">
-                            <span class="material-symbols-outlined text-xs text-cyan-500">lock</span>
-                            <span>Nhập thông tin tài khoản để Bot tự động đăng nhập khi chạy ngầm:</span>
-                        </span>
-                        <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">Lưu an toàn cục bộ</span>
-                    </div>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                        <!-- Username / Email / Phone -->
-                        <div class="space-y-1">
-                            <label for="socialUsernameInput" class="text-[11px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1">
-                                <span>Tài khoản / Email / SĐT</span>
-                                <span class="text-rose-500">*</span>
-                            </label>
-                            <div class="relative">
-                                <span class="material-symbols-outlined absolute left-2.5 top-2.5 text-slate-400 text-sm">person</span>
-                                <input type="text" id="socialUsernameInput" autocomplete="username"
-                                    placeholder="Email hoặc số điện thoại..."
-                                    class="w-full text-xs pl-8 pr-3 py-2 rounded-lg border border-slate-300 dark:border-white/15 bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-200 focus:outline-none focus:border-cyan-400">
-                            </div>
-                        </div>
-
-                        <!-- Password -->
-                        <div class="space-y-1">
-                            <label for="socialPasswordInput" class="text-[11px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1">
-                                <span>Mật khẩu</span>
-                                <span class="text-rose-500">*</span>
-                            </label>
-                            <div class="relative">
-                                <span class="material-symbols-outlined absolute left-2.5 top-2.5 text-slate-400 text-sm">key</span>
-                                <input type="password" id="socialPasswordInput" autocomplete="current-password"
-                                    placeholder="Mật khẩu tài khoản..."
-                                    class="w-full text-xs pl-8 pr-8 py-2 rounded-lg border border-slate-300 dark:border-white/15 bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-200 focus:outline-none focus:border-cyan-400">
-                                <button type="button" id="btnTogglePasswordVisibility" onclick="window.socialPublish.togglePasswordVisibility()"
-                                    class="absolute right-2 top-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-0.5 cursor-pointer" title="Ẩn/Hiện mật khẩu">
-                                    <span id="passwordVisibilityIcon" class="material-symbols-outlined text-base">visibility</span>
-                                </button>
-                            </div>
+                        <div class="text-[10px] text-slate-500 dark:text-slate-400">
+                            Chrome chạy ngầm 100% trong nền hệ thống, hoàn toàn không mở cửa sổ trên màn hình.
                         </div>
                     </div>
-
-                    <!-- Additional Row: 2FA & Remember Checkbox -->
-                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pt-1 text-[11px]">
-                        <label class="flex items-center gap-2 cursor-pointer select-none text-slate-700 dark:text-slate-300 font-medium">
-                            <input type="checkbox" id="chkRememberCredentials" checked
-                                class="w-3.5 h-3.5 text-cyan-500 rounded border-slate-400 dark:border-slate-600 focus:ring-cyan-400 cursor-pointer">
-                            <span>Ghi nhớ thông tin trên trình duyệt này</span>
-                        </label>
-                        <div class="flex items-center gap-1.5 w-full sm:w-auto">
-                            <label for="socialTwoFactorInput" class="text-slate-500 dark:text-slate-400 text-[10px] whitespace-nowrap">Mã 2FA (nếu có):</label>
-                            <input type="text" id="socialTwoFactorInput" maxlength="8" placeholder="6 số OTP"
-                                class="w-24 text-xs px-2 py-1 rounded border border-slate-300 dark:border-white/15 bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-200 font-mono text-center focus:outline-none focus:border-cyan-400">
-                        </div>
-                    </div>
-                </div>
+                </label>
             </div>
 
             <!-- Status / Error Alert Banner -->
