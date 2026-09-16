@@ -23,11 +23,12 @@ let stateHideOrphans = false;
 let stateShowTags = true;
 let stateShowAttachments = false;
 let stateExistingOnly = true;
+let stateNeonGlow = true;
 let activeFilterFolder = null;
 let currentSearchQuery = '';
 
 // 2. Obsidian Display & Force Parameters
-let textFadeThreshold = 1.35;
+let textFadeThreshold = 0.95;
 let nodeSizeMultiplier = 1.0;
 let linkThicknessMultiplier = 1.0;
 let centerForceStrength = 0.035;
@@ -37,7 +38,7 @@ let linkDistanceValue = 65;
 
 // Default Constants for Reset
 const DEFAULTS = {
-    textFadeThreshold: 1.35,
+    textFadeThreshold: 0.95,
     nodeSizeMultiplier: 1.0,
     linkThicknessMultiplier: 1.0,
     centerForceStrength: 0.035,
@@ -49,7 +50,8 @@ const DEFAULTS = {
     hideOrphans: false,
     showTags: true,
     showAttachments: false,
-    existingOnly: true
+    existingOnly: true,
+    neonGlow: true
 };
 
 /* ==========================================================
@@ -207,26 +209,31 @@ function render2DGraph(data) {
         // Leaf/Orphan note: ~2.4px
         // Connected note: 3.0px - 4.5px
         // Cluster Hub: 5.5px - 8.5px
-        let baseRadius = 2.4;
+        // Upgraded radius: Notes are prominently visible, luminous, and tactile ("sáng hết cả note")
+        let baseRadius = 4.2;
         if (n.degree > 0) {
-            baseRadius = Math.max(2.8, Math.min(9.0, 2.5 + Math.sqrt(n.degree) * 1.8));
+            baseRadius = Math.max(5.0, Math.min(13.0, 4.0 + Math.sqrt(n.degree) * 2.2));
         }
         n.radius = baseRadius * nodeSizeMultiplier;
 
-        // Authentic Obsidian node color: Clean light grey/off-white tone
-        if (!n.color || n.color.startsWith('#6366f1') || n.color.startsWith('#a855f7')) {
-            if (n.degree >= 5) {
-                n.displayColor = '#e2e8f0'; // Hub: Off-white
-            } else if (n.degree >= 2) {
-                n.displayColor = '#cbd5e1'; // Connected: Light slate
-            } else if (n.degree === 1) {
-                n.displayColor = '#94a3b8'; // Single link: Muted grey
-            } else {
-                n.displayColor = '#888888'; // Orphan: Neutral grey
-            }
-        } else {
-            n.displayColor = n.color;
-        }
+        // Vibrant Neon Note Colors: every note glows in its own unique folder/category neon color
+        const neonFolderPalette = {
+            'sql': '#38bdf8',         // Neon Sky Blue
+            'manager': '#ff2a6d',     // Neon Cyber Pink
+            'management': '#ff2a6d',  // Neon Cyber Pink
+            'wiki': '#b388ff',        // Neon Electric Violet
+            'daily': '#00ff9d',       // Neon Emerald Green
+            'raw': '#ffbe0b',         // Neon Cyber Gold
+            'projects': '#00f0ff',    // Bright Neon Cyan
+            'system': '#ff007f',      // Neon Magenta
+            'clippings': '#9d4edd',   // Deep Neon Purple
+            'kubernetes': '#3a86ff',  // Electric Blue
+            'root': '#818cf8',        // Neon Indigo
+            'journal': '#00f5d4'      // Neon Mint
+        };
+
+        const folderKey = (n.folder || 'root').toLowerCase();
+        n.displayColor = n.color || neonFolderPalette[folderKey] || '#00f0ff';
     });
 
     // Apply Filter: Hide Orphans
@@ -284,7 +291,7 @@ function render2DGraph(data) {
     const arrowColor = isDarkMode ? '#64748b' : '#94a3b8';
     const arrowActiveColor = isDarkMode ? '#ffffff' : '#0f172a';
 
-    // SVG Defs for Arrowheads
+    // SVG Defs for Arrowheads and GPU-Accelerated Neon Gradients
     const defs = svg.append('defs');
 
     defs.append('marker')
@@ -312,8 +319,92 @@ function render2DGraph(data) {
         .attr('d', 'M0,-4L8,0L0,4')
         .attr('fill', arrowActiveColor);
 
+    // Helper to generate safe SVG gradient IDs from color codes
+    function getCleanGradId(color) {
+        if (!color) return 'neonfallback';
+        const clean = color.replace(/[^a-zA-Z0-9]/g, '');
+        return clean || 'neonfallback';
+    }
+
+    // Zero-lag GPU texture-cached SVG Radial Gradients for Neon Glow (0ms blur filter overhead)
+    const registeredColors = new Set();
+    rawNodes.forEach(n => {
+        if (n.displayColor) registeredColors.add(n.displayColor);
+    });
+
+    registeredColors.forEach(color => {
+        const cleanId = getCleanGradId(color);
+
+        // 1. Atmospheric Ambient Halo Gradient
+        const haloGrad = defs.append('radialGradient')
+            .attr('id', `neon-halo-${cleanId}`)
+            .attr('cx', '50%')
+            .attr('cy', '50%')
+            .attr('r', '50%');
+
+        haloGrad.append('stop')
+            .attr('offset', '0%')
+            .attr('stop-color', color)
+            .attr('stop-opacity', isDarkMode ? 0.80 : 0.60);
+
+        haloGrad.append('stop')
+            .attr('offset', '45%')
+            .attr('stop-color', color)
+            .attr('stop-opacity', isDarkMode ? 0.35 : 0.22);
+
+        haloGrad.append('stop')
+            .attr('offset', '100%')
+            .attr('stop-color', color)
+            .attr('stop-opacity', 0);
+
+        // 2. High-Radiance Saturated Bloom Gradient with White-Hot Center
+        const bloomGrad = defs.append('radialGradient')
+            .attr('id', `neon-bloom-${cleanId}`)
+            .attr('cx', '50%')
+            .attr('cy', '50%')
+            .attr('r', '50%');
+
+        bloomGrad.append('stop')
+            .attr('offset', '0%')
+            .attr('stop-color', '#ffffff')
+            .attr('stop-opacity', 1.0);
+
+        bloomGrad.append('stop')
+            .attr('offset', '35%')
+            .attr('stop-color', color)
+            .attr('stop-opacity', 0.90);
+
+        bloomGrad.append('stop')
+            .attr('offset', '70%')
+            .attr('stop-color', color)
+            .attr('stop-opacity', 0.35);
+
+        bloomGrad.append('stop')
+            .attr('offset', '100%')
+            .attr('stop-color', color)
+            .attr('stop-opacity', 0);
+    });
+
     svgSelection2D = svg;
     containerGroup2D = svg.append('g');
+
+    let lastZoomState = null;
+    function updateLabelVisibility(force = false) {
+        const isZoomedInClose = currentZoomScale2D >= textFadeThreshold;
+        if (!force && !hoverNode2D && lastZoomState === isZoomedInClose && !stateShowAllLabels) {
+            return;
+        }
+        lastZoomState = isZoomedInClose;
+        nodeItems.selectAll('.node-text')
+            .style('opacity', d => {
+                if (hoverNode2D) {
+                    const isHovered = (hoverNode2D === d || (d.neighbors && d.neighbors.includes(hoverNode2D)));
+                    return isHovered ? 1 : 0.06;
+                }
+                if (stateShowAllLabels) return 0.95;
+                return isZoomedInClose ? 0.95 : 0;
+            });
+    }
 
     currentZoomScale2D = 1;
     zoomBehavior2D = d3.zoom()
@@ -326,11 +417,14 @@ function render2DGraph(data) {
 
     svg.call(zoomBehavior2D);
 
-    // Authentic Obsidian D3 Force Physics Simulation
+    // Authentic Obsidian D3 Force Physics Simulation with silky fluid velocity decay and zero jitter
     simulation2D = d3.forceSimulation(rawNodes)
+        .velocityDecay(0.60) // High viscous fluid damping for ultra-smooth motion without jitter
+        .alphaDecay(0.022)   // Steady energy dissipation
+        .alphaMin(0.001)     // Settle completely to drop CPU usage to 0%
         .force('center', d3.forceCenter(cx, cy))
         .force('charge', d3.forceManyBody().strength(d => (repelForceStrength * 0.45) - (d.degree || 0) * 8))
-        .force('collide', d3.forceCollide().radius(d => (d.radius || 3) + 3).strength(0.85))
+        .force('collide', d3.forceCollide().radius(d => (d.radius || 4) + 4).strength(0.85))
         .force('link', d3.forceLink(validLinks).id(d => d.id).distance(l => {
             const sFolder = l.source.folder || 'Root';
             const tFolder = l.target.folder || 'Root';
@@ -352,7 +446,7 @@ function render2DGraph(data) {
         .attr('stroke-opacity', isDarkMode ? 0.35 : 0.65)
         .attr('marker-end', stateShowArrows ? 'url(#obsidian-arrow)' : null);
 
-    // Nodes Layer (Flat, solid, clean dots)
+    // Nodes Layer (Flat, solid, clean dots with full neon radiance and 1:1 responsive drag)
     const nodeGroup = containerGroup2D.append('g').attr('class', 'nodes-layer');
     const nodeItems = nodeGroup
         .selectAll('.node-group')
@@ -363,16 +457,22 @@ function render2DGraph(data) {
         .attr('data-folder', d => d.folder)
         .style('cursor', 'pointer')
         .call(d3.drag()
+            .container(function () { return containerGroup2D.node(); })
             .on('start', (event, d) => {
-                if (!event.active) simulation2D.alphaTarget(0.3).restart();
-                d.fx = d.x; d.fy = d.y;
+                if (!event.active) simulation2D.alphaTarget(0.18).restart();
+                d.fx = event.x;
+                d.fy = event.y;
+                d3.select(this).raise();
             })
             .on('drag', (event, d) => {
-                d.fx = event.x; d.fy = event.y;
+                // 1:1 Direct cursor tracking: 0ms latency!
+                d.fx = event.x;
+                d.fy = event.y;
             })
             .on('end', (event, d) => {
                 if (!event.active) simulation2D.alphaTarget(0);
-                d.fx = null; d.fy = null;
+                d.fx = null;
+                d.fy = null;
             })
         )
         .on('click', (event, d) => {
@@ -384,55 +484,76 @@ function render2DGraph(data) {
         .on('mouseenter', (event, d) => highlightNode2D(d))
         .on('mouseleave', () => unhighlightNode2D());
 
-    // Main Node Circle (No heavy halos, pristine clean Obsidian circles)
+    // 1. Layer 1: Ambient Neon Halo (GPU texture-cached radial gradient, 0ms blur overhead)
+    nodeItems.append('circle')
+        .attr('class', 'node-halo')
+        .attr('r', d => (d.radius || 4) * 3.4)
+        .attr('fill', d => `url(#neon-halo-${getCleanGradId(d.displayColor)})`)
+        .style('pointer-events', 'none')
+        .style('display', stateNeonGlow ? null : 'none');
+
+    // 2. Layer 2: Neon Bloom (GPU texture-cached white-hot to neon saturation light bloom)
+    nodeItems.append('circle')
+        .attr('class', 'node-bloom')
+        .attr('r', d => (d.radius || 4) * 2.0)
+        .attr('fill', d => `url(#neon-bloom-${getCleanGradId(d.displayColor)})`)
+        .style('pointer-events', 'none')
+        .style('display', stateNeonGlow ? null : 'none');
+
+    // 3. Layer 3: Neon Core Tube (Vibrant crisp circle with high-contrast filament edge)
     nodeItems.append('circle')
         .attr('class', 'node-circle')
-        .attr('r', d => d.radius || 2.5)
+        .attr('r', d => d.radius || 4)
         .attr('fill', d => d.displayColor || '#a0a0a0')
-        .attr('stroke', d => d.degree >= 4 ? 'rgba(255,255,255,0.4)' : 'none')
-        .attr('stroke-width', d => d.degree >= 4 ? '0.75px' : '0px');
+        .attr('stroke', '#ffffff')
+        .attr('stroke-width', '1.5px')
+        .attr('stroke-opacity', 0.95);
 
-    // Title Labels (Obsidian Style - Subtle, crisp, understated)
+    // 4. Layer 4: Inner Core White Hot Glow (Central filament spark - "sáng hết cả note")
+    nodeItems.append('circle')
+        .attr('class', 'node-core-white')
+        .attr('r', d => (d.radius || 4) * 0.42)
+        .attr('fill', '#ffffff')
+        .attr('opacity', isDarkMode ? 0.95 : 0.85)
+        .style('pointer-events', 'none')
+        .style('display', stateNeonGlow ? null : 'none');
+
+    // Title Labels (Always luminous with crisp contrast)
     nodeItems.append('text')
         .attr('class', 'node-text')
-        .attr('dx', d => (d.radius || 3) + 5)
-        .attr('dy', 3.5)
-        .attr('font-size', isDarkMode ? '10.5px' : '9px')
-        .attr('font-weight', d => d.degree >= 3 ? '600' : '400')
+        .attr('dx', d => (d.radius || 4) + 7)
+        .attr('dy', 4)
+        .attr('font-size', isDarkMode ? '11px' : '9.5px')
+        .attr('font-weight', '600')
         .attr('font-family', "'Inter', -apple-system, BlinkMacSystemFont, sans-serif")
-        .attr('fill', isDarkMode ? '#e4e4e7' : '#1e293b')
+        .attr('fill', isDarkMode ? '#ffffff' : '#0f172a')
         .style('pointer-events', 'none')
         .style('paint-order', 'stroke fill')
-        .style('stroke', isDarkMode ? '#181818' : '#f8fafc')
+        .style('stroke', isDarkMode ? '#10131a' : '#f8fafc')
         .style('stroke-width', isDarkMode ? '2.5px' : '2px')
         .style('stroke-linejoin', 'round')
+        .style('text-shadow', d => isDarkMode && stateNeonGlow ? `0 0 6px ${d.displayColor}` : 'none')
         .text(d => d.name);
 
-    updateLabelVisibility();
+    updateLabelVisibility(true);
 
-    // Simulation Tick
+    // Throttled Simulation Tick with requestAnimationFrame for buttery 60/120fps
+    let animFrameScheduled = false;
     simulation2D.on('tick', () => {
-        linkLines
-            .attr('x1', d => d.source.x)
-            .attr('y1', d => d.source.y)
-            .attr('x2', d => d.target.x)
-            .attr('y2', d => d.target.y);
+        if (!animFrameScheduled) {
+            animFrameScheduled = true;
+            requestAnimationFrame(() => {
+                animFrameScheduled = false;
+                linkLines
+                    .attr('x1', d => d.source.x)
+                    .attr('y1', d => d.source.y)
+                    .attr('x2', d => d.target.x)
+                    .attr('y2', d => d.target.y);
 
-        nodeItems.attr('transform', d => `translate(${d.x},${d.y})`);
-    });
-
-    function updateLabelVisibility() {
-        const isZoomedInClose = currentZoomScale2D >= textFadeThreshold;
-        nodeItems.selectAll('.node-text')
-            .style('opacity', d => {
-                if (hoverNode2D) {
-                    const isHovered = (hoverNode2D === d || (d.neighbors && d.neighbors.includes(hoverNode2D)));
-                    return isHovered ? 1 : 0.06;
-                }
-                if (stateShowAllLabels) return 0.95;
-                return isZoomedInClose ? 0.95 : 0;
+                nodeItems.attr('transform', d => `translate(${d.x},${d.y})`);
             });
-    }
+        }
+    });
 
     function highlightNode2D(d) {
         hoverNode2D = d;
@@ -444,23 +565,53 @@ function render2DGraph(data) {
         // Dim non-neighbors
         nodeItems.style('opacity', n => neighborSet.has(n) ? 1 : 0.08);
 
-        // Highlight hovered node circle
-        nodeItems.selectAll('.node-circle')
-            .attr('fill', n => n === d ? (isDark ? '#ffffff' : '#0f172a') : (neighborSet.has(n) ? (isDark ? '#e2e8f0' : '#334155') : (n.displayColor || '#a0a0a0')))
-            .attr('stroke', n => n === d ? (isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.8)') : 'none')
-            .attr('stroke-width', n => n === d ? '2px' : '0px')
-            .attr('r', n => n === d ? (n.radius * 1.25 + 1) : n.radius);
+        // Highlight hovered node core, bloom, and halo in intense neon
+        nodeItems.each(function (n) {
+            const isHovered = (n === d);
+            const isNeighbor = neighborSet.has(n);
+            const group = d3.select(this);
+
+            if (isHovered) {
+                group.select('.node-halo')
+                    .attr('r', n.radius * 4.6);
+                group.select('.node-bloom')
+                    .attr('r', n.radius * 2.8);
+                group.select('.node-circle')
+                    .attr('r', n.radius * 1.35)
+                    .attr('stroke-width', '2.5px')
+                    .style('filter', stateNeonGlow
+                        ? `drop-shadow(0 0 6px #ffffff) drop-shadow(0 0 16px ${n.displayColor})`
+                        : 'none');
+                group.select('.node-core-white')
+                    .attr('r', n.radius * 0.55);
+            } else if (isNeighbor) {
+                group.select('.node-halo')
+                    .attr('r', n.radius * 3.6);
+                group.select('.node-bloom')
+                    .attr('r', n.radius * 2.2);
+                group.select('.node-circle')
+                    .attr('r', n.radius);
+                group.select('.node-core-white')
+                    .attr('r', n.radius * 0.42);
+            } else {
+                group.select('.node-halo').attr('r', n.radius * 2.5);
+                group.select('.node-bloom').attr('r', n.radius * 1.5);
+                group.select('.node-circle').attr('r', n.radius).style('filter', 'none');
+            }
+        });
 
         nodeItems.selectAll('.node-text')
             .style('opacity', n => neighborSet.has(n) ? 1 : 0)
-            .style('fill', n => n === d ? (isDark ? '#ffffff' : '#000000') : (isDark ? '#e4e4e7' : '#1e293b'))
+            .style('fill', n => n === d ? '#ffffff' : (isDark ? '#e4e4e7' : '#1e293b'))
+            .style('text-shadow', n => (n === d && stateNeonGlow) ? `0 0 8px #ffffff, 0 0 16px ${n.displayColor}` : 'none')
             .style('font-weight', n => n === d ? '700' : '600');
 
-        // Brighten connected links
+        // Brighten connected links with glowing neon color
         linkLines
-            .style('stroke-opacity', l => linkSet.has(l) ? 0.85 : 0.02)
-            .style('stroke-width', l => linkSet.has(l) ? (1.3 * linkThicknessMultiplier) : (0.6 * linkThicknessMultiplier))
-            .attr('stroke', l => linkSet.has(l) ? (isDark ? '#cbd5e1' : '#334155') : (isDark ? 'rgba(255, 255, 255, 0.16)' : 'rgba(15, 23, 42, 0.18)'))
+            .style('stroke-opacity', l => linkSet.has(l) ? 0.95 : 0.02)
+            .style('stroke-width', l => linkSet.has(l) ? (1.5 * linkThicknessMultiplier) : (0.6 * linkThicknessMultiplier))
+            .attr('stroke', l => linkSet.has(l) ? (d.displayColor || '#cbd5e1') : (isDark ? 'rgba(255, 255, 255, 0.16)' : 'rgba(15, 23, 42, 0.55)'))
+            .style('filter', l => (linkSet.has(l) && stateNeonGlow) ? `drop-shadow(0 0 5px ${d.displayColor})` : 'none')
             .attr('marker-end', l => linkSet.has(l) ? 'url(#obsidian-arrow-active)' : (stateShowArrows ? 'url(#obsidian-arrow)' : null));
     }
 
@@ -469,26 +620,39 @@ function render2DGraph(data) {
         const isDark = document.documentElement.classList.contains('dark');
         nodeItems.style('opacity', 1);
 
-        nodeItems.selectAll('.node-circle')
-            .attr('fill', d => d.displayColor || '#a0a0a0')
-            .attr('stroke', d => d.degree >= 4 ? (isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.2)') : 'none')
-            .attr('stroke-width', d => d.degree >= 4 ? '0.75px' : '0px')
-            .attr('r', d => d.radius || 2.5);
+        nodeItems.each(function (n) {
+            const group = d3.select(this);
+            group.select('.node-halo')
+                .attr('r', (n.radius || 4) * 3.4)
+                .style('display', stateNeonGlow ? null : 'none');
+            group.select('.node-bloom')
+                .attr('r', (n.radius || 4) * 2.0)
+                .style('display', stateNeonGlow ? null : 'none');
+            group.select('.node-circle')
+                .attr('r', n.radius || 4)
+                .attr('stroke-width', '1.5px')
+                .style('filter', 'none');
+            group.select('.node-core-white')
+                .attr('r', (n.radius || 4) * 0.42)
+                .style('display', stateNeonGlow ? null : 'none');
+        });
 
         nodeItems.selectAll('.node-text')
-            .style('fill', isDark ? '#e4e4e7' : '#1e293b')
-            .style('stroke', isDark ? '#181818' : '#f8fafc')
+            .style('fill', isDark ? '#ffffff' : '#0f172a')
+            .style('stroke', isDark ? '#10131a' : '#f8fafc')
             .style('stroke-width', isDark ? '2.5px' : '2px')
-            .style('font-size', isDark ? '10.5px' : '9px')
-            .style('font-weight', d => d.degree >= 3 ? '600' : '400');
+            .style('text-shadow', d => isDark && stateNeonGlow ? `0 0 6px ${d.displayColor}` : 'none')
+            .style('font-size', isDark ? '11px' : '9.5px')
+            .style('font-weight', '600');
 
         linkLines
             .style('stroke-opacity', isDark ? 0.35 : 0.65)
             .style('stroke-width', isDark ? 0.8 * linkThicknessMultiplier : 1.0 * linkThicknessMultiplier)
-            .attr('stroke', isDark ? 'rgba(255, 255, 255, 0.16)' : 'rgba(15, 23, 42, 0.55)')
+            .attr('stroke', defaultLinkStroke)
+            .style('filter', 'none')
             .attr('marker-end', stateShowArrows ? 'url(#obsidian-arrow)' : null);
 
-        updateLabelVisibility();
+        updateLabelVisibility(true);
     }
 }
 
@@ -655,6 +819,24 @@ window.toggleGraphLabels = function (checked) {
         });
 };
 
+window.toggleNeonGlow = function (checked) {
+    if (typeof checked === 'boolean') {
+        stateNeonGlow = checked;
+    } else {
+        stateNeonGlow = !stateNeonGlow;
+    }
+
+    const toggleInput = document.getElementById('toggleNeonGlowInput');
+    if (toggleInput) toggleInput.checked = stateNeonGlow;
+
+    d3.selectAll('.node-halo').style('display', stateNeonGlow ? null : 'none');
+    d3.selectAll('.node-bloom').style('display', stateNeonGlow ? null : 'none');
+    d3.selectAll('.node-core-white').style('display', stateNeonGlow ? null : 'none');
+    d3.selectAll('.node-text').style('text-shadow', d => stateNeonGlow
+        ? `0 0 6px ${d.displayColor}`
+        : 'none');
+};
+
 window.updateTextFadeThreshold = function (val) {
     textFadeThreshold = parseFloat(val);
     const label = document.getElementById('valTextFade');
@@ -674,17 +856,20 @@ window.updateNodeSizeMultiplier = function (val) {
     if (label) label.textContent = `${nodeSizeMultiplier.toFixed(1)}x`;
 
     d3.selectAll('.node-group').each(function (d) {
-        let baseRadius = 2.4;
+        let baseRadius = 4.2;
         if (d.degree > 0) {
-            baseRadius = Math.max(2.8, Math.min(9.0, 2.5 + Math.sqrt(d.degree) * 1.8));
+            baseRadius = Math.max(5.0, Math.min(13.0, 4.0 + Math.sqrt(d.degree) * 2.2));
         }
         d.radius = baseRadius * nodeSizeMultiplier;
         d3.select(this).select('.node-circle').attr('r', d.radius);
-        d3.select(this).select('.node-text').attr('dx', d.radius + 5);
+        d3.select(this).select('.node-core-white').attr('r', d.radius * 0.42);
+        d3.select(this).select('.node-halo').attr('r', d.radius * 3.4);
+        d3.select(this).select('.node-bloom').attr('r', d.radius * 2.0);
+        d3.select(this).select('.node-text').attr('dx', d.radius + 7);
     });
 
     if (simulation2D) {
-        simulation2D.force('collide', d3.forceCollide().radius(d => (d.radius || 3) + 3).strength(0.85));
+        simulation2D.force('collide', d3.forceCollide().radius(d => (d.radius || 4) + 4).strength(0.85));
         simulation2D.alpha(0.2).restart();
     }
 };
@@ -811,6 +996,7 @@ window.resetGraphSettingsToDefault = function () {
     stateShowAllLabels = DEFAULTS.showLabels;
     stateShowArrows = DEFAULTS.showArrows;
     stateHideOrphans = DEFAULTS.hideOrphans;
+    stateNeonGlow = DEFAULTS.neonGlow;
     activeFilterFolder = null;
     currentSearchQuery = '';
 
@@ -820,6 +1006,7 @@ window.resetGraphSettingsToDefault = function () {
     window.toggleGraphLabels(stateShowAllLabels);
     window.toggleGraphArrows(stateShowArrows);
     window.toggleOrphanNodes(!stateHideOrphans);
+    window.toggleNeonGlow(stateNeonGlow);
     window.clearGraphSearch();
 
     const sliderTextFade = document.getElementById('sliderTextFade');
