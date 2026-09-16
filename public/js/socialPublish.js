@@ -335,9 +335,9 @@
             console.warn('[SocialPublish] switchPlatform error (non-fatal):', err);
         }
 
-        // Khởi tạo xem trước và chế độ xem
+        // Khởi tạo xem trước và chế độ xem (mặc định mở chế độ Xem Trước để người dùng duyệt trước khi đăng)
         try {
-            toggleViewMode('editor');
+            toggleViewMode('preview');
             updateLivePreview();
         } catch (err) {
             console.warn('[SocialPublish] toggleViewMode/updateLivePreview error (non-fatal):', err);
@@ -703,17 +703,10 @@
             } else {
                 if (result.data?.requiresLogin || result.data?.requires2FA) {
                     showStatusAlert(
-                        `⚠️ **Yêu Cầu Thông Tin Đăng Nhập Facebook**\n` +
-                        (result.message || 'Vui lòng nhập Tài khoản (Email/SĐT) và Mật khẩu ở mục "Tài khoản & Mật khẩu" bên dưới để Bot tự động đăng nhập!'),
+                        `⚠️ **Yêu Cầu Đăng Nhập Facebook**\n` +
+                        (result.message || 'Trình duyệt chưa đăng nhập Facebook. Vui lòng mở "🌐 Mở Trình Duyệt Trên Web" để đăng nhập trước khi chạy Bot ngầm!'),
                         'error'
                     );
-                    // Tự động mở form đăng nhập để người dùng tiện điền
-                    const drawer = document.getElementById('credentialsDrawerContainer');
-                    if (drawer && drawer.classList.contains('hidden')) {
-                        drawer.classList.remove('hidden');
-                    }
-                    const userInput = document.getElementById('socialUsernameInput');
-                    if (userInput && !userInput.value) userInput.focus();
                 } else {
                     showStatusAlert(`⚠️ Bot báo lỗi: ${result.message || 'Không thể thực thi'}`, 'error');
                 }
@@ -801,16 +794,10 @@
             } else {
                 if (result.data?.requiresLogin || result.data?.requires2FA) {
                     showStatusAlert(
-                        `⚠️ **Yêu Cầu Thông Tin Đăng Nhập TikTok**\n` +
-                        (result.message || 'Vui lòng nhập Tài khoản (Email/Username) và Mật khẩu ở mục "Tài khoản & Mật khẩu" bên dưới để Bot tự động đăng nhập!'),
+                        `⚠️ **Yêu Cầu Đăng Nhập TikTok**\n` +
+                        (result.message || 'Trình duyệt chưa đăng nhập TikTok. Vui lòng mở "🌐 Mở Trình Duyệt Trên Web" để đăng nhập trước khi chạy Bot ngầm!'),
                         'error'
                     );
-                    const drawer = document.getElementById('credentialsDrawerContainer');
-                    if (drawer && drawer.classList.contains('hidden')) {
-                        drawer.classList.remove('hidden');
-                    }
-                    const userInput = document.getElementById('socialUsernameInput');
-                    if (userInput && !userInput.value) userInput.focus();
                 } else {
                     showStatusAlert(`⚠️ Bot báo lỗi: ${result.message || 'Không thể thực thi'}`, 'error');
                 }
@@ -828,8 +815,18 @@
 
     /**
      * Kích hoạt Browser Bot tương ứng với nền tảng đang chọn (Facebook hoặc TikTok)
+     * Đảm bảo người dùng đã xem trước và xác nhận duyệt trước khi chạy
      */
     function triggerActiveBrowserBot() {
+        const fullText = getFullPostText();
+        const mediaUrlInput = document.getElementById('socialMediaUrlInput');
+        const mediaUrl = (mediaUrlInput ? mediaUrlInput.value.trim() : '') || activeMediaData.url;
+
+        if (!fullText && !mediaUrl) {
+            showStatusAlert('⚠️ Vui lòng nhập nội dung bài viết hoặc đính kèm ảnh trước khi duyệt đăng bài!', 'error');
+            return;
+        }
+
         if (currentPlatform === 'tiktok') {
             return runBrowserBotTiktok();
         }

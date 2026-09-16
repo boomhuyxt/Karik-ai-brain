@@ -602,15 +602,6 @@ class JarvisVoiceManager {
             <div class="text-slate-100 font-medium text-xs sm:text-sm leading-relaxed border-t border-purple-500/20 pt-1.5 mt-1 break-words">
                 ${renderFn(text)}
             </div>
-            <div class="w-full flex items-center justify-between border-t border-slate-700/50 mt-2 pt-1 text-[10px] text-slate-400 font-mono">
-                <span class="flex items-center gap-1 text-emerald-400" title="Độ tiêu hao Token thực tế (In: ${tokens.inputTokens} | Out: ${tokens.outputTokens})">
-                    <span class="material-symbols-outlined text-[11px]">token</span>
-                    <strong>${tokens.totalTokens || 0}</strong> Tokens
-                </span>
-                <span class="text-slate-500 text-[9px] bg-slate-800/60 px-1 rounded">
-                    ${agent.role || 'Multi-Agent'}
-                </span>
-            </div>
         `;
         chatMessages.appendChild(aiDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;

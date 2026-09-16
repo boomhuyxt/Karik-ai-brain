@@ -24,12 +24,9 @@ window.triggerSocialPublishFromChat = function(platform, mode = 'modal') {
                 window.socialPublish.switchPlatform(selectedPlatform);
             }
 
-            if (mode === 'bot') {
-                setTimeout(() => {
-                    if (typeof window.socialPublish.triggerActiveBrowserBot === 'function') {
-                        window.socialPublish.triggerActiveBrowserBot();
-                    }
-                }, 350);
+            // Always present the preview and approval screen first so the user can verify before publishing
+            if (window.socialPublish && typeof window.socialPublish.toggleViewMode === 'function') {
+                window.socialPublish.toggleViewMode('preview');
             }
         } else {
             console.error('[SocialPublish] Unable to initialize window.socialPublish');
@@ -239,9 +236,9 @@ function initAIChat() {
                 <img src="${dataUrl}" alt="${escapeHtml(title)}" class="max-h-96 w-auto max-w-full object-contain rounded-lg shadow-lg cursor-pointer hover:scale-[1.02] transition-transform" onclick="window.openImageEditor('${dataUrl}')" />
             </div>
             <div class="mt-3 flex flex-wrap items-center gap-2 w-full">
-                <button type="button" onclick="window.triggerSocialPublishFromChat('facebook', 'bot')" class="flex-1 min-w-[140px] px-3 py-2 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-bold text-xs shadow-md transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer border border-blue-400/40">
-                    <span class="material-symbols-outlined text-sm text-cyan-200">smart_toy</span>
-                    <span>🤖 Đăng Lên FB (AI Bot)</span>
+                <button type="button" onclick="window.triggerSocialPublishFromChat('facebook', 'preview')" class="flex-1 min-w-[140px] px-3 py-2 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-bold text-xs shadow-md transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer border border-blue-400/40" title="Xem trước nội dung và duyệt trước khi đăng bài">
+                    <span class="material-symbols-outlined text-sm text-cyan-200">visibility</span>
+                    <span>👀 Xem Trước & Duyệt Đăng FB</span>
                 </button>
                 <a href="${dataUrl}" download="${fileName}" class="flex-1 min-w-[130px] px-3 py-2 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-xs shadow-md transition-all active:scale-95 flex items-center justify-center gap-1.5 text-center cursor-pointer">
                     <span class="material-symbols-outlined text-sm">download</span>
@@ -514,15 +511,15 @@ function initAIChat() {
                                     <span>${escapeHtml(postHeadline)}</span>
                                     <span class="text-[9px] ${platformBadgeClass} border px-1.5 py-0.2 rounded font-mono">${platformBadgeName}</span>
                                 </div>
-                                <div class="text-[10px] text-cyan-300 truncate">🤖 AI Browser Bot: Mở Chrome/Edge tự động đăng bài & ảnh Studio</div>
+                                <div class="text-[10px] text-cyan-300 truncate">👀 Xem trước & duyệt nội dung trực quan trước khi đăng bài</div>
                             </div>
                         </div>
                         <div class="flex items-center gap-2 w-full sm:w-auto shrink-0">
-                            <button type="button" onclick="window.triggerSocialPublishFromChat('${postPlatform}', 'bot')" class="flex-1 sm:flex-initial px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-bold text-xs shadow-lg transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer border border-blue-400/50">
-                                <span class="material-symbols-outlined text-sm text-cyan-200">smart_toy</span>
-                                <span>🤖 AI Vào Trình Duyệt Đăng Bài</span>
+                            <button type="button" onclick="window.triggerSocialPublishFromChat('${postPlatform}', 'preview')" class="flex-1 sm:flex-initial px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-bold text-xs shadow-lg transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer border border-blue-400/50" title="Xem trước nội dung và duyệt trước khi đăng bài">
+                                <span class="material-symbols-outlined text-sm text-cyan-200">visibility</span>
+                                <span>👀 Xem Trước & AI Vào Trình Duyệt Đăng Bài</span>
                             </button>
-                            <button type="button" onclick="window.triggerSocialPublishFromChat('${postPlatform}', 'modal')" class="px-2.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold flex items-center justify-center gap-1 cursor-pointer border border-white/10" title="Xem & Tùy chỉnh trước khi đăng">
+                            <button type="button" onclick="window.triggerSocialPublishFromChat('${postPlatform}', 'modal')" class="px-2.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold flex items-center justify-center gap-1 cursor-pointer border border-white/10" title="Mở bộ công cụ soạn thảo & tùy chỉnh">
                                 <span class="material-symbols-outlined text-sm">tune</span>
                             </button>
                         </div>
@@ -569,15 +566,6 @@ function initAIChat() {
                     ${studioActionCardHtml}
                     ${socialActionCardHtml}
                 </div>
-                <div class="ai-footer-bar w-full flex items-center justify-between border-t border-slate-200 dark:border-slate-700/50 mt-2.5 pt-1.5 text-[10px] text-slate-600 dark:text-slate-400 font-mono">
-                    <span class="flex items-center gap-1 text-emerald-800 dark:text-emerald-400 font-semibold" title="Độ tiêu hao Token thực tế (In: ${tokenInfo.inputTokens} | Out: ${tokenInfo.outputTokens})">
-                        <span class="material-symbols-outlined text-[12px] text-emerald-600 dark:text-emerald-400">token</span>
-                        <strong class="token-text-highlight font-bold text-emerald-900 dark:text-emerald-300">${tokenInfo.totalTokens || 0}</strong> Tokens <span class="text-slate-500 dark:text-slate-400 font-medium">(In: ${tokenInfo.inputTokens || 0} | Out: ${tokenInfo.outputTokens || 0})</span>
-                    </span>
-                    <span class="model-badge text-slate-700 dark:text-slate-400 text-[9px] bg-slate-100 dark:bg-slate-800/60 border border-slate-300 dark:border-transparent px-1.5 py-0.5 rounded font-mono font-semibold">
-                        Model: ${agentInfo.model || 'gemini-3.1-flash'}
-                    </span>
-                </div>
             `;
             chatMessages.appendChild(aiDiv);
 
@@ -611,12 +599,9 @@ function initAIChat() {
                             window.socialPublish.switchPlatform(platform);
                         }
 
-                        if (mode === 'bot') {
-                            setTimeout(() => {
-                                if (window.socialPublish && typeof window.socialPublish.triggerActiveBrowserBot === 'function') {
-                                    window.socialPublish.triggerActiveBrowserBot();
-                                }
-                            }, 350);
+                        // Always present the preview and approval screen first so the user can verify before publishing
+                        if (window.socialPublish && typeof window.socialPublish.toggleViewMode === 'function') {
+                            window.socialPublish.toggleViewMode('preview');
                         }
                     }
                 };

@@ -64,7 +64,7 @@ async function fetchAndRenderGraph() {
         if (currentGraphData) {
             const cleanRepoName = currentGraphData.repo || 'boomhuyxt/Obsidian-Karik-Ai';
 
-            const repoBadges = document.querySelectorAll('#repoNameBadge, #graphRepoBadge');
+            const repoBadges = document.querySelectorAll('#graphRepoBadge');
             repoBadges.forEach(badge => {
                 badge.textContent = cleanRepoName;
                 badge.title = `Kho tri thức GitHub: ${cleanRepoName} (${currentGraphData.totalFiles || 0} ghi chú)`;
