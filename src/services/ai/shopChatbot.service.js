@@ -2,22 +2,81 @@ const { getEmbedding } = require('../../providers/gemini/embedding');
 const shopKnowledgeRepo = require('../../repositories/shopKnowledge.repository');
 
 class ShopChatbotService {
+  constructor() {
+    // Lưu sản phẩm vừa thảo luận gần nhất của mỗi shop để hiểu ngữ cảnh khách nói "tôi muốn mua 1 cái"
+    this.lastDiscussedShopProduct = new Map();
+  }
+
   /**
-   * Khách hàng hỏi thông tin sản phẩm và tình trạng tồn kho
+   * Khách hàng hỏi thông tin sản phẩm hoặc đặt mua trực tiếp qua Chatbox
    */
   async answerCustomerQuestion({ shop_id = 'default_shop', question }) {
     if (!question || !question.trim()) {
+      const allItems = await shopKnowledgeRepo.queryShopInventory(shop_id, null, '');
       return {
-        reply: 'Dạ bạn cần tìm sản phẩm hoặc phụ tùng cho dòng xe nào ạ?'
+        found: true,
+        reply: 'Dạ bạn cần tìm sản phẩm hoặc phụ tùng cho dòng xe nào ạ?',
+        products: allItems
       };
     }
 
     const cleanQuestion = question.trim();
 
-    // 1. Sinh vector từ câu hỏi khách
-    const queryVector = await getEmbedding(cleanQuestion);
+    // -------------------------------------------------------------
+    // 1. NHẬN DIỆN Ý ĐỊNH ĐẶT MUA HÀNG (PURCHASE INTENT DETECTION)
+    // -------------------------------------------------------------
+    const buyRegex = /(mua|lấy|chốt|đặt|order|cho\s+anh|cho\s+em|cho\s+toi|giao\s+cho)/i;
+    const isBuyIntent = buyRegex.test(cleanQuestion);
 
-    // 2. Tìm kiếm trong kho của Shop
+    if (isBuyIntent) {
+      // Trích xuất số lượng khách muốn mua (VD: "mua 1 cái" -> 1, "lấy 2 chai" -> 2)
+      const qtyMatch = cleanQuestion.match(/(\d+)\s*(cái|chai|bộ|bình|chiếc|viên|lon)?/i);
+      const quantity = qtyMatch ? parseInt(qtyMatch[1], 10) : 1;
+
+      // Tìm sản phẩm cần mua: Ưu tiên sản phẩm vừa thảo luận, nếu không thì tìm theo từ khóa
+      let targetProduct = this.lastDiscussedShopProduct.get(shop_id);
+
+      // Nếu trong câu có nhắc đến tên sản phẩm khác, tìm kiếm lại
+      const directMatches = await shopKnowledgeRepo.queryShopInventory(shop_id, null, cleanQuestion);
+      if (directMatches.length > 0 && directMatches[0].score >= 0.35) {
+        targetProduct = directMatches[0];
+      }
+
+      if (targetProduct) {
+        try {
+          const orderResult = await this.processOrderAndDeduct({
+            shop_id,
+            item_identifier: targetProduct.sku || targetProduct.name,
+            quantity: quantity,
+            customer_name: 'Khách chat trực tiếp'
+          });
+
+          return {
+            found: true,
+            is_order: true,
+            shop_id,
+            reply: `🎉 ${orderResult.customer_reply}\n\n` +
+                   `• Sản phẩm: ${targetProduct.name}\n` +
+                   `• Số lượng: ${quantity} ${targetProduct.unit || 'cái'}\n` +
+                   `• Tổng tiền: ${Number((targetProduct.price || 0) * quantity).toLocaleString('vi-VN')} VNĐ\n` +
+                   `• Tồn kho còn lại: ${orderResult.updated_item.quantity} ${targetProduct.unit || 'cái'}.\n` +
+                   `🔔 Hệ thống đã tự động trừ kho và gửi thông báo biến động kho đến Chủ Shop!`,
+            order: orderResult
+          };
+        } catch (err) {
+          return {
+            found: false,
+            shop_id,
+            reply: `Dạ sản phẩm "${targetProduct.name}" hiện không đủ số lượng để đặt (hoặc đã hết hàng). Bạn có muốn chọn sản phẩm khác không ạ?`
+          };
+        }
+      }
+    }
+
+    // -------------------------------------------------------------
+    // 2. TRA CỨU TỒN KHO & TƯ VẤN SẢN PHẨM (HYBRID RAG SEARCH)
+    // -------------------------------------------------------------
+    const queryVector = await getEmbedding(cleanQuestion);
     const matchedItems = await shopKnowledgeRepo.queryShopInventory(shop_id, queryVector, cleanQuestion);
 
     if (!matchedItems || matchedItems.length === 0) {
@@ -29,7 +88,9 @@ class ShopChatbotService {
       };
     }
 
-    // 3. Phân loại còn hàng / hết hàng
+    // Lưu sản phẩm top đầu vào bộ nhớ đệm ngữ cảnh
+    this.lastDiscussedShopProduct.set(shop_id, matchedItems[0]);
+
     const inStock = matchedItems.filter(i => Number(i.quantity || 0) > 0);
     const outOfStock = matchedItems.filter(i => Number(i.quantity || 0) <= 0);
 
@@ -38,12 +99,12 @@ class ShopChatbotService {
       const top = inStock[0];
       reply = `Dạ bên em CÒN HÀNG sản phẩm "${top.name}" ạ!\n` +
         `• Dòng xe thích hợp: ${top.compatible_models || 'Tương thích tốt'}\n` +
-        `• Tồn kho hiện tại: ${top.quantity} ${top.unit || 'chai'}\n` +
+        `• Tồn kho hiện tại: ${top.quantity} ${top.unit || 'cái'}\n` +
         `• Giá bán: ${Number(top.price || 0).toLocaleString('vi-VN')} VNĐ\n` +
         `• Vị trí kho: ${top.location || 'Kho hàng'}`;
 
       if (inStock.length > 1) {
-        reply += `\n\nBên em còn có các loại khác cùng loại:\n` +
+        reply += `\n\nBên em còn có thêm các mặt hàng tương tự:\n` +
           inStock.slice(1, 3).map(i => `+ ${i.name} (Còn ${i.quantity} ${i.unit || 'cái'}) - ${Number(i.price || 0).toLocaleString('vi-VN')}đ`).join('\n');
       }
     } else {

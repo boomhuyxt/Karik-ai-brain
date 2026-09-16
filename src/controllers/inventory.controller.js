@@ -155,10 +155,11 @@ class InventoryController {
   // 9. Khách hàng chat hỏi sản phẩm và tồn kho của 1 Shop
   async handleShopCustomerChat(req, res) {
     try {
-      const { shop_id, question } = req.body;
+      const shop_id = (req.body && req.body.shop_id) || req.query.shop_id || 'default_shop';
+      const question = (req.body && req.body.question) || req.query.q || req.query.question || '';
       const result = await shopChatbotService.answerCustomerQuestion({
-        shop_id: shop_id || 'default_shop',
-        question: question || req.query.q
+        shop_id,
+        question
       });
       return res.json({ success: true, ...result });
     } catch (err) {

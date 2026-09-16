@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Karik AI Brain - Smart Multi-Shop Inventory & RAG Console</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --bg-main: #090d16;
+      --bg-surface: #101626;
+      --bg-card: rgba(22, 30, 49, 0.75);
+      --bg-card-hover: rgba(30, 41, 67, 0.9);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-focus: #6366f1;
+      
+      --primary: #6366f1;
+      --primary-glow: rgba(99, 102, 241, 0.35);
+      --secondary: #06b6d4;
+      --accent-green: #10b981;
+      --accent-warn: #f59e0b;
+      --accent-danger: #ef4444;
+      
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --radius-full: 9999px;
+      
+      --shadow-card: 0 10px 30px -10px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      --shadow-glow: 0 0 25px var(--primary-glow);
+      --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      min-height: 100vh;
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 85% 85%, rgba(6, 182, 212, 0.1) 0%, transparent 40%);
+      background-attachment: fixed;
+      padding: 24px;
+      line-height: 1.5;
+    }
+
+    h1, h2, h3, h4, .brand-font { font-family: 'Outfit', sans-serif; }
+
+    /* Top Navigation Header */
+    .app-header {
+      max-width: 1440px;
+      margin: 0 auto 24px auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg-card);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 14px 24px;
+      box-shadow: var(--shadow-card);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-logo {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      color: #fff;
+      box-shadow: 0 0 20px var(--primary-glow);
+    }
+
+    .brand-title {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      background: linear-gradient(90deg, #fff, #94a3b8);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-tag {
+      font-size: 11px;
+      background: rgba(99, 102, 241, 0.15);
+      color: #818cf8;
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+      font-weight: 600;
+      margin-left: 6px;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .shop-select-wrap {
+      display: flex;
+      align-items: center;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 4px 12px;
+      gap: 8px;
+    }
+
+    .shop-select-wrap i { color: var(--secondary); font-size: 14px; }
+
+    .shop-select-wrap input {
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      width: 140px;
+      outline: none;
+    }
+
+    .status-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: var(--radius-full);
+      background: rgba(16, 185, 129, 0.12);
+      color: var(--accent-green);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--accent-green);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--accent-green);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    /* Main Grid Layout */
+    .dashboard-grid {
+      max-width: 1440px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 1024px) {
+      .dashboard-grid { grid-template-columns: 1fr; }
+    }
+
+    /* Glass Panels */
+    .panel {
+      background: var(--bg-card);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow-card);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 16px;
+    }
+
+    .panel-title {
+      font-size: 17px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #fff;
+    }
+
+    .panel-title i {
+      font-size: 18px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* Upload & File Drop Zone */
+    .upload-zone {
+      border: 2px dashed rgba(99, 102, 241, 0.3);
+      background: rgba(99, 102, 241, 0.03);
+      border-radius: var(--radius-md);
+      padding: 24px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .upload-zone:hover, .upload-zone.drag-over {
+      border-color: var(--primary);
+      background: rgba(99, 102, 241, 0.08);
+      transform: translateY(-2px);
+    }
+
+    .upload-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: rgba(99, 102, 241, 0.15);
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+    }
+
+    .upload-text-main { font-size: 14px; font-weight: 600; color: #fff; }
+    .upload-text-sub { font-size: 12px; color: var(--text-muted); }
+
+    .btn-group { display: flex; gap: 10px; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 18px;
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      border: none;
+      outline: none;
+      font-family: inherit;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), #4f46e5);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+    }
+    .btn-primary:hover {
+      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-main);
+      border: 1px solid var(--border-subtle);
+    }
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.15);
+      color: #fca5a5;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+    .btn-danger:hover {
+      background: var(--accent-danger);
+      color: #fff;
+    }
+
+    /* Live Inventory Table */
+    .table-container {
+      max-height: 260px;
+      overflow-y: auto;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      background: rgba(15, 23, 42, 0.4);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12.5px;
+      text-align: left;
+    }
+
+    th {
+      background: rgba(15, 23, 42, 0.95);
+      padding: 10px 14px;
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 11.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      position: sticky;
+      top: 0;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    td {
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      color: var(--text-main);
+    }
+
+    tr:hover td { background: rgba(255, 255, 255, 0.02); }
+
+    .tag-stock {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .tag-stock.in_stock { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+    .tag-stock.low_stock { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+    .tag-stock.out_of_stock { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+
+    /* Interactive Chatbox (Phone Style) */
+    .chat-container {
+      display: flex;
+      flex-direction: column;
+      height: 480px;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+    }
+
+    .chat-header {
+      padding: 12px 16px;
+      background: rgba(22, 30, 49, 0.9);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .bot-avatar {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      color: #fff;
+    }
+
+    .chat-messages {
+      flex: 1;
+      padding: 16px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .chat-bubble {
+      max-width: 85%;
+      padding: 12px 16px;
+      border-radius: 16px;
+      font-size: 13.5px;
+      line-height: 1.5;
+      animation: fadeIn 0.2s ease-out;
+      white-space: pre-line;
+    }
+
+    .chat-bubble.user {
+      align-self: flex-end;
+      background: linear-gradient(135deg, var(--primary), #4f46e5);
+      color: #fff;
+      border-bottom-right-radius: 4px;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+    }
+
+    .chat-bubble.bot {
+      align-self: flex-start;
+      background: #1e293b;
+      color: var(--text-main);
+      border: 1px solid var(--border-subtle);
+      border-bottom-left-radius: 4px;
+    }
+
+    .chat-quick-actions {
+      padding: 8px 16px;
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      background: rgba(15, 23, 42, 0.4);
+      border-top: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .quick-chip {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      padding: 5px 10px;
+      border-radius: var(--radius-full);
+      font-size: 11.5px;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .quick-chip:hover {
+      background: rgba(99, 102, 241, 0.2);
+      color: #a5b4fc;
+      border-color: rgba(99, 102, 241, 0.4);
+    }
+
+    .chat-input-bar {
+      padding: 12px 16px;
+      background: rgba(22, 30, 49, 0.9);
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      gap: 8px;
+    }
+
+    .chat-input-bar input {
+      flex: 1;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 10px 14px;
+      color: #fff;
+      font-size: 13px;
+      outline: none;
+      font-family: inherit;
+    }
+    .chat-input-bar input:focus { border-color: var(--primary); }
+
+    /* Alerts & Notifications Box */
+    .alerts-feed {
+      max-height: 200px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .alert-card {
+      background: rgba(15, 23, 42, 0.5);
+      border-left: 4px solid var(--primary);
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 12.5px;
+      transition: var(--transition);
+    }
+
+    .alert-card.CRITICAL { border-left-color: var(--accent-danger); background: rgba(239, 68, 68, 0.08); }
+    .alert-card.WARNING { border-left-color: var(--accent-warn); background: rgba(245, 158, 11, 0.08); }
+    .alert-card.INFO { border-left-color: var(--accent-green); background: rgba(16, 185, 129, 0.08); }
+
+    .alert-meta {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 6px;
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top App Header -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-logo"><i class="fa-solid fa-brain"></i></div>
+      <div>
+        <div style="display:flex; align-items:center;">
+          <span class="brand-title">Karik AI Brain</span>
+          <span class="brand-tag">Single-Table RAG</span>
+        </div>
+        <div style="font-size:11.5px; color:var(--text-dim);">Multi-Tenant Marketing & Inventory Automation</div>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <div class="shop-select-wrap">
+        <i class="fa-solid fa-store"></i>
+        <input type="text" id="shopIdInput" value="shop_honda_01" title="Nhập mã Shop ID và nhấn Enter để chuyển đổi" onchange="onShopChanged()">
+      </div>
+      <div class="status-pill">
+        <div class="status-dot"></div>
+        <span id="connectionBadge">Supabase Connected</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main 2-Column Responsive Dashboard -->
+  <main class="dashboard-grid">
+    
+    <!-- LEFT COLUMN: SHOP OWNER CONSOLE -->
+    <section class="panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <i class="fa-solid fa-boxes-stacked"></i>
+          <span>1. Quản Trị Kho Hàng (Chủ Shop)</span>
+        </div>
+        <button class="btn btn-secondary" style="font-size:12px; padding:6px 12px;" onclick="loadCurrentInventory()">
+          <i class="fa-solid fa-arrows-rotate"></i> Làm mới
+        </button>
+      </div>
+
+      <!-- File Upload Zone -->
+      <div class="upload-zone" id="dropZone" onclick="document.getElementById('excelFileInput').click()">
+        <div class="upload-icon"><i class="fa-solid fa-file-excel"></i></div>
+        <div>
+          <div class="upload-text-main" id="uploadStatusText">Kéo thả file Excel (.xlsx, .csv) vào đây</div>
+          <div class="upload-text-sub" id="uploadSubText">Hệ thống sẽ lưu đường dẫn và tự động Vectorize dữ liệu</div>
+        </div>
+        <input type="file" id="excelFileInput" accept=".xlsx,.xls,.csv" style="display:none" onchange="onFilePicked(event)">
+      </div>
+
+      <div class="btn-group">
+        <button class="btn btn-primary" style="flex:1;" onclick="submitExcelUpload()">
+          <i class="fa-solid fa-cloud-arrow-up"></i> Nạp File & Train AI
+        </button>
+        <button class="btn btn-secondary" onclick="loadSampleInventoryData()">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> Nạp Dữ Liệu Mẫu
+        </button>
+      </div>
+
+      <!-- Live Inventory Table -->
+      <div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <span style="font-size:13px; font-weight:700; color:#fff;">Danh Sách Tồn Kho Thực Tế (JSON):</span>
+          <span id="itemCountBadge" style="font-size:11.5px; color:var(--text-muted);">0 mặt hàng</span>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Sản phẩm / Dòng xe</th>
+                <th>Mã SKU</th>
+                <th>Tồn kho</th>
+                <th>Giá bán</th>
+                <th>Vị trí</th>
+              </tr>
+            </thead>
+            <tbody id="inventoryTableBody">
+              <tr>
+                <td colspan="5" style="text-align:center; color:var(--text-dim); padding:24px;">Chưa có dữ liệu. Hãy nạp file Excel hoặc bấm "Nạp Dữ Liệu Mẫu".</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Realtime Owner Alerts Feed -->
+      <div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <span style="font-size:13px; font-weight:700; color:var(--accent-warn);">
+            <i class="fa-solid fa-bell"></i> 3. Nhật Ký Cảnh Báo Cho Chủ Shop:
+          </span>
+          <button class="btn btn-secondary" style="font-size:11px; padding:4px 8px;" onclick="loadShopAlerts()">Làm mới</button>
+        </div>
+        <div class="alerts-feed" id="alertsFeed">
+          <div style="font-size:12px; color:var(--text-dim); text-align:center; padding:16px;">Chưa có biến động kho nào.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT COLUMN: AI CUSTOMER CHAT SIMULATOR -->
+    <section class="panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <i class="fa-solid fa-comments"></i>
+          <span>2. Chatbox Tư Vấn Khách Hàng (AI RAG)</span>
+        </div>
+        <span style="font-size:11.5px; color:var(--accent-green);">● Đang hoạt động</span>
+      </div>
+
+      <div class="chat-container">
+        <div class="chat-header">
+          <div class="bot-avatar"><i class="fa-solid fa-robot"></i></div>
+          <div>
+            <div style="font-size:13.5px; font-weight:700; color:#fff;">Jarvis Sales Assistant</div>
+            <div style="font-size:11px; color:var(--text-muted);">Tự động tra cứu tồn kho theo thời gian thực</div>
+          </div>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+          <div class="chat-bubble bot">
+            👋 Chào bạn! Em là AI bán hàng tự động. Bạn đang cần tìm nhớt hoặc phụ tùng cho dòng xe nào ạ?
+          </div>
+        </div>
+
+        <!-- Quick Question Chips -->
+        <div class="chat-quick-actions">
+          <div class="quick-chip" onclick="quickAsk('Nhớt cho xe Wave còn không shop?')">🛵 Nhớt xe Wave</div>
+          <div class="quick-chip" onclick="quickAsk('Nhớt xe tay ga Air Blade giá bao nhiêu?')">🏍️ Nhớt Air Blade</div>
+          <div class="quick-chip" onclick="quickAsk('Bugi chân dài Future 125 còn hàng ko?')">⚡ Bugi Future</div>
+        </div>
+
+        <div class="chat-input-bar">
+          <input type="text" id="userChatInput" placeholder="Hỏi AI về bất kỳ sản phẩm nào..." onkeypress="if(event.key==='Enter') sendCustomerMessage()">
+          <button class="btn btn-primary" style="padding:10px 14px;" onclick="sendCustomerMessage()">
+            <i class="fa-solid fa-paper-plane"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Direct Purchase Simulator -->
+      <div style="background:rgba(15,23,42,0.5); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:14px;">
+        <span style="font-size:12.5px; font-weight:700; color:#fff; display:block; margin-bottom:8px;">
+          🛒 Mô phỏng Khách Chốt Đơn (Trừ kho tự động):
+        </span>
+        <div style="display:flex; gap:8px;">
+          <input type="text" id="orderSkuInput" value="CASTROL-WAVE-08L" placeholder="Mã SKU sản phẩm" style="flex:2; background:#0d1117; border:1px solid var(--border-subtle); border-radius:6px; padding:8px 12px; color:#fff; font-size:12px; outline:none;">
+          <input type="number" id="orderQtyInput" value="2" min="1" style="flex:1; background:#0d1117; border:1px solid var(--border-subtle); border-radius:6px; padding:8px 12px; color:#fff; font-size:12px; outline:none;">
+          <button class="btn btn-danger" onclick="simulateCustomerOrder()">Chốt Đơn</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script>
+    let pickedBase64 = null;
+    let pickedFileName = null;
+
+    function getShopId() {
+      return document.getElementById('shopIdInput').value.trim() || 'default_shop';
+    }
+
+    function onShopChanged() {
+      loadCurrentInventory();
+      loadShopAlerts();
+    }
+
+    function onFilePicked(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      pickedFileName = file.name;
+      document.getElementById('uploadStatusText').innerHTML = `📄 <strong>${file.name}</strong> (${(file.size/1024).toFixed(1)} KB)`;
+      document.getElementById('uploadSubText').innerHTML = `Bấm nút "Nạp File & Train AI" bên dưới để xử lý.`;
+      
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        pickedBase64 = evt.target.result.split(',')[1];
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function submitExcelUpload() {
+      if (!pickedBase64) {
+        alert('Vui lòng chọn file Excel trước hoặc bấm nút "Nạp Dữ Liệu Mẫu"!');
+        return;
+      }
+      const shop_id = getShopId();
+      document.getElementById('uploadStatusText').innerHTML = `⏳ Đang nạp và train vector cho Shop "${shop_id}"...`;
+
+      try {
+        const res = await fetch('/api/inventory/chat-upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            shop_id,
+            fileName: pickedFileName || 'kho_hang.xlsx',
+            base64Data: pickedBase64
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          document.getElementById('uploadStatusText').innerHTML = `✅ Đã nạp thành công <strong>${data.total_items}</strong> mặt hàng vào Supabase!`;
+          document.getElementById('uploadSubText').innerHTML = `AI đã học xong dữ liệu kho của Shop "${shop_id}".`;
+          loadCurrentInventory();
+          loadShopAlerts();
+        } else {
+          document.getElementById('uploadStatusText').innerHTML = `❌ Lỗi: ${data.error}`;
+        }
+      } catch (err) {
+        document.getElementById('uploadStatusText').innerHTML = `❌ Lỗi kết nối: ${err.message}`;
+      }
+    }
+
+    function loadSampleInventoryData() {
+      const sample = [
+        { 'Tên sản phẩm': 'Nhớt Castrol Power 1 4T 0.8L', 'Mã SKU': 'CASTROL-WAVE-08L', 'Dòng xe tương thích': 'Honda Wave Alpha, RSX, Future, Blade', 'Số lượng tồn': 12, 'Đơn vị': 'chai', 'Giá bán': 95000, 'Vị trí': 'Kệ A1', 'Cảnh báo tồn': 3 },
+        { 'Tên sản phẩm': 'Nhớt Motul Scooter Expert LE 0.8L', 'Mã SKU': 'MOTUL-SCOOTER-08L', 'Dòng xe tương thích': 'Air Blade, Vision, Lead, Vario', 'Số lượng tồn': 2, 'Đơn vị': 'chai', 'Giá bán': 115000, 'Vị trí': 'Kệ A2', 'Cảnh báo tồn': 3 },
+        { 'Tên sản phẩm': 'Bugi NGK chân dài CPR6EA-9', 'Mã SKU': 'BUGI-NGK-WAVE', 'Dòng xe tương thích': 'Wave RSX Fi, Future 125, Vision', 'Số lượng tồn': 0, 'Đơn vị': 'cái', 'Giá bán': 55000, 'Vị trí': 'Khay B1', 'Cảnh báo tồn': 2 }
+      ];
+      
+      try {
+        if (typeof XLSX !== 'undefined') {
+          const wb = XLSX.utils.book_new();
+          const ws = XLSX.utils.json_to_sheet(sample);
+          XLSX.utils.book_append_sheet(wb, ws, 'KhoHang');
+          pickedBase64 = XLSX.write(wb, { type: 'base64', bookType: 'xlsx' });
+        } else {
+          // Fallback CSV nếu CDN bị chậm
+          const csvContent = "Tên sản phẩm,Mã SKU,Dòng xe tương thích,Số lượng tồn,Đơn vị,Giá bán,Vị trí,Cảnh báo tồn\n" +
+            "Nhớt Castrol Power 1 4T 0.8L,CASTROL-WAVE-08L,\"Honda Wave Alpha, RSX, Future, Blade\",12,chai,95000,Kệ A1,3\n" +
+            "Nhớt Motul Scooter Expert LE 0.8L,MOTUL-SCOOTER-08L,\"Air Blade, Vision, Lead, Vario\",2,chai,115000,Kệ A2,3\n" +
+            "Bugi NGK chân dài CPR6EA-9,BUGI-NGK-WAVE,\"Wave RSX Fi, Future 125, Vision\",0,cái,55000,Khay B1,2";
+          pickedBase64 = btoa(unescape(encodeURIComponent(csvContent)));
+        }
+        pickedFileName = 'kho_hang_chuan_mau.xlsx';
+        document.getElementById('uploadStatusText').innerHTML = `📄 <strong>${pickedFileName}</strong> (Dữ liệu mẫu chuẩn)`;
+        submitExcelUpload();
+      } catch (err) {
+        alert('Lỗi tạo dữ liệu mẫu: ' + err.message);
+      }
+    }
+
+    async function loadCurrentInventory() {
+      const shop_id = getShopId();
+      try {
+        const res = await fetch(`/api/inventory/shop-query?shop_id=${shop_id}&q=`);
+        const data = await res.json();
+        const tbody = document.getElementById('inventoryTableBody');
+        
+        if (data.products && data.products.length > 0) {
+          document.getElementById('itemCountBadge').innerText = `${data.products.length} mặt hàng`;
+          tbody.innerHTML = data.products.map(p => `
+            <tr>
+              <td>
+                <div style="font-weight:600; color:#fff;">${p.name}</div>
+                <div style="font-size:11px; color:var(--text-dim);">${p.compatible_models || ''}</div>
+              </td>
+              <td><code>${p.sku || '-'}</code></td>
+              <td>
+                <span class="tag-stock ${p.status || (p.quantity > 0 ? 'in_stock' : 'out_of_stock')}">
+                  ${p.quantity} ${p.unit || 'cái'}
+                </span>
+              </td>
+              <td style="font-weight:600; color:#38bdf8;">${Number(p.price || 0).toLocaleString('vi-VN')}đ</td>
+              <td><span style="color:var(--text-muted); font-size:11px;">${p.location || 'Kho'}</span></td>
+            </tr>
+          `).join('');
+        } else {
+          document.getElementById('itemCountBadge').innerText = '0 mặt hàng';
+          tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-dim); padding:24px;">Chưa có dữ liệu cho shop "${shop_id}". Bấm "Nạp Dữ Liệu Mẫu" để thử.</td></tr>`;
+        }
+      } catch (e) {
+        document.getElementById('connectionBadge').innerText = 'Offline / Connecting...';
+      }
+    }
+
+    async function sendCustomerMessage(customText) {
+      const input = document.getElementById('userChatInput');
+      const question = customText || input.value.trim();
+      if (!question) return;
+
+      const shop_id = getShopId();
+      const messagesContainer = document.getElementById('chatMessages');
+
+      messagesContainer.innerHTML += `<div class="chat-bubble user">${question}</div>`;
+      if (!customText) input.value = '';
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+      const typingId = 'typing_' + Date.now();
+      messagesContainer.innerHTML += `<div class="chat-bubble bot" id="${typingId}">⚡ Đang đối chiếu kho hàng...</div>`;
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+      try {
+        const res = await fetch('/api/inventory/shop-query', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ shop_id, question })
+        });
+        const data = await res.json();
+        const typingElem = document.getElementById(typingId);
+        if (typingElem) typingElem.remove();
+
+        messagesContainer.innerHTML += `<div class="chat-bubble bot">${data.reply || 'Dạ không tìm thấy sản phẩm.'}</div>`;
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+        if (data.is_order) {
+          loadCurrentInventory();
+          loadShopAlerts();
+        }
+      } catch (err) {
+        const typingElem = document.getElementById(typingId);
+        if (typingElem) typingElem.innerText = `❌ Lỗi: ${err.message}`;
+      }
+    }
+
+    function quickAsk(text) {
+      sendCustomerMessage(text);
+    }
+
+    async function simulateCustomerOrder() {
+      const shop_id = getShopId();
+      const item_identifier = document.getElementById('orderSkuInput').value.trim();
+      const quantity = Number(document.getElementById('orderQtyInput').value || 1);
+
+      if (!item_identifier) return;
+
+      const messagesContainer = document.getElementById('chatMessages');
+      messagesContainer.innerHTML += `<div class="chat-bubble user">Tôi muốn mua ${quantity} x [${item_identifier}]</div>`;
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+      try {
+        const res = await fetch('/api/inventory/shop-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            shop_id,
+            item_identifier,
+            quantity,
+            customer_name: 'Khách hàng Web',
+            customer_phone: '0908.123.456'
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          messagesContainer.innerHTML += `<div class="chat-bubble bot">${data.customer_reply}</div>`;
+          loadCurrentInventory();
+          loadShopAlerts();
+        } else {
+          messagesContainer.innerHTML += `<div class="chat-bubble bot" style="color:var(--accent-danger);">❌ Lỗi: ${data.error}</div>`;
+        }
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      } catch (err) {
+        alert('Lỗi đặt hàng: ' + err.message);
+      }
+    }
+
+    async function loadShopAlerts() {
+      const shop_id = getShopId();
+      try {
+        const res = await fetch(`/api/inventory/shop-alerts?shop_id=${shop_id}`);
+        const data = await res.json();
+        const feed = document.getElementById('alertsFeed');
+        if (data.data && data.data.length > 0) {
+          feed.innerHTML = data.data.map(a => `
+            <div class="alert-card ${a.level}">
+              <div style="font-weight:700; color:#fff;">${a.message}</div>
+              <div class="alert-meta">
+                <span>Lý do: ${a.reason || 'Bán hàng'}</span>
+                <span>🕒 ${new Date(a.created_at).toLocaleTimeString('vi-VN')}</span>
+              </div>
+            </div>
+          `).join('');
+        } else {
+          feed.innerHTML = `<div style="font-size:12px; color:var(--text-dim); text-align:center; padding:16px;">Chưa có biến động kho nào.</div>`;
+        }
+      } catch (e) {}
+    }
+
+    // Tự động tải dữ liệu ban đầu
+    window.onload = () => {
+      loadCurrentInventory();
+      loadShopAlerts();
+    };
+  </script>
+</body>
+</html>
