@@ -11,21 +11,7 @@ class GraphService {
   }
 
   findLocalVaultPath() {
-    const customVault = process.env.OBSIDIAN_VAULT_PATH || env.obsidianVaultPath;
-    if (!customVault) {
-      return null;
-    }
-
-    try {
-      if (fs.existsSync(customVault) && fs.statSync(customVault).isDirectory()) {
-        const items = fs.readdirSync(customVault);
-        if (items.length > 0) {
-          return customVault;
-        }
-      }
-    } catch (e) {}
-
-    return null;
+    return githubRepository.getLocalVaultPath();
   }
 
   scanLocalVault(vaultDir) {
@@ -230,32 +216,22 @@ class GraphService {
 
       // 2. Fetch and resolve content for structured notes (Wiki, Manager, Daily, MOCs)
       const localVault = this.findLocalVaultPath();
-      const structuredFiles = mdFiles.filter(f => !f.path.startsWith('raw/') || f.size < 4000);
+      const structuredFiles = mdFiles.filter(f => !f.path.startsWith('raw/'));
 
-      await Promise.all(structuredFiles.map(async (file) => {
-        const sourcePath = file.path.split(path.sep).join('/');
-        let fileContent = file.content || '';
-
-        if (!fileContent && localVault) {
+      if (localVault) {
+        for (const file of structuredFiles) {
+          const sourcePath = file.path.split(path.sep).join('/');
           try {
             const fullLocalPath = path.join(localVault, ...sourcePath.split('/'));
             if (fs.existsSync(fullLocalPath) && fs.statSync(fullLocalPath).isFile()) {
-              fileContent = fs.readFileSync(fullLocalPath, 'utf8');
-              file.content = fileContent;
+              file.content = fs.readFileSync(fullLocalPath, 'utf8');
             }
           } catch (e) {}
         }
-
-        if (!fileContent) {
-          try {
-            const cachedFile = await githubRepository.getFile(sourcePath);
-            if (cachedFile && cachedFile.content) {
-              fileContent = cachedFile.content;
-              file.content = fileContent;
-            }
-          } catch (e) {}
-        }
-      }));
+      } else {
+        // Direct GitHub Mode: Fetch structured notes via GraphQL batching & disk cache
+        await this.batchResolveGitHubContents(owner, repo, structuredFiles);
+      }
 
       // 3. Strictly parse true [[WikiLink]] and [Markdown](file.md) links from note content
       // (NO fake folder or cluster links - Raw knowledge and orphan notes remain unlinked)
@@ -377,6 +353,85 @@ class GraphService {
         { source: 'System/Config.md', target: 'Projects/Graph Dashboard.md' }
       ]
     };
+  }
+
+  async batchResolveGitHubContents(owner, repo, structuredFiles) {
+    require('dotenv').config({ override: true });
+    const token = process.env.GITHUB_PAT || env.github.token;
+    if (!token || !structuredFiles || structuredFiles.length === 0) return;
+
+    const missingFiles = [];
+
+    // 1. Check disk cache by sha first
+    for (const file of structuredFiles) {
+      const p = file.path.split(path.sep).join('/');
+      const cached = githubRepository.getDiskCacheFile(p);
+      if (cached && (cached.sha === file.sha || !file.sha) && cached.content) {
+        file.content = cached.content;
+      } else {
+        missingFiles.push(file);
+      }
+    }
+
+    if (missingFiles.length === 0) {
+      return;
+    }
+
+    // 2. Batch fetch missing files directly from GitHub GraphQL API
+    const batchSize = 35;
+    for (let i = 0; i < missingFiles.length; i += batchSize) {
+      const chunk = missingFiles.slice(i, i + batchSize);
+      const subQueries = chunk.map((file, idx) => {
+        const alias = `f_${idx}`;
+        const p = file.path.split(path.sep).join('/');
+        return `${alias}: object(expression: "main:${p}") { ... on Blob { text } }`;
+      });
+
+      const query = `
+        query {
+          repository(owner: "${owner}", name: "${repo}") {
+            ${subQueries.join('\n')}
+          }
+        }
+      `;
+
+      try {
+        const gqlRes = await fetch('https://api.github.com/graphql', {
+          method: 'POST',
+          headers: {
+            'User-Agent': 'Jarvis-AI-Brain',
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ query }),
+          signal: AbortSignal.timeout(12000)
+        });
+
+        if (gqlRes.ok) {
+          const gqlData = await gqlRes.json();
+          const repoObj = gqlData.data?.repository || {};
+          chunk.forEach((file, idx) => {
+            const p = file.path.split(path.sep).join('/');
+            const text = repoObj[`f_${idx}`]?.text || '';
+            if (text) {
+              file.content = text;
+              githubRepository.saveDiskCacheFile(p, { path: p, content: text, sha: file.sha });
+            }
+          });
+        } else {
+          throw new Error(`GraphQL response status ${gqlRes.status}`);
+        }
+      } catch (gqlErr) {
+        console.warn('[GraphService] GraphQL batch failed, fallback to sequential getFile:', gqlErr.message);
+        for (const file of chunk) {
+          const p = file.path.split(path.sep).join('/');
+          const fObj = await githubRepository.getFile(p);
+          if (fObj && fObj.content) {
+            file.content = fObj.content;
+          }
+        }
+      }
+    }
   }
 }
 

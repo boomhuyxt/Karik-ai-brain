@@ -13,7 +13,7 @@ class GithubRepository {
 
   getLocalVaultPath() {
     const customVault = process.env.OBSIDIAN_VAULT_PATH || env.obsidianVaultPath;
-    if (!customVault) {
+    if (!customVault || customVault.trim() === '') {
       return null;
     }
 
@@ -29,51 +29,79 @@ class GithubRepository {
     return null;
   }
 
+  getDiskCacheFile(filePath) {
+    try {
+      const cacheDir = path.join(process.cwd(), '.cache', 'obsidian_notes');
+      if (!fs.existsSync(cacheDir)) return null;
+      const safeKey = Buffer.from(filePath).toString('hex') + '.json';
+      const cachePath = path.join(cacheDir, safeKey);
+      if (fs.existsSync(cachePath)) {
+        const raw = fs.readFileSync(cachePath, 'utf8');
+        return JSON.parse(raw);
+      }
+    } catch (e) {}
+    return null;
+  }
+
+  saveDiskCacheFile(filePath, fileObj) {
+    try {
+      const cacheDir = path.join(process.cwd(), '.cache', 'obsidian_notes');
+      if (!fs.existsSync(cacheDir)) {
+        fs.mkdirSync(cacheDir, { recursive: true });
+      }
+      const safeKey = Buffer.from(filePath).toString('hex') + '.json';
+      const cachePath = path.join(cacheDir, safeKey);
+      fs.writeFileSync(cachePath, JSON.stringify(fileObj), 'utf8');
+    } catch (e) {}
+  }
+
   getHeaders() {
+    require('dotenv').config({ override: true });
+    const token = process.env.GITHUB_PAT || env.github.token;
     const headers = {
       'User-Agent': 'Jarvis-AI-Brain',
       'Accept': 'application/vnd.github.v3+json'
     };
-    if (env.github.token) {
-      headers['Authorization'] = `Bearer ${env.github.token}`;
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
     }
     return headers;
   }
 
   async getTree(forceRefresh = false) {
-    require('dotenv').config();
+    require('dotenv').config({ override: true });
     const owner = process.env.GITHUB_OWNER || env.github.owner || 'boomhuyxt';
     const repo = process.env.GITHUB_REPO || env.github.repo || 'Obsidian-Karik-Ai';
+    const token = process.env.GITHUB_PAT || env.github.token;
 
     if (!forceRefresh && this.treeCache && (Date.now() - this.treeCacheTime < this.TREE_CACHE_TTL)) {
       return this.treeCache;
     }
 
     // 1. Primary: Fetch from GitHub API
-    if (env.github.token) {
+    if (token) {
       try {
-        let branch = 'main';
-        const repoRes = await fetch(`https://api.github.com/repos/${owner}/${repo}`, {
+        let branch = process.env.GITHUB_BRANCH || 'main';
+        let treeRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/trees/${branch}?recursive=1`, {
           headers: this.getHeaders(),
-          signal: AbortSignal.timeout(8000)
+          signal: AbortSignal.timeout(10000)
         });
-        if (repoRes.ok) {
-          const repoData = await repoRes.json();
-          branch = repoData.default_branch || 'main';
-        } else if (repoRes.status === 403) {
-          this.lastError = { status: 403, message: `GitHub API bị giới hạn tần suất (Rate limit) hoặc bị chặn truy cập cho repo ${owner}/${repo}.` };
-          console.warn(`[GithubRepo] 403 Rate limit exceeded or access denied for ${owner}/${repo}`);
-        } else if (repoRes.status === 401) {
-          this.lastError = { status: 401, message: `Token GITHUB_PAT trong .env đã hết hạn hoặc không đúng (401 Bad credentials).` };
-          console.warn(`[GithubRepo] 401 Bad credentials for token in .env`);
-        } else if (repoRes.status === 404) {
-          this.lastError = { status: 404, message: `Không tìm thấy repository ${owner}/${repo} trên GitHub (404 Not Found hoặc repo riêng tư thiếu quyền truy cập).` };
-        }
 
-        const treeRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/trees/${branch}?recursive=1`, {
-          headers: this.getHeaders(),
-          signal: AbortSignal.timeout(8000)
-        });
+        // If main returned 404, look up default branch
+        if (treeRes.status === 404) {
+          const repoRes = await fetch(`https://api.github.com/repos/${owner}/${repo}`, {
+            headers: this.getHeaders(),
+            signal: AbortSignal.timeout(8000)
+          });
+          if (repoRes.ok) {
+            const repoData = await repoRes.json();
+            branch = repoData.default_branch || 'main';
+            treeRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/trees/${branch}?recursive=1`, {
+              headers: this.getHeaders(),
+              signal: AbortSignal.timeout(10000)
+            });
+          }
+        }
 
         if (treeRes.ok) {
           const treeData = await treeRes.json();
@@ -83,6 +111,21 @@ class GithubRepository {
             this.treeCacheTime = Date.now();
             return this.treeCache;
           }
+        } else if (treeRes.status === 403) {
+          const errBody = await treeRes.json().catch(() => ({}));
+          const isSecondary = errBody.message && errBody.message.toLowerCase().includes('secondary');
+          this.lastError = {
+            status: 403,
+            message: isSecondary
+              ? `GitHub chạm Secondary Rate Limit (quá nhiều request song song). Hệ thống tự động chuyển sang local vault / offline cache.`
+              : `GitHub API bị giới hạn tần suất (Rate limit) hoặc bị chặn quyền truy cập repo ${owner}/${repo}.`
+          };
+          console.warn(`[GithubRepo] 403 Rate limit for ${owner}/${repo}:`, errBody.message || 'Access denied');
+        } else if (treeRes.status === 401) {
+          this.lastError = { status: 401, message: `Token GITHUB_PAT trong .env đã hết hạn hoặc không đúng (401 Bad credentials).` };
+          console.warn(`[GithubRepo] 401 Bad credentials for token in .env`);
+        } else if (treeRes.status === 404) {
+          this.lastError = { status: 404, message: `Không tìm thấy repository ${owner}/${repo} trên GitHub (404 Not Found hoặc repo riêng tư thiếu quyền truy cập).` };
         }
       } catch (err) {
         this.lastError = { status: 500, message: `Lỗi kết nối GitHub API: ${err.message}` };
@@ -137,6 +180,7 @@ class GithubRepository {
   }
 
   async getFile(filePath) {
+    require('dotenv').config({ override: true });
     const owner = process.env.GITHUB_OWNER || env.github.owner || 'boomhuyxt';
     const repo = process.env.GITHUB_REPO || env.github.repo || 'Obsidian-Karik-Ai';
 
@@ -145,31 +189,7 @@ class GithubRepository {
       return this.memoryFiles.get(filePath);
     }
 
-    // 2. Primary: Fetch from GitHub REST API
-    if (env.github.token) {
-      const safePath = filePath.split('/').map(p => encodeURIComponent(p)).join('/');
-      try {
-        const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${safePath}`, {
-          headers: this.getHeaders(),
-          signal: AbortSignal.timeout(8000)
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          const content = Buffer.from(data.content, 'base64').toString('utf-8');
-          const fileObj = { path: filePath, content, sha: data.sha };
-          this.memoryFiles.set(filePath, fileObj);
-          return fileObj;
-        } else if (res.status === 404) {
-          // File not found on GitHub yet
-          return { path: filePath, content: `# ${filePath}\n\nFile mới tạo hoặc chưa tồn tại trên repository.`, sha: null };
-        }
-      } catch (err) {
-        console.warn(`[GithubRepo] getFile error for ${filePath}:`, err.message);
-      }
-    }
-
-    // 3. Fallback: Check local vault if available
+    // 2. Local Vault (Fastest & Zero API calls)
     const localVault = this.getLocalVaultPath();
     if (localVault) {
       try {
@@ -182,6 +202,38 @@ class GithubRepository {
         }
       } catch (err) {
         console.warn(`[GithubRepo] Local getFile notice:`, err.message);
+      }
+    }
+
+    // 3. Check persistent disk cache
+    const diskCached = this.getDiskCacheFile(filePath);
+    if (diskCached && diskCached.content) {
+      this.memoryFiles.set(filePath, diskCached);
+      return diskCached;
+    }
+
+    // 4. Primary Remote: Fetch from GitHub REST API
+    const token = process.env.GITHUB_PAT || env.github.token;
+    if (token) {
+      const safePath = filePath.split('/').map(p => encodeURIComponent(p)).join('/');
+      try {
+        const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${safePath}`, {
+          headers: this.getHeaders(),
+          signal: AbortSignal.timeout(8000)
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          const content = Buffer.from(data.content, 'base64').toString('utf-8');
+          const fileObj = { path: filePath, content, sha: data.sha };
+          this.memoryFiles.set(filePath, fileObj);
+          this.saveDiskCacheFile(filePath, fileObj);
+          return fileObj;
+        } else if (res.status === 404) {
+          return { path: filePath, content: `# ${filePath}\n\nFile mới tạo hoặc chưa tồn tại trên repository.`, sha: null };
+        }
+      } catch (err) {
+        console.warn(`[GithubRepo] getFile error for ${filePath}:`, err.message);
       }
     }
 

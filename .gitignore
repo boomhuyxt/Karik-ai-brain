@@ -16,6 +16,7 @@ yarn-error.log*
 
 # Scratch & IDE
 scratch/
+.cache/
 .system_generated/
 .DS_Store
 Thumbs.db

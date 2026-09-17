@@ -9,16 +9,22 @@ module.exports = {
   nodeEnv: process.env.NODE_ENV || 'development',
   github: {
     get token() {
+      require('dotenv').config({ override: true });
       return process.env.GITHUB_PAT || '';
     },
     get owner() {
+      require('dotenv').config({ override: true });
       return process.env.GITHUB_OWNER || 'boomhuyxt';
     },
     get repo() {
+      require('dotenv').config({ override: true });
       return process.env.GITHUB_REPO || 'Obsidian-Karik-Ai';
     }
   },
-  obsidianVaultPath: process.env.OBSIDIAN_VAULT_PATH || '',
+  get obsidianVaultPath() {
+    require('dotenv').config({ override: true });
+    return process.env.OBSIDIAN_VAULT_PATH || '';
+  },
   supabase: {
     url: process.env.SUPABASE_URL || 'https://blrimwahpwfqewfmmtet.supabase.co',
     key: process.env.SUPABASE_KEY || '',

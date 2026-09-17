@@ -76,7 +76,8 @@ router.post('/tts', async (req, res, next) => {
 // Backwards-compatible / Helper API endpoints
 router.get('/nodes', async (req, res, next) => {
   try {
-    const data = await graphService.getGraphData();
+    const forceRefresh = req.query.refresh === 'true';
+    const data = await graphService.getGraphData(forceRefresh);
     res.json(data);
   } catch (err) {
     next(err);

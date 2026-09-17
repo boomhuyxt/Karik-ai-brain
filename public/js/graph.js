@@ -57,9 +57,10 @@ const DEFAULTS = {
 /* ==========================================================
    1. DATA FETCHING & INITIALIZATION
    ========================================================== */
-async function fetchAndRenderGraph() {
+async function fetchAndRenderGraph(forceRefresh = false) {
     try {
-        const res = await fetch('/api/nodes');
+        const url = forceRefresh ? '/api/nodes?refresh=true' : '/api/nodes';
+        const res = await fetch(url);
         if (!res.ok) throw new Error('Failed to load graph data');
         currentGraphData = await res.json();
 
@@ -107,7 +108,13 @@ function renderFallbackNotice(data) {
                 </div>
                 <p class="text-slate-200 text-[11px] leading-relaxed m-0">${errorMsg}</p>
                 <div class="pt-1 text-[11px] text-amber-200/80 border-t border-amber-500/20 mt-1">
-                    💡 <strong>Cách sửa:</strong> Hãy cập nhật token <code class="bg-black/50 text-amber-300 px-1.5 py-0.5 rounded font-mono font-bold">GITHUB_PAT</code> mới trong file <code class="bg-black/50 text-amber-300 px-1.5 py-0.5 rounded font-mono">.env</code> để nạp lại toàn bộ các node Obsidian của bạn!
+                    💡 <strong>Cách sửa:</strong> Hãy kiểm tra token <code class="bg-black/50 text-amber-300 px-1.5 py-0.5 rounded font-mono font-bold">GITHUB_PAT</code> trong file <code class="bg-black/50 text-amber-300 px-1.5 py-0.5 rounded font-mono">.env</code> hoặc mở trực tiếp local vault.
+                </div>
+                <div class="pt-2 flex items-center justify-between border-t border-amber-500/20 mt-1">
+                    <span class="text-[10px] text-amber-200/70">Đã cập nhật .env hoặc muốn đồng bộ lại?</span>
+                    <button onclick="window.fetchAndRenderGraph(true)" class="px-2.5 py-1 bg-amber-500/30 hover:bg-amber-500/50 text-amber-100 border border-amber-500/40 rounded-lg text-[11px] font-semibold transition-all flex items-center gap-1 cursor-pointer">
+                        <span class="material-symbols-outlined text-[13px]">sync</span> Thử kết nối lại ngay
+                    </button>
                 </div>
             </div>
             <button onclick="document.getElementById('graphFallbackNotice')?.remove()" class="text-slate-400 hover:text-white p-0.5 rounded transition-colors" title="Đóng thông báo">
