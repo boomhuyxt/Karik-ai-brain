@@ -26,4 +26,19 @@ router.post('/shop-order', (req, res) => inventoryController.handleShopOrderAndD
 // 4. Chủ Shop xem thông báo biến động kho riêng của shop mình
 router.get('/shop-alerts', (req, res) => inventoryController.getShopSpecificAlerts(req, res));
 
+// 5. Chủ Shop xem Báo cáo doanh thu & sản phẩm bán trong ngày
+router.get('/daily-report', (req, res) => inventoryController.getDailySalesReport(req, res));
+
+// 6. Chủ Shop xuất file Excel tồn kho mới nhất đã trừ đơn hàng
+router.get('/export-excel', (req, res) => inventoryController.exportInventoryExcel(req, res));
+
+// 7. Quản lý File Upload (Admin Dashboard)
+router.get('/files', (req, res) => inventoryController.getAllKnowledgeFiles(req, res));
+router.delete('/files/:id', (req, res) => inventoryController.deleteKnowledgeFile(req, res));
+
+// 8. Bưu Cục Đơn Hàng (Role Bưu Cục / Logistics)
+router.get('/post-office-orders', (req, res) => inventoryController.getPostOfficeOrders(req, res));
+router.post('/post-office-orders/:id/status', (req, res) => inventoryController.updatePostOfficeOrderStatus(req, res));
+router.post('/post-office-orders/status', (req, res) => inventoryController.updatePostOfficeOrderStatus(req, res));
+
 module.exports = router;

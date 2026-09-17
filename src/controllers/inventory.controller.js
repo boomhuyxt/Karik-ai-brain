@@ -5,6 +5,7 @@ const inventoryQueryService = require('../services/inventory/inventoryQuery.serv
 const stockAlertService = require('../services/inventory/stockAlert.service');
 const chatFileHandlerService = require('../services/ai/chatFileHandler.service');
 const shopChatbotService = require('../services/ai/shopChatbot.service');
+const shopReportService = require('../services/inventory/shopReport.service');
 
 class InventoryController {
   // 1. Lấy danh sách hàng hóa trong kho
@@ -157,9 +158,11 @@ class InventoryController {
     try {
       const shop_id = (req.body && req.body.shop_id) || req.query.shop_id || 'default_shop';
       const question = (req.body && req.body.question) || req.query.q || req.query.question || '';
+      const session_id = (req.body && req.body.session_id) || req.query.session_id || shop_id;
       const result = await shopChatbotService.answerCustomerQuestion({
         shop_id,
-        question
+        question,
+        session_id
       });
       return res.json({ success: true, ...result });
     } catch (err) {
@@ -194,6 +197,115 @@ class InventoryController {
       return res.status(500).json({ success: false, error: err.message });
     }
   }
+
+  // 12. Báo cáo doanh thu & sản phẩm bán trong ngày
+  async getDailySalesReport(req, res) {
+    try {
+      const shop_id = req.query.shop_id || 'default_shop';
+      const date = req.query.date || null;
+      const report = await shopReportService.generateDailySalesReport(shop_id, date);
+      return res.json({ success: true, ...report });
+    } catch (err) {
+      return res.status(500).json({ success: false, error: err.message });
+    }
+  }
+
+  // 13. Xuất file Excel tồn kho mới nhất đã trừ đơn hàng
+  async exportInventoryExcel(req, res) {
+    try {
+      const shop_id = req.query.shop_id || 'default_shop';
+      const result = await shopReportService.exportUpdatedInventoryExcel(shop_id);
+      return res.json({ success: true, ...result });
+    } catch (err) {
+      return res.status(500).json({ success: false, error: err.message });
+    }
+  }
+
+  // 14. Lấy danh sách toàn bộ các file Excel/CSV đã upload (Dành cho Quản Lý Upload File)
+  async getAllKnowledgeFiles(req, res) {
+    try {
+      const shopKnowledgeRepo = require('../repositories/shopKnowledge.repository');
+      const shop_id = req.query.shop_id || null;
+      let files = [];
+      if (shop_id) {
+        files = await shopKnowledgeRepo.getFilesByShop(shop_id);
+      } else {
+        files = await shopKnowledgeRepo.getAllFiles();
+      }
+
+      // Thống kê metadata cho từng file
+      const formattedFiles = files.map(f => {
+        const items = Array.isArray(f.inventory_data) ? f.inventory_data : [];
+        return {
+          id: f.id,
+          shop_id: f.shop_id,
+          file_name: f.file_name,
+          file_path: f.file_path,
+          total_items: items.length,
+          in_stock_count: items.filter(i => Number(i.quantity || 0) > 0).length,
+          out_of_stock_count: items.filter(i => Number(i.quantity || 0) <= 0).length,
+          created_at: f.created_at,
+          updated_at: f.updated_at,
+          items_preview: items.slice(0, 10),
+          all_items: items
+        };
+      });
+
+      return res.json({
+        success: true,
+        total_files: formattedFiles.length,
+        data: formattedFiles
+      });
+    } catch (err) {
+      return res.status(500).json({ success: false, error: err.message });
+    }
+  }
+
+  // 15. Xóa file upload theo ID
+  async deleteKnowledgeFile(req, res) {
+    try {
+      const shopKnowledgeRepo = require('../repositories/shopKnowledge.repository');
+      const file_id = req.params.id || req.body.file_id;
+      if (!file_id) {
+        return res.status(400).json({ success: false, error: 'Thiếu file_id cần xóa.' });
+      }
+      const result = await shopKnowledgeRepo.deleteFile(file_id);
+      return res.json(result);
+    } catch (err) {
+      return res.status(500).json({ success: false, error: err.message });
+    }
+  }
+  // 16. Lấy toàn bộ đơn hàng chuyển tiếp về Bưu Cục
+  async getPostOfficeOrders(req, res) {
+    try {
+      const shopKnowledgeRepo = require('../repositories/shopKnowledge.repository');
+      const orders = await shopKnowledgeRepo.getAllOrders();
+      return res.json({
+        success: true,
+        total_orders: orders.length,
+        data: orders
+      });
+    } catch (err) {
+      return res.status(500).json({ success: false, error: err.message });
+    }
+  }
+
+  // 17. Cập nhật trạng thái đơn hàng (Đã in vận đơn / Đang vận chuyển / Giao thành công)
+  async updatePostOfficeOrderStatus(req, res) {
+    try {
+      const shopKnowledgeRepo = require('../repositories/shopKnowledge.repository');
+      const orderId = req.params.id || req.body.order_id;
+      const { status } = req.body;
+      if (!orderId) {
+        return res.status(400).json({ success: false, error: 'Thiếu mã đơn hàng (order_id).' });
+      }
+      const result = await shopKnowledgeRepo.updateOrderStatus(orderId, status || 'PRINTED');
+      return res.json(result);
+    } catch (err) {
+      return res.status(500).json({ success: false, error: err.message });
+    }
+  }
 }
 
 module.exports = new InventoryController();
+

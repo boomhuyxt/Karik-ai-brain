@@ -1,13 +1,14 @@
 const test = require('node:test');
 const assert = require('node:assert');
 const authService = require('../../src/services/auth/auth.service');
+const userRepository = require('../../src/repositories/user.repository');
 
 test('AuthService - Register & Login Flow', async (t) => {
   const testEmail = `test_${Date.now()}@example.com`;
   const testPassword = 'Password123!';
   const testName = 'Test User';
 
-  // 1. Test registration
+  // 1. Test registration (must strictly grant default role 0 - User/Chủ Shop)
   const regResult = await authService.register({
     email: testEmail,
     password: testPassword,
@@ -17,7 +18,20 @@ test('AuthService - Register & Login Flow', async (t) => {
   assert.strictEqual(regResult.success, true);
   assert.strictEqual(regResult.user.email, testEmail.toLowerCase());
   assert.strictEqual(regResult.user.fullName, testName);
+  assert.strictEqual(regResult.user.role, '0', 'New registrations must receive default role 0 (User/Chủ Shop)');
   assert.ok(regResult.token);
+
+  // Test registration with email containing "admin" keyword (must still receive role 0)
+  const fakeAdminEmail = `admin_imposter_${Date.now()}@example.com`;
+  const fakeAdminReg = await authService.register({
+    email: fakeAdminEmail,
+    password: testPassword,
+    fullName: 'Fake Admin'
+  });
+  assert.strictEqual(fakeAdminReg.user.role, '0', 'Emails containing "admin" must still receive default role 0');
+  const fakeAdminLogin = await authService.login(fakeAdminEmail, testPassword);
+  assert.strictEqual(fakeAdminLogin.user.role, '0', 'Logged in fake admin must have role 0');
+  userRepository.memoryUsers.delete(fakeAdminEmail.toLowerCase());
 
   // 2. Test duplicate registration error
   await assert.rejects(
@@ -45,11 +59,22 @@ test('AuthService - Register & Login Flow', async (t) => {
     (err) => err.statusCode === 401
   );
 
-  // 5. Test Admin adminAI login & role
-  const adminLoginResult = await authService.login('adminAI', 'admin123456');
+  // 5. Test Admin dynamic login & role
+  const dynamicAdminEmail = `admin_test_${Date.now()}@example.com`;
+  userRepository.memoryUsers.set(dynamicAdminEmail, {
+    id: `usr_admin_test_${Date.now()}`,
+    email: dynamicAdminEmail,
+    fullName: 'Test Dynamic Admin',
+    passwordHash: require('../../src/utils/crypto').hashPassword('admin123456'),
+    role: '1',
+    status: 'active',
+    createdAt: new Date().toISOString()
+  });
+  const adminLoginResult = await authService.login(dynamicAdminEmail, 'admin123456');
   assert.strictEqual(adminLoginResult.success, true);
   assert.strictEqual(adminLoginResult.user.role, '1');
   assert.ok(adminLoginResult.token);
+  userRepository.memoryUsers.delete(dynamicAdminEmail);
 
   // 6. Test Forgot Password & Reset Password Flow
   const forgotRes = await authService.forgotPassword(testEmail);

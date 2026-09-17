@@ -18,18 +18,25 @@
         <div class="hidden md:flex items-center gap-2.5">
             <!-- Admin Only Header Controls -->
             <div id="adminHeaderActions" class="flex items-center gap-2.5">
-                <!-- Search Input -->
-                <div class="relative">
-                    <span class="material-symbols-outlined absolute left-2.5 top-2 text-base text-slate-400 dark:text-on-surface-variant">search</span>
-                    <input id="graphSearchInput" type="text" placeholder="Tìm kiếm note / tag..."
-                        class="bg-slate-100 dark:bg-surface-container-high/80 border border-slate-300/80 dark:border-white/10 rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-800 dark:text-white font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none focus:border-purple-500 transition-all w-44 lg:w-56">
-                </div>
-
-                <!-- System Monitoring & Risk Dashboard Button -->
+                <!-- System Monitoring & Risk Dashboard Button (Moved to 1st position) -->
                 <button id="btnSystemMonitor" onclick="window.openSystemMonitorModal()" title="Xem độ tiêu hao Token, Tiến độ dự án & Độ rủi ro các API"
                     class="bg-cyan-50 hover:bg-cyan-100 dark:bg-cyan-500/20 dark:hover:bg-cyan-500/30 text-cyan-900 dark:text-cyan-300 border border-cyan-300/90 dark:border-cyan-400/40 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs hover:shadow-sm active:scale-95 cursor-pointer">
                     <span class="material-symbols-outlined text-base text-cyan-600 dark:text-cyan-300">analytics</span>
                     <span>Giám Sát & Rủi Ro</span>
+                </button>
+
+                <!-- Post Office & Shipping Button -->
+                <button id="btnPostOfficeOrders" onclick="window.openPostOfficeModal()" title="Bưu Cục Đơn Hàng & In Vận Đơn dán gói hàng"
+                    class="bg-amber-50 hover:bg-amber-100 dark:bg-amber-500/20 dark:hover:bg-amber-500/30 text-amber-900 dark:text-amber-300 border border-amber-300/90 dark:border-amber-400/40 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs hover:shadow-sm active:scale-95 cursor-pointer">
+                    <span class="material-symbols-outlined text-base text-amber-600 dark:text-amber-300">local_shipping</span>
+                    <span>Bưu Cục Đơn Hàng</span>
+                </button>
+
+                <!-- Knowledge & File Storage Manager Button (Replaces old position) -->
+                <button id="btnManageFiles" onclick="window.openFileManagerModal()" title="Quản lý các file Excel/CSV kiến thức kho đã upload lên Supabase"
+                    class="bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-600/20 dark:hover:bg-indigo-600/30 text-indigo-900 dark:text-indigo-200 border border-indigo-300/90 dark:border-indigo-400/40 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs hover:shadow-sm active:scale-95 cursor-pointer">
+                    <span class="material-symbols-outlined text-base text-indigo-600 dark:text-indigo-300">folder_shared</span>
+                    <span>Quản Lý File Upload</span>
                 </button>
 
                 <!-- User Management Button (Admin Only) -->
@@ -61,6 +68,13 @@
 
                 <div class="h-4 w-[1px] bg-slate-300 dark:bg-white/15 mx-1"></div>
             </div>
+
+            <!-- Post Office Standalone Button (Visible for Post Office role when admin header is hidden) -->
+            <button id="btnPostOfficeOnly" onclick="window.openPostOfficeModal()" title="Bưu Cục Đơn Hàng & In Vận Đơn dán gói hàng" style="display: none;"
+                class="bg-amber-500 hover:bg-amber-600 text-white px-3.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95 cursor-pointer">
+                <span class="material-symbols-outlined text-base">local_shipping</span>
+                <span>📦 Đơn Hàng & In Vận Đơn</span>
+            </button>
 
             <!-- Theme Mode Switcher (Visible to All Users & Admin) -->
             <button id="btnThemeToggle" onclick="window.toggleTheme()" title="Chuyển đổi chế độ Sáng / Tối (Dark / Light)"
@@ -124,21 +138,33 @@
             <span id="themeModeBadgeMobile" class="text-[10px] font-mono px-2 py-0.5 rounded bg-purple-100 dark:bg-primary/20 text-purple-700 dark:text-primary border border-purple-300 dark:border-primary/30">DARK</span>
         </button>
 
+        <!-- Post Office Only Mobile Button -->
+        <button id="btnPostOfficeMobileOnly" onclick="window.openPostOfficeModal()" style="display: none;"
+            class="w-full bg-amber-500 hover:bg-amber-600 text-white py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-sm">
+            <span class="material-symbols-outlined text-base">local_shipping</span>
+            <span>📦 Bưu Cục & In Vận Đơn</span>
+        </button>
+
         <!-- Admin Only Mobile Controls -->
         <div id="adminMobileActions" class="space-y-3">
-            <!-- Search Input Mobile -->
-            <div class="relative">
-                <span class="material-symbols-outlined absolute left-3 top-2.5 text-base text-slate-400 dark:text-on-surface-variant">search</span>
-                <input id="graphSearchInputMobile" type="text" placeholder="Tìm kiếm note / tag..."
-                    class="w-full bg-slate-100 dark:bg-surface-container-high/90 border border-slate-300/80 dark:border-white/15 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-800 dark:text-white font-medium placeholder:text-slate-400 outline-none focus:border-purple-500">
-            </div>
-
             <!-- Action Buttons Grid -->
             <div class="grid grid-cols-2 gap-2">
+                <button id="btnPostOfficeOrdersMobile" onclick="window.openPostOfficeModal()"
+                    class="w-full bg-amber-50 hover:bg-amber-100 dark:bg-amber-600/20 dark:hover:bg-amber-600/30 text-amber-800 dark:text-amber-200 border border-amber-300 dark:border-amber-400/40 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all col-span-2">
+                    <span class="material-symbols-outlined text-base text-amber-600 dark:text-amber-300">local_shipping</span>
+                    <span>Bưu Cục & In Vận Đơn</span>
+                </button>
+
                 <button id="btnSystemMonitorMobile" onclick="window.openSystemMonitorModal()"
                     class="w-full bg-cyan-50 hover:bg-cyan-100 dark:bg-cyan-600/20 dark:hover:bg-cyan-600/30 text-cyan-800 dark:text-cyan-200 border border-cyan-300 dark:border-cyan-400/40 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all col-span-2">
                     <span class="material-symbols-outlined text-base text-cyan-600 dark:text-cyan-300">analytics</span>
                     <span>Giám Sát Token & Rủi Ro API</span>
+                </button>
+
+                <button id="btnManageFilesMobile" onclick="window.openFileManagerModal()"
+                    class="w-full bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-600/20 dark:hover:bg-indigo-600/30 text-indigo-800 dark:text-indigo-200 border border-indigo-300 dark:border-indigo-400/40 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all col-span-2">
+                    <span class="material-symbols-outlined text-base text-indigo-600 dark:text-indigo-300">folder_shared</span>
+                    <span>Quản Lý File Upload & Kho</span>
                 </button>
 
                 <button id="btnManageUsersMobile"

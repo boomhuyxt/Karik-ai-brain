@@ -84,77 +84,90 @@ class ExcelParserService {
    * Tự động nhận diện và map tên cột tiếng Việt/Anh sang schema chuẩn
    */
   normalizeRows(rawRows) {
-    return rawRows.map((row, index) => {
-      const getVal = (possibleKeys) => {
-        for (const key of possibleKeys) {
-          const cleanKey = key.trim().toLowerCase();
-          const foundKey = Object.keys(row).find(k => {
-            const cleanRowKey = k.trim().toLowerCase();
-            return cleanRowKey === cleanKey || cleanRowKey.includes(cleanKey);
-          });
-          if (foundKey && row[foundKey] !== undefined && row[foundKey] !== '') {
-            return row[foundKey];
+    const junkRegex = /^(ghi chú|lưu ý|hướng dẫn|chú ý|tổng cộng|header|footer|note|cảnh báo|ô tồn kho)\b/i;
+
+    return rawRows
+      .filter(row => {
+        const textValues = Object.values(row).map(v => String(v || '').trim()).join(' ');
+        if (!textValues || junkRegex.test(textValues)) return false;
+        return true;
+      })
+      .map((row, index) => {
+        const getVal = (possibleKeys) => {
+          for (const key of possibleKeys) {
+            const cleanKey = key.trim().toLowerCase();
+            const foundKey = Object.keys(row).find(k => {
+              const cleanRowKey = k.trim().toLowerCase();
+              return cleanRowKey === cleanKey || cleanRowKey.includes(cleanKey);
+            });
+            if (foundKey && row[foundKey] !== undefined && row[foundKey] !== '') {
+              return row[foundKey];
+            }
+          }
+          return null;
+        };
+
+        let name = getVal([
+          'tên sản phẩm', 'tên hàng hóa', 'tên hàng', 'tên mặt hàng', 'tên phụ tùng',
+          'tên vật tư', 'tên linh kiện', 'mặt hàng', 'sản phẩm', 'phụ tùng', 'tên',
+          'product name', 'item name', 'name', 'mô tả'
+        ]);
+
+        if (!name) {
+          const textValues = Object.values(row).filter(v => typeof v === 'string' && isNaN(v) && v.trim().length > 2);
+          if (textValues.length > 0) {
+            name = textValues.reduce((a, b) => a.length > b.length ? a : b);
+          } else {
+            name = `Sản phẩm dòng ${index + 1}`;
           }
         }
-        return null;
-      };
 
-      let name = getVal([
-        'tên sản phẩm', 'tên hàng hóa', 'tên hàng', 'tên mặt hàng', 'tên phụ tùng',
-        'tên vật tư', 'tên linh kiện', 'mặt hàng', 'sản phẩm', 'phụ tùng', 'tên',
-        'product name', 'item name', 'name', 'mô tả'
-      ]);
+        const sku = getVal(['mã sp', 'mã sản phẩm', 'mã hàng', 'mã phụ tùng', 'mã sku', 'sku', 'code', 'mã']) || `SKU-${Date.now()}-${index + 1}`;
+        const category = getVal(['danh mục', 'phân loại', 'loại hàng', 'loại phụ tùng', 'loại', 'category', 'group']) || 'Phụ tùng / Linh kiện';
+        const compatible_models = getVal(['dòng xe', 'áp dụng cho xe', 'xe sử dụng', 'dùng cho xe', 'dùng cho', 'tương thích', 'loại xe', 'đời xe', 'models', 'xe']) || String(name);
+        
+        const rawQty = getVal(['tồn kho', 'số lượng tồn', 'số lượng thực tế', 'số lượng', 'sl tồn', 'sl', 'tồn', 'hiện có', 'quantity', 'stock', 'qty']);
+        const quantity = rawQty !== null && !isNaN(rawQty) ? Number(rawQty) : 0;
 
-      if (!name) {
-        const textValues = Object.values(row).filter(v => typeof v === 'string' && isNaN(v) && v.trim().length > 2);
-        if (textValues.length > 0) {
-          name = textValues.reduce((a, b) => a.length > b.length ? a : b);
-        } else {
-          name = `Sản phẩm dòng ${index + 1}`;
+        const unit = getVal(['đvt', 'đơn vị tính', 'đơn vị', 'dvt', 'unit']) || 'cái';
+        
+        const rawPrice = getVal(['giá bán', 'giá bán lẻ', 'giá niêm yết', 'đơn giá', 'thành tiền', 'giá', 'price']);
+        const price = rawPrice !== null && !isNaN(rawPrice) ? Number(rawPrice) : 0;
+
+        const rawCost = getVal(['giá nhập', 'giá vốn', 'cost price', 'cost']);
+        const cost_price = rawCost !== null && !isNaN(rawCost) ? Number(rawCost) : 0;
+
+        const location = getVal(['vị trí kho', 'vị trí', 'kệ', 'khay', 'tủ', 'location']) || 'Kho chính';
+        const min_threshold = Number(getVal(['ngưỡng tối thiểu', 'cảnh báo tồn', 'tồn tối thiểu', 'min threshold']) || 3);
+        const description = getVal(['mô tả', 'ghi chú', 'tính năng', 'nhà cung cấp', 'notes']) || '';
+
+        let status = 'in_stock';
+        if (quantity <= 0) {
+          status = 'out_of_stock';
+        } else if (quantity <= min_threshold) {
+          status = 'low_stock';
         }
-      }
 
-      const sku = getVal(['mã sp', 'mã sản phẩm', 'mã hàng', 'mã phụ tùng', 'mã sku', 'sku', 'code', 'mã']) || `SKU-${Date.now()}-${index + 1}`;
-      const category = getVal(['danh mục', 'phân loại', 'loại hàng', 'loại phụ tùng', 'loại', 'category', 'group']) || 'Phụ tùng / Linh kiện';
-      const compatible_models = getVal(['dòng xe', 'áp dụng cho xe', 'xe sử dụng', 'dùng cho xe', 'dùng cho', 'tương thích', 'loại xe', 'đời xe', 'models', 'xe']) || String(name);
-      
-      const rawQty = getVal(['tồn kho', 'số lượng tồn', 'số lượng thực tế', 'số lượng', 'sl tồn', 'sl', 'tồn', 'hiện có', 'quantity', 'stock', 'qty']);
-      const quantity = rawQty !== null && !isNaN(rawQty) ? Number(rawQty) : 0;
-
-      const unit = getVal(['đvt', 'đơn vị tính', 'đơn vị', 'dvt', 'unit']) || 'cái';
-      
-      const rawPrice = getVal(['giá bán', 'giá bán lẻ', 'giá niêm yết', 'đơn giá', 'thành tiền', 'giá', 'price']);
-      const price = rawPrice !== null && !isNaN(rawPrice) ? Number(rawPrice) : 0;
-
-      const rawCost = getVal(['giá nhập', 'giá vốn', 'cost price', 'cost']);
-      const cost_price = rawCost !== null && !isNaN(rawCost) ? Number(rawCost) : 0;
-
-      const location = getVal(['vị trí kho', 'vị trí', 'kệ', 'khay', 'tủ', 'location']) || 'Kho chính';
-      const min_threshold = Number(getVal(['ngưỡng tối thiểu', 'cảnh báo tồn', 'tồn tối thiểu', 'min threshold']) || 3);
-      const description = getVal(['mô tả', 'ghi chú', 'tính năng', 'nhà cung cấp', 'notes']) || '';
-
-      let status = 'in_stock';
-      if (quantity <= 0) {
-        status = 'out_of_stock';
-      } else if (quantity <= min_threshold) {
-        status = 'low_stock';
-      }
-
-      return {
-        sku: String(sku).trim(),
-        name: String(name).trim(),
-        category: String(category).trim(),
-        compatible_models: String(compatible_models).trim(),
-        quantity: Math.max(0, quantity),
-        unit: String(unit).trim(),
-        price: Math.max(0, price),
-        cost_price: Math.max(0, cost_price),
-        location: String(location).trim(),
-        min_threshold: Math.max(1, min_threshold),
-        status,
-        description: String(description).trim()
-      };
-    });
+        return {
+          sku: String(sku).trim(),
+          name: String(name).trim(),
+          category: String(category).trim(),
+          compatible_models: String(compatible_models).trim(),
+          quantity: Math.max(0, quantity),
+          unit: String(unit).trim(),
+          price: Math.max(0, price),
+          cost_price: Math.max(0, cost_price),
+          location: String(location).trim(),
+          min_threshold: Math.max(1, min_threshold),
+          status,
+          description: String(description).trim()
+        };
+      })
+      .filter(item => {
+        if (!item.name || item.name.length < 2) return false;
+        if (junkRegex.test(item.name)) return false;
+        return true;
+      });
   }
 }
 

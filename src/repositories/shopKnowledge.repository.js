@@ -79,23 +79,91 @@ class ShopKnowledgeRepository {
 
   // 2. Lấy danh sách file và dữ liệu kho của một Shop
   async getFilesByShop(shop_id) {
+    let files = [];
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('shop_knowledge_files')
+          .select('*')
+          .eq('shop_id', shop_id)
+          .order('updated_at', { ascending: false });
+
+        if (!error && Array.isArray(data)) {
+          files = data;
+        }
+      } catch (err) {}
+    }
+
+    // Merge memory files for this shop
+    const existingIds = new Set(files.map(f => f.id));
+    for (const memFile of this.memoryFiles.values()) {
+      if (memFile.shop_id === shop_id) {
+        if (!existingIds.has(memFile.id)) {
+          files.push(memFile);
+          existingIds.add(memFile.id);
+        } else {
+          const idx = files.findIndex(f => f.id === memFile.id);
+          if (idx !== -1) {
+            files[idx] = memFile;
+          }
+        }
+      }
+    }
+
+    return files.length > 0 ? files : Array.from(this.memoryFiles.values()).filter(f => f.shop_id === shop_id);
+  }
+
+  // 2.1 Lấy toàn bộ file của tất cả các shop (Dành cho Admin Dashboard / File Manager / Bưu Cục)
+  async getAllFiles() {
+    let files = [];
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('shop_knowledge_files')
+          .select('*')
+          .order('updated_at', { ascending: false });
+
+        if (!error && Array.isArray(data)) {
+          files = data;
+        }
+      } catch (err) {}
+    }
+
+    // Merge memory files
+    const existingIds = new Set(files.map(f => f.id));
+    for (const memFile of this.memoryFiles.values()) {
+      if (!existingIds.has(memFile.id)) {
+        files.push(memFile);
+        existingIds.add(memFile.id);
+      } else {
+        // Overlay latest memory changes
+        const idx = files.findIndex(f => f.id === memFile.id);
+        if (idx !== -1) {
+          files[idx] = memFile;
+        }
+      }
+    }
+
+    return files.length > 0 ? files : Array.from(this.memoryFiles.values());
+  }
+
+  // 2.2 Xóa file theo ID
+  async deleteFile(file_id) {
+    this.memoryFiles.delete(file_id);
     if (!supabase) {
-      return Array.from(this.memoryFiles.values()).filter(f => f.shop_id === shop_id);
+      return { success: true, message: 'Đã xóa file khỏi bộ nhớ.' };
     }
 
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('shop_knowledge_files')
-        .select('*')
-        .eq('shop_id', shop_id)
-        .order('updated_at', { ascending: false });
+        .delete()
+        .eq('id', file_id);
 
-      if (error || !data || data.length === 0) {
-        return Array.from(this.memoryFiles.values()).filter(f => f.shop_id === shop_id);
-      }
-      return data;
+      if (error) throw error;
+      return { success: true, message: 'Đã xóa file thành công từ database.' };
     } catch (err) {
-      return Array.from(this.memoryFiles.values()).filter(f => f.shop_id === shop_id);
+      return { success: true, message: `Đã xóa cục bộ (Lỗi Supabase: ${err.message})` };
     }
   }
 
@@ -131,46 +199,43 @@ class ShopKnowledgeRepository {
 
       for (const item of items) {
         let score = 0;
-        const name = (item.name || '').toLowerCase();
-        const models = (item.compatible_models || '').toLowerCase();
-        const sku = (item.sku || '').toLowerCase();
-        const desc = (item.description || '').toLowerCase();
+        const itemName = (item.name || '').toLowerCase();
+        const itemNameNoAccent = removeAccents(itemName);
+        const itemCategory = (item.category || '').toLowerCase();
+        const itemSku = (item.sku || '').toLowerCase();
 
-        const rawTarget = `${name} ${models} ${sku} ${desc}`;
-        const noAccentTarget = removeAccents(rawTarget);
-
-        // 1. Khớp chính xác cả cụm
-        if (tokens.length > 0 && noAccentTarget.includes(tokens.join(' '))) {
-          score += 0.9;
+        // Exact match
+        if (cleanRaw && (itemName.includes(cleanRaw) || cleanRaw.includes(itemName))) {
+          score += 60;
+        }
+        if (cleanNoAccent && itemNameNoAccent.includes(cleanNoAccent)) {
+          score += 50;
+        }
+        if (itemSku && (cleanRaw.includes(itemSku) || itemSku.includes(cleanRaw))) {
+          score += 70;
         }
 
-        // 2. Khớp từng từ khóa chính (Keywords Overlap)
-        let matchedTokens = 0;
+        // Token matching
+        let tokenMatches = 0;
         for (const token of tokens) {
-          if (noAccentTarget.includes(token)) {
-            matchedTokens++;
-          }
+          if (itemNameNoAccent.includes(token)) tokenMatches++;
+          if (itemCategory.includes(token)) tokenMatches++;
+        }
+        score += tokenMatches * 15;
+
+        // Semantic Vector Boost
+        if (vectorScore > 0.4) {
+          score += vectorScore * 30;
         }
 
-        if (tokens.length > 0) {
-          const ratio = matchedTokens / tokens.length;
-          score += ratio * 0.7;
-          if (matchedTokens > 0) score += 0.25;
-        }
-
-        // 3. Kết hợp điểm Vector
-        if (vectorScore > 0) {
-          score = Math.max(score, vectorScore);
-        }
-
-        // Nếu không truyền keyword (lấy toàn bộ danh sách) hoặc điểm số đủ cao
-        if (score >= 0.2 || !textKeyword || !textKeyword.trim()) {
+        if (score >= 15 || !textKeyword || !textKeyword.trim()) {
           matchedItems.push({
             file_id: file.id,
             file_name: file.file_name,
             shop_id: file.shop_id,
-            score: score,
-            ...item
+            score,
+            ...item,
+            item
           });
         }
       }
@@ -180,8 +245,8 @@ class ShopKnowledgeRepository {
     return matchedItems;
   }
 
-  // 4. Trừ số lượng tồn kho trong JSON và thêm Notification gửi Chủ Shop
-  async deductStockAndNotify(shop_id, skuOrName, quantitySold = 1, reason = 'Khách đặt qua Chatbot') {
+  // 4. Trừ số lượng tồn kho trong JSON và thêm Notification gửi Chủ Shop & Bưu Cục
+  async deductStockAndNotify(shop_id, skuOrName, quantitySold = 1, reason = 'Khách đặt qua Chatbot', customerDetails = {}) {
     const files = await this.getFilesByShop(shop_id);
     if (!files || files.length === 0) {
       throw new Error(`Shop "${shop_id}" chưa có dữ liệu kho nào.`);
@@ -210,31 +275,51 @@ class ShopKnowledgeRepository {
         items[itemIndex].status = newQty <= 0 ? 'out_of_stock' : (newQty <= minThreshold ? 'low_stock' : 'in_stock');
         foundItem = { ...items[itemIndex], previous_quantity: currentQty };
 
-        // Tạo thông báo mới cho Chủ Shop
+        // Tạo thông báo mới cho Chủ Shop và Bưu Cục
+        const unitPrice = Number(foundItem.price || 0);
+        const totalPrice = unitPrice * Number(quantitySold);
+        const todayStr = new Date().toISOString().split('T')[0];
+
         let alertLevel = 'INFO';
-        let alertMsg = `📦 [Đã bán] ${quantitySold} ${foundItem.unit || 'cái'} "${foundItem.name}". Tồn kho còn: ${newQty} ${foundItem.unit || 'cái'}.`;
+        let alertMsg = `📦 [Đã bán] ${quantitySold} ${foundItem.unit || 'cái'} "${foundItem.name}" (Doanh thu: ${totalPrice.toLocaleString('vi-VN')}đ). Tồn kho trước: ${currentQty} ➔ TỒN THỰC TẾ CÒN LẠI: ${newQty} ${foundItem.unit || 'cái'}.`;
 
         if (newQty <= 0) {
           alertLevel = 'CRITICAL';
-          alertMsg = `🚨 [HẾT HÀNG] "${foundItem.name}" ĐÃ HẾT HÀNG TRONG KHO (0 ${foundItem.unit || 'cái'})! Chủ shop cần nhập thêm ngay.`;
+          alertMsg = `🚨 [HẾT HÀNG] "${foundItem.name}" ĐÃ HẾT HÀNG TRONG KHO (0 ${foundItem.unit || 'cái'})! Tồn kho trước: ${currentQty} ➔ CÒN LẠI: 0. Chủ shop cần nhập thêm ngay.`;
         } else if (newQty <= minThreshold) {
           alertLevel = 'WARNING';
-          alertMsg = `⚠️ [TỒN THẤP] "${foundItem.name}" chỉ còn ${newQty} ${foundItem.unit || 'cái'}. Vui lòng chuẩn bị nhập thêm.`;
+          alertMsg = `⚠️ [TỒN THẤP] "${foundItem.name}" chỉ còn ${newQty} ${foundItem.unit || 'cái'} (Tồn kho trước: ${currentQty} ➔ CÒN LẠI: ${newQty}). Vui lòng chuẩn bị nhập thêm.`;
         }
 
+        const orderId = customerDetails.order_id || `DH_${Date.now().toString().slice(-6)}_${Math.floor(Math.random() * 1000)}`;
+        const trackingNo = customerDetails.tracking_number || `VNPOST${Date.now().toString().slice(-8)}`;
+
         const newNotification = {
-          id: `noti_${Date.now()}`,
+          id: `noti_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+          order_id: orderId,
+          tracking_number: trackingNo,
+          shop_id: shop_id,
           created_at: new Date().toISOString(),
+          sold_date: todayStr,
           level: alertLevel,
           message: alertMsg,
           item_sku: foundItem.sku,
           item_name: foundItem.name,
+          unit: foundItem.unit || 'cái',
+          unit_price: unitPrice,
+          total_price: totalPrice,
+          total_amount: Number(customerDetails.total_amount || totalPrice),
           quantity_sold: quantitySold,
+          previous_quantity: currentQty,
           remaining_quantity: newQty,
-          reason
+          reason,
+          customer_name: customerDetails.customer_name || 'Khách hàng',
+          customer_phone: customerDetails.customer_phone || '090xxxxxxx',
+          customer_address: customerDetails.customer_address || 'Địa chỉ giao hàng',
+          order_status: customerDetails.order_status || 'PENDING'
         };
 
-        const updatedNotifications = [newNotification, ...(targetFile.notifications || [])].slice(0, 50);
+        const updatedNotifications = [newNotification, ...(targetFile.notifications || [])].slice(0, 100);
 
         const updatedRecord = {
           ...targetFile,
@@ -280,6 +365,61 @@ class ShopKnowledgeRepository {
     }
     allNotis.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
     return allNotis;
+  }
+
+  // 6. Lấy toàn bộ đơn hàng từ tất cả các Shop (Dành riêng cho Bưu Cục)
+  async getAllOrders() {
+    const allFiles = await this.getAllFiles();
+    const orders = [];
+    for (const f of allFiles) {
+      if (Array.isArray(f.notifications)) {
+        const validOrders = f.notifications.filter(n => Number(n.quantity_sold || 0) > 0);
+        orders.push(...validOrders);
+      }
+    }
+    // Sắp xếp đơn mới nhất lên đầu
+    orders.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    return orders;
+  }
+
+  // 7. Cập nhật trạng thái đơn hàng (Bưu cục đánh dấu Đã in / Đang giao / Hoàn thành)
+  async updateOrderStatus(orderOrNotiId, newStatus = 'PRINTED') {
+    const allFiles = await this.getAllFiles();
+    let updated = false;
+
+    for (const file of allFiles) {
+      if (Array.isArray(file.notifications)) {
+        const notiIndex = file.notifications.findIndex(n => n.id === orderOrNotiId || n.order_id === orderOrNotiId || n.tracking_number === orderOrNotiId);
+        if (notiIndex !== -1) {
+          file.notifications[notiIndex].order_status = newStatus;
+          file.notifications[notiIndex].updated_at = new Date().toISOString();
+          
+          this.memoryFiles.set(file.id, { ...file, updated_at: new Date().toISOString() });
+
+          if (supabase) {
+            try {
+              await supabase
+                .from('shop_knowledge_files')
+                .update({
+                  notifications: file.notifications,
+                  updated_at: new Date().toISOString()
+                })
+                .eq('id', file.id);
+            } catch (e) {}
+          }
+
+          updated = true;
+          return {
+            success: true,
+            order: file.notifications[notiIndex]
+          };
+        }
+      }
+    }
+
+    if (!updated) {
+      return { success: false, message: `Không tìm thấy đơn hàng "${orderOrNotiId}".` };
+    }
   }
 
   _cosineSimilarity(vecA, vecB) {

@@ -23,8 +23,10 @@ class AuthController {
 
   async me(req, res, next) {
     try {
-      const userId = req.user?.id || 'usr_admin';
-      const result = await authService.getProfile(userId);
+      if (!req.user || !req.user.id) {
+        return res.status(401).json({ error: true, message: 'Chưa đăng nhập hoặc phiên làm việc đã hết hạn.' });
+      }
+      const result = await authService.getProfile(req.user.id);
       res.json(result);
     } catch (err) {
       res.status(err.statusCode || 404).json({ error: true, message: err.message });
