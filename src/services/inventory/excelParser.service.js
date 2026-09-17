@@ -1,6 +1,28 @@
-const XLSX = require('xlsx');
+let XLSX = null;
+try {
+  XLSX = require('xlsx');
+} catch (e) {
+  // Graceful fallback: Thư viện xlsx sẽ được nạp khi có request hoặc thông báo hướng dẫn npm install
+}
 
 class ExcelParserService {
+  /**
+   * Lấy instance XLSX một cách an toàn (lazy load)
+   */
+  getXLSX() {
+    if (!XLSX) {
+      try {
+        XLSX = require('xlsx');
+      } catch (err) {
+        throw new Error(
+          "Thư viện 'xlsx' chưa được cài đặt trong node_modules. " +
+          "Vui lòng mở Terminal và chạy lệnh: npm install (hoặc: npm install xlsx)."
+        );
+      }
+    }
+    return XLSX;
+  }
+
   /**
    * Parse file Excel / CSV từ Buffer hoặc Base64
    * @param {Buffer|string} input - Buffer file hoặc chuỗi Base64
@@ -18,20 +40,51 @@ class ExcelParserService {
       throw new Error('Dữ liệu file không hợp lệ (cần Buffer hoặc Base64).');
     }
 
-    const workbook = XLSX.read(buffer, { type: 'buffer' });
+    // Nếu XLSX chưa cài đặt, thử parse dạng CSV văn bản thuần trước khi báo lỗi
+    let xlsxLib;
+    try {
+      xlsxLib = this.getXLSX();
+    } catch (loadErr) {
+      const text = buffer.toString('utf-8');
+      if (text.includes(',') && text.includes('\n')) {
+        return this.parseCsvFallback(text);
+      }
+      throw loadErr;
+    }
+
+    const workbook = xlsxLib.read(buffer, { type: 'buffer' });
     const firstSheetName = workbook.SheetNames[0];
     if (!firstSheetName) {
       throw new Error('File Excel không có trang tính (Sheet) nào.');
     }
 
     const worksheet = workbook.Sheets[firstSheetName];
-    const rawRows = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
+    const rawRows = xlsxLib.utils.sheet_to_json(worksheet, { defval: '' });
 
     if (!rawRows || rawRows.length === 0) {
       throw new Error('File Excel không có dữ liệu.');
     }
 
     return this.normalizeRows(rawRows);
+  }
+
+  /**
+   * Bộ parser CSV thuần dự phòng khi môi trường chưa cài xlsx
+   */
+  parseCsvFallback(text) {
+    const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
+    if (lines.length < 2) return [];
+    const headers = lines[0].split(',').map(h => h.trim().replace(/^["']|["']$/g, ''));
+    const rows = [];
+    for (let i = 1; i < lines.length; i++) {
+      const values = lines[i].split(',').map(v => v.trim().replace(/^["']|["']$/g, ''));
+      const obj = {};
+      headers.forEach((h, idx) => {
+        obj[h] = values[idx] || '';
+      });
+      rows.push(obj);
+    }
+    return this.normalizeRows(rows);
   }
 
   /**
