@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html class="dark" data-bs-theme="dark" lang="vi">
+
+<head>
+    <script>
+        // Anti-FOUC immediate theme applicator
+        (function() {
+            try {
+                const savedTheme = localStorage.getItem('theme') || 'dark';
+                document.documentElement.setAttribute('data-bs-theme', savedTheme);
+                if (savedTheme === 'light') {
+                    document.documentElement.classList.remove('dark');
+                    document.documentElement.classList.add('light');
+                } else {
+                    document.documentElement.classList.remove('light');
+                    document.documentElement.classList.add('dark');
+                }
+            } catch (e) {
+                document.documentElement.setAttribute('data-bs-theme', 'dark');
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>AI Smart Inventory & Multi-Shop Chatbox Test</title>
+    <link rel="icon" type="image/png" href="/Logo/logo-removebg.png">
+
+    <!-- Bootstrap 5.3 CSS & Bootstrap Icons CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    
+    <!-- SheetJS for Client-Side Excel Generation (Local with CDN fallback) -->
+    <script src="/js/xlsx.full.min.js"></script>
+    <script>
+        if (typeof XLSX === 'undefined') {
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+            document.head.appendChild(script);
+        }
+    </script>
+
+    <!-- Google Fonts & Material Symbols -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,700&family=Plus+Jakarta+Sans:ital,wght@0,500;0,600;0,700;0,800;1,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-display: 'Plus Jakarta Sans', 'Be Vietnam Pro', sans-serif;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: #0b0f19;
+            color: #e2e8f0;
+            min-height: 100vh;
+            transition: background-color 0.25s ease, color 0.25s ease;
+        }
+
+        [data-bs-theme="light"] body {
+            background-color: #f1f5f9 !important;
+            color: #1e293b !important;
+        }
+
+        .font-display { font-family: var(--font-display); }
+
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined' !important;
+            font-weight: normal;
+            font-style: normal;
+            font-size: 20px;
+            vertical-align: middle;
+            line-height: 1;
+        }
+
+        /* Glassmorphism Panels */
+        .glass-panel {
+            background: rgba(18, 24, 38, 0.75);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+            transition: all 0.2s ease;
+        }
+
+        [data-bs-theme="light"] .glass-panel {
+            background: rgba(255, 255, 255, 0.9);
+            border-color: rgba(0, 0, 0, 0.08);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+        }
+
+        .glass-panel:hover {
+            border-color: rgba(99, 102, 241, 0.35);
+        }
+
+        /* Chat Styles */
+        .chat-container {
+            height: 440px;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding: 16px;
+            background: rgba(11, 15, 25, 0.6);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        [data-bs-theme="light"] .chat-container {
+            background: #f8fafc;
+            border-color: rgba(0, 0, 0, 0.06);
+        }
+
+        .chat-bubble {
+            max-width: 85%;
+            padding: 12px 16px;
+            border-radius: 16px;
+            font-size: 0.92rem;
+            line-height: 1.5;
+            word-wrap: break-word;
+            position: relative;
+            animation: fadeIn 0.2s ease-in-out;
+        }
+
+        .chat-bubble.user {
+            align-self: flex-end;
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            color: #ffffff;
+            border-bottom-right-radius: 4px;
+        }
+
+        .chat-bubble.bot {
+            align-self: flex-start;
+            background: rgba(30, 41, 59, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #f1f5f9;
+            border-bottom-left-radius: 4px;
+        }
+
+        [data-bs-theme="light"] .chat-bubble.bot {
+            background: #ffffff;
+            border-color: #e2e8f0;
+            color: #0f172a;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Suggestion Chips */
+        .question-chip {
+            font-size: 0.8rem;
+            padding: 5px 12px;
+            border-radius: 20px;
+            background: rgba(99, 102, 241, 0.12);
+            border: 1px solid rgba(99, 102, 241, 0.25);
+            color: #818cf8;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            white-space: nowrap;
+        }
+
+        .question-chip:hover {
+            background: #6366f1;
+            color: #fff;
+            transform: translateY(-1px);
+        }
+
+        /* Alert item in notification panel */
+        .alert-item {
+            border-left: 4px solid #6366f1;
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+            transition: transform 0.15s;
+        }
+
+        [data-bs-theme="light"] .alert-item {
+            background: #ffffff;
+            border-color: #6366f1;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .alert-item.critical {
+            border-left-color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .alert-item.warning {
+            border-left-color: #f59e0b;
+            background: rgba(245, 158, 11, 0.1);
+        }
+
+        .badge-stock {
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- HEADER -->
+    <nav class="navbar navbar-expand-lg border-bottom border-secondary border-opacity-10 py-3" style="background: rgba(11, 15, 25, 0.85); backdrop-filter: blur(12px);">
+        <div class="container-fluid px-4">
+            <div class="d-flex align-items-center gap-3">
+                <a href="/" class="d-flex align-items-center gap-2 text-decoration-none text-reset">
+                    <img src="/Logo/logo-removebg.png" alt="Logo" width="38" height="38" class="rounded-circle shadow-sm">
+                    <div>
+                        <div class="fw-bold font-display fs-5 text-gradient">AI Smart Inventory</div>
+                        <div class="text-secondary small" style="font-size: 0.72rem;">Single-Table RAG & Multi-Shop Chatbox</div>
+                    </div>
+                </a>
+                <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 ms-2 px-2 py-1">
+                    v1.0 Live Test
+                </span>
+            </div>
+
+            <!-- Shop Selector & Controls -->
+            <div class="d-flex align-items-center gap-3 ms-auto">
+                <div class="input-group input-group-sm" style="max-width: 250px;">
+                    <span class="input-group-text bg-dark text-secondary border-secondary border-opacity-25">
+                        <i class="bi bi-shop"></i>
+                    </span>
+                    <input type="text" id="shopIdInput" class="form-control bg-dark text-white border-secondary border-opacity-25" value="shop_xe_may_01" placeholder="Mã Shop (shop_id)" title="Mã shop riêng biệt">
+                    <button class="btn btn-outline-primary" id="btnSwitchShop" title="Tải dữ liệu shop này">
+                        <i class="bi bi-arrow-repeat"></i>
+                    </button>
+                </div>
+
+                <button class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1" id="themeToggleBtn" onclick="toggleTheme()" title="Chuyển chế độ Sáng / Tối">
+                    <span class="material-symbols-outlined" id="themeIcon" style="font-size: 18px;">dark_mode</span>
+                </button>
+
+                <a href="/" class="btn btn-sm btn-outline-light d-flex align-items-center gap-1">
+                    <i class="bi bi-house"></i>
+                    <span class="d-none d-md-inline">Dashboard</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="container-fluid px-4 py-4">
+        <!-- FILE:// PROTOCOL WARNING (Auto detected) -->
+        <div id="fileProtocolBanner" class="alert alert-warning border-warning border-opacity-25 d-none p-3 rounded-4 mb-3">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-exclamation-triangle-fill fs-5 text-warning"></i>
+                <div>
+                    <strong>Cảnh báo giao thức:</strong> Bạn đang mở trực tiếp file từ ổ đĩa (<code>file://</code>). Để đảm bảo các API kết nối ổn định không bị trình duyệt chặn CORS, hãy mở bằng trình duyệt tại:
+                    <a href="http://localhost:3000/shop-test" class="alert-link text-primary fw-bold ms-1">http://localhost:3000/shop-test</a>.
+                </div>
+            </div>
+        </div>
+
+        <!-- TOP INFO BANNER -->
+        <div class="alert alert-info bg-primary bg-opacity-10 border-primary border-opacity-25 text-light d-flex align-items-center justify-content-between p-3 rounded-4 mb-4 flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-3">
+                <div class="p-2 rounded-circle bg-primary bg-opacity-25 text-primary fs-4">
+                    <i class="bi bi-robot"></i>
+                </div>
+                <div>
+                    <div class="fw-semibold text-white">Hệ Thống Bán Hàng & Quản Lý Kho Tự Động Siêu Tiết Kiệm (Single-Table RAG)</div>
+                    <div class="text-secondary small">Dữ liệu được cô lập tuyệt đối theo từng Shop. AI tự đọc file Excel, tự tư vấn tồn kho theo đời xe, tự trừ kho và gửi thông báo cho chủ shop.</div>
+                </div>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50 px-3 py-2" id="backendStatusBadge">
+                    <i class="bi bi-arrow-repeat spin me-1"></i> Đang kiểm tra Server...
+                </span>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- CỘT TRÁI: 1. NẠP KHO + 2. DANH SÁCH SẢN PHẨM HIỆN TẠI -->
+            <div class="col-lg-4 d-flex flex-column gap-4">
+                <!-- PANEL: NẠP KHO HÀNG -->
+                <div class="glass-panel p-4">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="material-symbols-outlined text-primary fs-5">upload_file</span>
+                            <h6 class="fw-bold m-0 font-display">1. Chủ Shop Nạp Kho (AI Học)</h6>
+                        </div>
+                        <span class="badge bg-secondary bg-opacity-25 text-info" id="currentShopBadge">shop_xe_may_01</span>
+                    </div>
+                    <p class="text-secondary small mb-3">
+                        Gửi file Excel/CSV danh mục kho hàng vào Chatbox. AI sẽ tự động phân tích và sinh Vector Embedding.
+                    </p>
+
+                    <!-- Nút thao tác nhanh -->
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary d-flex align-items-center justify-content-center gap-2 py-2 fw-semibold" id="btnLoadSampleData" onclick="loadSampleExcelData()">
+                            <span class="material-symbols-outlined" style="font-size: 18px;">auto_awesome</span>
+                            <span>✨ Nạp Dữ Liệu Mẫu (Nhớt Wave & Bugi)</span>
+                        </button>
+                        
+                        <div class="d-flex gap-2">
+                            <label class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center gap-1 py-2 text-truncate" style="cursor: pointer;">
+                                <i class="bi bi-file-earmark-excel text-success"></i>
+                                <span id="fileNameLabel">Chọn File Excel/CSV</span>
+                                <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" style="display: none;" onchange="handleFileSelect(event)">
+                            </label>
+                            <button class="btn btn-success d-none px-3" id="btnUploadSelected" onclick="uploadSelectedFile()" title="Tải file lên">
+                                <i class="bi bi-cloud-arrow-up-fill"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Trạng thái Upload -->
+                    <div id="uploadStatusBox" class="mt-3 d-none"></div>
+                </div>
+
+                <!-- PANEL: THÔNG BÁO BIẾN ĐỘNG KHO (CHỦ SHOP) -->
+                <div class="glass-panel p-4 flex-grow-1">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="material-symbols-outlined text-warning fs-5">notifications_active</span>
+                            <h6 class="fw-bold m-0 font-display">Chuông Báo Biến Động Kho</h6>
+                        </div>
+                        <button class="btn btn-sm btn-link text-secondary p-0 text-decoration-none" onclick="fetchShopAlerts()" title="Làm mới thông báo">
+                            <i class="bi bi-arrow-clockwise"></i> Làm mới
+                        </button>
+                    </div>
+
+                    <div id="alertsContainer" style="max-height: 280px; overflow-y: auto;">
+                        <div class="text-center text-secondary py-4 small">
+                            <i class="bi bi-bell-slash fs-4 d-block mb-1 opacity-50"></i>
+                            Chưa có biến động kho nào cho Shop này.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CỘT GIỮA: KHÁCH HÀNG CHAT VỚI AI CHATBOT -->
+            <div class="col-lg-5 d-flex flex-column">
+                <div class="glass-panel p-4 d-flex flex-column h-100">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="position-relative">
+                                <span class="material-symbols-outlined text-info fs-4">chat</span>
+                                <span class="position-absolute top-0 start-100 translate-middle p-1 bg-success border border-dark rounded-circle"></span>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold m-0 font-display">2. Khách Hàng Chat Hỏi Tồn Kho</h6>
+                                <span class="text-secondary small" style="font-size: 0.75rem;">AI RAG tư vấn sản phẩm tương thích theo ngữ cảnh</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="clearChat()" title="Xoá lịch sử chat">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+
+                    <!-- Gợi ý câu hỏi nhanh -->
+                    <div class="d-flex align-items-center gap-2 py-2 overflow-x-auto mb-2 text-nowrap" style="scrollbar-width: none;">
+                        <span class="text-secondary small" style="font-size: 0.75rem;"><i class="bi bi-lightning-charge"></i> Hỏi nhanh:</span>
+                        <span class="question-chip" onclick="askQuestion('Chai nhớt dùng cho xe Wave còn không em?')">Nhớt xe Wave</span>
+                        <span class="question-chip" onclick="askQuestion('Bugi xe Wave RSX giá bao nhiêu còn không?')">Bugi Wave RSX</span>
+                        <span class="question-chip" onclick="askQuestion('Có lọc gió xe Future không shop?')">Lọc gió Future</span>
+                        <span class="question-chip" onclick="askQuestion('Shop ơi còn phụ tùng xe SH không?')">Xe SH (Test hết)</span>
+                    </div>
+
+                    <!-- Khung Chat Messages -->
+                    <div class="chat-container flex-grow-1" id="chatBox">
+                        <div class="chat-bubble bot">
+                            👋 <strong>Xin chào!</strong> Em là trợ lý AI của shop. Anh/chị đang cần tìm phụ tùng, dầu nhớt hay linh kiện cho dòng xe nào ạ? Em có thể kiểm tra kho theo thời gian thực ngay lập tức!
+                        </div>
+                    </div>
+
+                    <!-- Ô nhập tin nhắn -->
+                    <form class="mt-3" onsubmit="handleChatSubmit(event)">
+                        <div class="input-group">
+                            <input type="text" id="chatInput" class="form-control bg-dark text-white border-secondary border-opacity-25 py-2 px-3" placeholder="Nhập câu hỏi (Ví dụ: Nhớt xe Wave còn không?)..." autocomplete="off">
+                            <button class="btn btn-primary px-3 d-flex align-items-center gap-1" type="submit" id="btnSendChat">
+                                <i class="bi bi-send-fill"></i>
+                                <span class="d-none d-sm-inline">Hỏi AI</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- CỘT PHẢI: KẾT QUẢ TƯ VẤN & FORM CHỐT ĐƠN TRỰC TIẾP -->
+            <div class="col-lg-3 d-flex flex-column gap-4">
+                <!-- PANEL: CHỐT MUA HÀNG (TRỪ KHO) -->
+                <div class="glass-panel p-4">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <span class="material-symbols-outlined text-success fs-5">shopping_cart_checkout</span>
+                        <h6 class="fw-bold m-0 font-display">3. Chốt Đơn & Trừ Kho</h6>
+                    </div>
+                    <p class="text-secondary small mb-3">
+                        Khi khách đồng ý mua, hệ thống tự động trừ trực tiếp vào số lượng tồn kho trong database và thông báo cho chủ shop.
+                    </p>
+
+                    <form id="orderForm" onsubmit="handleOrderSubmit(event)">
+                        <div class="mb-2">
+                            <label class="form-label small text-secondary mb-1">Mã SKU hoặc Tên sản phẩm:</label>
+                            <input type="text" id="orderSkuInput" class="form-control form-control-sm bg-dark text-white border-secondary border-opacity-25" placeholder="VD: CASTROL-WAVE-08" required>
+                        </div>
+
+                        <div class="row g-2 mb-2">
+                            <div class="col-5">
+                                <label class="form-label small text-secondary mb-1">Số lượng:</label>
+                                <input type="number" id="orderQtyInput" class="form-control form-control-sm bg-dark text-white border-secondary border-opacity-25" value="1" min="1" required>
+                            </div>
+                            <div class="col-7">
+                                <label class="form-label small text-secondary mb-1">Tên khách hàng:</label>
+                                <input type="text" id="orderCustomerName" class="form-control form-control-sm bg-dark text-white border-secondary border-opacity-25" value="Anh Nam (Chatbox)">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small text-secondary mb-1">Số điện thoại:</label>
+                            <input type="text" id="orderCustomerPhone" class="form-control form-control-sm bg-dark text-white border-secondary border-opacity-25" value="0912.345.678">
+                        </div>
+
+                        <button type="submit" class="btn btn-success w-100 d-flex align-items-center justify-content-center gap-2 py-2 fw-semibold" id="btnSubmitOrder">
+                            <i class="bi bi-bag-check-fill"></i>
+                            <span>🛒 Chốt Mua & Trừ Tồn Kho</span>
+                        </button>
+                    </form>
+
+                    <div id="orderStatusBox" class="mt-3 d-none"></div>
+                </div>
+
+                <!-- PANEL: THÔNG TIN KHO HIỆN TẠI -->
+                <div class="glass-panel p-4 flex-grow-1">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="material-symbols-outlined text-info fs-5">inventory_2</span>
+                            <h6 class="fw-bold m-0 font-display">Tồn Kho Shop Này</h6>
+                        </div>
+                    </div>
+                    <div id="stockSummaryBox" class="small text-secondary">
+                        <div class="text-center py-3">
+                            <i class="bi bi-box-seam fs-4 d-block mb-1 opacity-50"></i>
+                            Bấm "Nạp Dữ Liệu Mẫu" để xem thông tin tồn kho.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="border-top border-secondary border-opacity-10 py-3 text-center text-secondary small mt-4">
+        Jarvis AI Brain &bull; Ultra-low-cost Multi-Shop AI Sales & Inventory Automation
+    </footer>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        let currentShopId = 'shop_xe_may_01';
+        let selectedFileBase64 = null;
+        let selectedFileName = null;
+
+        // Dynamic API URL Helper (supports direct localhost:3000 or opened via file://)
+        function getApiUrl(endpoint) {
+            if (window.location.protocol === 'file:') {
+                return 'http://localhost:3000' + endpoint;
+            }
+            return endpoint;
+        }
+
+        function formatErrorMessage(err) {
+            if (err.message && err.message.toLowerCase().includes('fetch')) {
+                return `<strong>❌ Không thể kết nối tới Server (${err.message}):</strong><br>` +
+                       `• Vui lòng đảm bảo server backend đang chạy (<code>npm run dev</code> hoặc <code>npm start</code>).<br>` +
+                       `• Đảm bảo bạn đang truy cập qua: <a href="http://localhost:3000/shop-test" class="text-info fw-bold">http://localhost:3000/shop-test</a>.`;
+            }
+            return `<strong>❌ Lỗi:</strong> ${err.message}`;
+        }
+
+        // Kiểm tra kết nối server
+        async function checkBackendConnection() {
+            const badge = document.getElementById('backendStatusBadge');
+            try {
+                const res = await fetch(getApiUrl(`/api/inventory/shop-alerts?shop_id=${encodeURIComponent(currentShopId)}`));
+                if (res.ok) {
+                    badge.className = 'badge bg-success bg-opacity-25 text-success border border-success border-opacity-50 px-3 py-2';
+                    badge.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i> Backend Online';
+                    return true;
+                } else {
+                    throw new Error(`HTTP ${res.status}`);
+                }
+            } catch (err) {
+                badge.className = 'badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-50 px-3 py-2';
+                badge.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-1"></i> Mất kết nối Backend (Port 3000)';
+                return false;
+            }
+        }
+
+        // Khởi tạo trang
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.location.protocol === 'file:') {
+                const banner = document.getElementById('fileProtocolBanner');
+                if (banner) banner.classList.remove('d-none');
+            }
+
+            currentShopId = document.getElementById('shopIdInput').value || 'shop_xe_may_01';
+            updateShopUI();
+            checkBackendConnection();
+            fetchShopAlerts();
+
+            // Lắng nghe đổi shop
+            document.getElementById('btnSwitchShop').addEventListener('click', () => {
+                const newShop = document.getElementById('shopIdInput').value.trim();
+                if (newShop) {
+                    currentShopId = newShop;
+                    updateShopUI();
+                    fetchShopAlerts();
+                    addBotMessage(`🔄 Đã chuyển sang làm việc với Shop: <strong>${currentShopId}</strong>. Dữ liệu kho của shop này hoàn toàn độc lập.`);
+                }
+            });
+        });
+
+        function updateShopUI() {
+            document.getElementById('currentShopBadge').innerText = currentShopId;
+        }
+
+        // 1. TẠO VÀ NẠP DỮ LIỆU EXCEL MẪU
+        async function loadSampleExcelData() {
+            const btn = document.getElementById('btnLoadSampleData');
+            const statusBox = document.getElementById('uploadStatusBox');
+            btn.disabled = true;
+            btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status"></span> Đang tạo & nạp kho...`;
+
+            try {
+                if (typeof XLSX === 'undefined') {
+                    throw new Error('Thư viện XLSX đang được khởi tạo. Vui lòng thử lại sau vài giây.');
+                }
+
+                // Tạo dữ liệu mẫu Excel tương thích dòng xe máy
+                const sampleItems = [
+                    {
+                        'Tên sản phẩm': 'Nhớt Castrol Power 1 4T 0.8L',
+                        'Mã SKU': 'CASTROL-WAVE-08',
+                        'Phân loại': 'Dầu nhớt',
+                        'Dòng xe tương thích': 'Honda Wave, Wave RSX, Future, Blade, Sirius, Jupiter',
+                        'Số lượng tồn': 12,
+                        'Đơn vị': 'chai',
+                        'Giá bán': 95000,
+                        'Vị trí': 'Kệ A1 - Tầng 2',
+                        'Cảnh báo tồn': 3
+                    },
+                    {
+                        'Tên sản phẩm': 'Bugi Denso U22EPR9 Tiêu Chuẩn',
+                        'Mã SKU': 'BUGI-DENSO-01',
+                        'Phân loại': 'Đánh lửa',
+                        'Dòng xe tương thích': 'Wave Alpha, Wave RSX, Blade 110, Dream',
+                        'Số lượng tồn': 8,
+                        'Đơn vị': 'cái',
+                        'Giá bán': 45000,
+                        'Vị trí': 'Khay B2',
+                        'Cảnh báo tồn': 2
+                    },
+                    {
+                        'Tên sản phẩm': 'Lọc gió Honda Wave 110 Chính Hãng',
+                        'Mã SKU': 'LOCGIO-WAVE-110',
+                        'Phân loại': 'Lọc gió',
+                        'Dòng xe tương thích': 'Wave Alpha 110, Wave RSX 110 FI (2014-2024)',
+                        'Số lượng tồn': 6,
+                        'Đơn vị': 'cái',
+                        'Giá bán': 65000,
+                        'Vị trí': 'Kệ C1',
+                        'Cảnh báo tồn': 2
+                    },
+                    {
+                        'Tên sản phẩm': 'Nhớt Motul 3100 Silver 0.8L',
+                        'Mã SKU': 'MOTUL-3100-08',
+                        'Phân loại': 'Dầu nhớt',
+                        'Dòng xe tương thích': 'Wave, Sirius, Future, Jupiter, Exciter 135',
+                        'Số lượng tồn': 15,
+                        'Đơn vị': 'chai',
+                        'Giá bán': 105000,
+                        'Vị trí': 'Kệ A2',
+                        'Cảnh báo tồn': 4
+                    }
+                ];
+
+                const wb = XLSX.utils.book_new();
+                const ws = XLSX.utils.json_to_sheet(sampleItems);
+                XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+                const base64Data = XLSX.write(wb, { type: 'base64', bookType: 'xlsx' });
+
+                const res = await fetch(getApiUrl('/api/inventory/chat-upload'), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        shop_id: currentShopId,
+                        fileName: 'kho_phu_tung_wave_thang9.xlsx',
+                        base64Data: base64Data
+                    })
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    statusBox.className = 'mt-3 alert alert-success p-2 small';
+                    statusBox.innerHTML = `<strong>✅ Thành công:</strong> Đã nạp ${data.total_items} sản phẩm và train AI cho Shop <code>${currentShopId}</code>!`;
+                    statusBox.classList.remove('d-none');
+
+                    addBotMessage(`🎉 <strong>Đã nạp file kho hàng thành công!</strong><br>Tổng cộng <strong>${data.total_items} mặt hàng</strong> (Nhớt Castrol, Bugi Denso, Lọc gió Wave, Nhớt Motul) đã được lưu và học bằng AI Vector.<br>Bây giờ anh/chị có thể thử gõ câu hỏi tư vấn ngay bên dưới!`);
+
+                    renderStockSummary(sampleItems);
+                    fetchShopAlerts();
+                } else {
+                    throw new Error(data.error || 'Nạp dữ liệu thất bại');
+                }
+            } catch (err) {
+                statusBox.className = 'mt-3 alert alert-danger p-2 small';
+                statusBox.innerHTML = formatErrorMessage(err);
+                statusBox.classList.remove('d-none');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<span class="material-symbols-outlined" style="font-size: 18px;">auto_awesome</span><span>✨ Nạp Dữ Liệu Mẫu (Nhớt Wave & Bugi)</span>`;
+            }
+        }
+
+        // 2. CHỌN VÀ TẢI FILE THỰC TẾ
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            selectedFileName = file.name;
+            document.getElementById('fileNameLabel').innerText = file.name;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const data = e.target.result;
+                selectedFileBase64 = data.split(',')[1];
+                document.getElementById('btnUploadSelected').classList.remove('d-none');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function uploadSelectedFile() {
+            if (!selectedFileBase64) return;
+            const btn = document.getElementById('btnUploadSelected');
+            const statusBox = document.getElementById('uploadStatusBox');
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(getApiUrl('/api/inventory/chat-upload'), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        shop_id: currentShopId,
+                        fileName: selectedFileName,
+                        base64Data: selectedFileBase64
+                    })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    statusBox.className = 'mt-3 alert alert-success p-2 small';
+                    statusBox.innerHTML = `<strong>✅ Thành công:</strong> Đã nạp file "${selectedFileName}" (${data.total_items} mặt hàng).`;
+                    statusBox.classList.remove('d-none');
+                    addBotMessage(`📁 <strong>Đã nhận file "${selectedFileName}":</strong> AI đã học xong danh mục ${data.total_items} sản phẩm.`);
+                    if (data.items) renderStockSummary(data.items);
+                    fetchShopAlerts();
+                } else {
+                    throw new Error(data.error || 'Nạp file thất bại');
+                }
+            } catch (err) {
+                statusBox.className = 'mt-3 alert alert-danger p-2 small';
+                statusBox.innerHTML = formatErrorMessage(err);
+                statusBox.classList.remove('d-none');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        // 3. CHAT HỎI TỒN KHO VỚI AI
+        function askQuestion(q) {
+            document.getElementById('chatInput').value = q;
+            handleChatSubmit(new Event('submit'));
+        }
+
+        async function handleChatSubmit(event) {
+            if (event) event.preventDefault();
+            const input = document.getElementById('chatInput');
+            const question = input.value.trim();
+            if (!question) return;
+
+            addUserMessage(question);
+            input.value = '';
+
+            const btn = document.getElementById('btnSendChat');
+            btn.disabled = true;
+
+            // Tin nhắn loading
+            const loadingId = addBotMessage(`<span class="spinner-border spinner-border-sm me-2"></span> AI đang tra cứu kho...`);
+
+            try {
+                const res = await fetch(getApiUrl('/api/inventory/shop-query'), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        shop_id: currentShopId,
+                        question: question
+                    })
+                });
+                const data = await res.json();
+
+                let botReplyHtml = '';
+                if (data.success && data.found) {
+                    botReplyHtml = data.reply.replace(/\n/g, '<br>');
+
+                    // Gợi ý nút đặt nhanh nếu có sản phẩm
+                    if (data.products && data.products.length > 0) {
+                        const topProd = data.products[0];
+                        botReplyHtml += `
+                            <div class="mt-3 pt-2 border-top border-secondary border-opacity-25 d-flex align-items-center justify-content-between">
+                                <span class="badge ${Number(topProd.quantity) > 0 ? 'bg-success' : 'bg-danger'} bg-opacity-25 text-white">
+                                    ${Number(topProd.quantity) > 0 ? 'CÒN ' + topProd.quantity + ' ' + (topProd.unit || 'cái') : 'HẾT HÀNG'}
+                                </span>
+                                ${Number(topProd.quantity) > 0 ? `
+                                    <button class="btn btn-sm btn-outline-success py-1 px-2" onclick="quickFillOrder('${topProd.sku || topProd.name}', 1)">
+                                        <i class="bi bi-cart-plus me-1"></i> Chọn chốt đơn này
+                                    </button>
+                                ` : ''}
+                            </div>
+                        `;
+                    }
+                } else {
+                    botReplyHtml = data.reply || 'Dạ hiện tại shop chưa tìm thấy sản phẩm phù hợp trong kho ạ.';
+                }
+
+                updateBotMessage(loadingId, botReplyHtml);
+            } catch (err) {
+                updateBotMessage(loadingId, formatErrorMessage(err));
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        function quickFillOrder(sku, qty) {
+            document.getElementById('orderSkuInput').value = sku;
+            document.getElementById('orderQtyInput').value = qty || 1;
+            document.getElementById('orderSkuInput').focus();
+        }
+
+        // 4. CHỐT ĐƠN & TRỪ TỒN KHO
+        async function handleOrderSubmit(event) {
+            event.preventDefault();
+            const sku = document.getElementById('orderSkuInput').value.trim();
+            const qty = document.getElementById('orderQtyInput').value;
+            const name = document.getElementById('orderCustomerName').value.trim();
+            const phone = document.getElementById('orderCustomerPhone').value.trim();
+            const statusBox = document.getElementById('orderStatusBox');
+            const btn = document.getElementById('btnSubmitOrder');
+
+            btn.disabled = true;
+            btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Đang xử lý...`;
+
+            try {
+                const res = await fetch(getApiUrl('/api/inventory/shop-order'), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        shop_id: currentShopId,
+                        item_identifier: sku,
+                        quantity: Number(qty),
+                        customer_name: name,
+                        customer_phone: phone
+                    })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    statusBox.className = 'mt-3 alert alert-success p-2 small';
+                    statusBox.innerHTML = `<strong>✅ Đã chốt đơn!</strong><br>${data.customer_reply.replace(/\n/g, '<br>')}<br><span class="badge bg-primary mt-1">Tồn kho mới: ${data.updated_item.quantity}</span>`;
+                    statusBox.classList.remove('d-none');
+
+                    addBotMessage(`🎉 <strong>ĐƠN HÀNG MỚI ĐÃ CHỐT!</strong><br>${data.customer_reply.replace(/\n/g, '<br>')}<br><em>(Hệ thống vừa trừ ${qty} sản phẩm trong kho và phát chuông báo đến Chủ Shop)</em>`);
+
+                    // Cập nhật lại thông báo chuông báo
+                    fetchShopAlerts();
+                } else {
+                    throw new Error(data.error || 'Không thể chốt đơn');
+                }
+            } catch (err) {
+                statusBox.className = 'mt-3 alert alert-danger p-2 small';
+                statusBox.innerHTML = formatErrorMessage(err);
+                statusBox.classList.remove('d-none');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="bi bi-bag-check-fill me-1"></i> <span>🛒 Chốt Mua & Trừ Tồn Kho</span>`;
+            }
+        }
+
+        // 5. LẤY DANH SÁCH CHUÔNG BÁO CHO CHỦ SHOP
+        async function fetchShopAlerts() {
+            const container = document.getElementById('alertsContainer');
+            try {
+                const res = await fetch(getApiUrl(`/api/inventory/shop-alerts?shop_id=${encodeURIComponent(currentShopId)}`));
+                const result = await res.json();
+
+                if (result.success && result.data && result.data.length > 0) {
+                    container.innerHTML = result.data.map(alert => {
+                        const isCritical = alert.level === 'CRITICAL' || (alert.remaining_stock !== undefined && alert.remaining_stock <= 0);
+                        const isWarning = alert.level === 'WARNING' || (alert.remaining_stock !== undefined && alert.remaining_stock <= 3);
+                        const cls = isCritical ? 'critical' : (isWarning ? 'warning' : '');
+
+                        return `
+                            <div class="alert-item ${cls}">
+                                <div class="d-flex align-items-center justify-content-between mb-1">
+                                    <span class="fw-bold text-white">${alert.item_name || alert.sku || 'Sản phẩm'}</span>
+                                    <span class="badge ${isCritical ? 'bg-danger' : (isWarning ? 'bg-warning text-dark' : 'bg-primary')} badge-stock">
+                                        -${alert.quantity_sold || 1} cái
+                                    </span>
+                                </div>
+                                <div class="text-secondary small mb-1">${alert.message || 'Đã xuất bán'}</div>
+                                <div class="d-flex justify-content-between text-secondary" style="font-size: 0.72rem;">
+                                    <span>Tồn còn lại: <strong class="text-info">${alert.remaining_stock !== undefined ? alert.remaining_stock : 'N/A'}</strong></span>
+                                    <span>${new Date(alert.timestamp || Date.now()).toLocaleTimeString('vi-VN')}</span>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    container.innerHTML = `
+                        <div class="text-center text-secondary py-4 small">
+                            <i class="bi bi-bell-slash fs-4 d-block mb-1 opacity-50"></i>
+                            Chưa có biến động kho nào cho Shop này.
+                        </div>
+                    `;
+                }
+            } catch (err) {
+                container.innerHTML = `<div class="text-danger small py-2">${formatErrorMessage(err)}</div>`;
+            }
+        }
+
+        function renderStockSummary(items) {
+            const box = document.getElementById('stockSummaryBox');
+            if (!items || items.length === 0) return;
+
+            box.innerHTML = `
+                <div class="table-responsive" style="max-height: 250px; overflow-y: auto;">
+                    <table class="table table-sm table-dark table-hover mb-0" style="font-size: 0.78rem;">
+                        <thead>
+                            <tr class="text-secondary">
+                                <th>Tên hàng</th>
+                                <th class="text-end">Tồn</th>
+                                <th class="text-end">Giá</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${items.map(item => `
+                                <tr>
+                                    <td class="text-truncate" style="max-width: 140px;" title="${item['Tên sản phẩm'] || item.name}">
+                                        ${item['Tên sản phẩm'] || item.name}
+                                    </td>
+                                    <td class="text-end">
+                                        <span class="badge ${Number(item['Số lượng tồn'] || item.quantity) > 3 ? 'bg-success' : 'bg-danger'} bg-opacity-25 text-white">
+                                            ${item['Số lượng tồn'] || item.quantity}
+                                        </span>
+                                    </td>
+                                    <td class="text-end text-nowrap">
+                                        ${Number(item['Giá bán'] || item.price || 0).toLocaleString('vi-VN')}đ
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        // Helper Chat UI
+        function addUserMessage(text) {
+            const box = document.getElementById('chatBox');
+            const div = document.createElement('div');
+            div.className = 'chat-bubble user';
+            div.textContent = text;
+            box.appendChild(div);
+            box.scrollTop = box.scrollHeight;
+        }
+
+        function addBotMessage(html) {
+            const box = document.getElementById('chatBox');
+            const id = 'msg_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
+            const div = document.createElement('div');
+            div.className = 'chat-bubble bot';
+            div.id = id;
+            div.innerHTML = html;
+            box.appendChild(div);
+            box.scrollTop = box.scrollHeight;
+            return id;
+        }
+
+        function updateBotMessage(id, html) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.innerHTML = html;
+                const box = document.getElementById('chatBox');
+                box.scrollTop = box.scrollHeight;
+            }
+        }
+
+        function clearChat() {
+            const box = document.getElementById('chatBox');
+            box.innerHTML = `
+                <div class="chat-bubble bot">
+                    👋 Lịch sử chat đã được xóa. Bạn cần tìm phụ tùng hay nhớt xe gì cứ hỏi em nhé!
+                </div>
+            `;
+        }
+
+        // Theme Toggle
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-bs-theme') || 'dark';
+            const next = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-bs-theme', next);
+            if (next === 'light') {
+                document.documentElement.classList.remove('dark');
+                document.documentElement.classList.add('light');
+                document.getElementById('themeIcon').innerText = 'light_mode';
+            } else {
+                document.documentElement.classList.remove('light');
+                document.documentElement.classList.add('dark');
+                document.getElementById('themeIcon').innerText = 'dark_mode';
+            }
+            try { localStorage.setItem('theme', next); } catch (e) {}
+        }
+    </script>
+</body>
+
+</html>

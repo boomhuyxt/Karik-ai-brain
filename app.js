@@ -48,6 +48,11 @@ app.get('/docs', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'docs.html'));
 });
 
+// Smart Inventory & Multi-Shop Chatbox Test endpoint
+app.get(['/shop-test', '/shop-test.html'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'shop-test.html'));
+});
+
 // Primary REST API Router with Anti-Spam Rate Limit
 app.use('/api', apiLimiter, apiRoutes);
 

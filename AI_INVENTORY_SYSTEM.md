@@ -121,7 +121,7 @@ sequenceDiagram
 
 ### Cách 1: Test qua Giao diện Web Localhost
 1. Chạy lệnh: `npm run dev` (hoặc `npm start`).
-2. Mở trình duyệt: `http://localhost:3000/shop-test.html`.
+2. Mở trình duyệt: `http://localhost:3000/shop-test` (hoặc `http://localhost:3000/shop-test.html`).
 3. Bấm **"✨ Nạp Dữ liệu Mẫu"** $\rightarrow$ Gõ câu hỏi chat $\rightarrow$ Bấm **"🛒 Chốt mua ngay"** để xem biến động kho thời gian thực.
 
 ### Cách 2: Test qua Terminal
