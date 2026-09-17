@@ -19,3 +19,4 @@ scratch/
 .system_generated/
 .DS_Store
 Thumbs.db
+src/storage/uploads/*.xlsx

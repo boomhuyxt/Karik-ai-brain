@@ -35,10 +35,28 @@ class AIManagerService {
     const delegatedAgent = routerService.dispatchAgent(prompt, category);
     const targetModel = options.model || delegatedAgent.model;
     const targetProvider = options.provider || routerService.selectProvider(prompt, category);
-    const providerInstance = this.providers[targetProvider] || geminiService;
+    // 1.5. RAG Semantic Recall: Quét tri thức đã lưu trong Obsidian để nạp vào Context cho AI
+    let enrichedContext = options.context || '';
+    try {
+      const searchService = require('../knowledge/search.service');
+      const relevantNotes = await searchService.vectorSearch(prompt, 2);
+      if (Array.isArray(relevantNotes) && relevantNotes.length > 0) {
+        const knowledgeSnippets = relevantNotes
+          .filter(n => n && n.content && !n.content.includes('File mới hoặc chưa tồn tại'))
+          .map(n => `• [Obsidian Note: ${n.path || 'Tri thức'}]:\n${String(n.content).slice(0, 350)}`)
+          .join('\n\n');
+
+        if (knowledgeSnippets) {
+          enrichedContext = (enrichedContext ? enrichedContext + '\n\n' : '') +
+            `[TRI THỨC ĐÃ LƯU TRONG OBSIDIAN VAULT - HÃY THAM KHẢO VÀ CẢI TIẾN KHI TRẢ LỜI]:\n${knowledgeSnippets}`;
+        }
+      }
+    } catch (ragErr) {
+      // Non-blocking fallback if vector search encounters issue
+    }
 
     // 2. AI Karik analyzes user request and engineers a detailed task prompt for the agent
-    const orchestratedPrompt = routerService.buildOrchestratedPrompt(prompt, delegatedAgent, options.context);
+    const orchestratedPrompt = routerService.buildOrchestratedPrompt(prompt, delegatedAgent, enrichedContext);
 
     const requestOptions = {
       ...options,
@@ -65,15 +83,14 @@ class AIManagerService {
     const mimeType = typeof chatResult === 'object' && chatResult !== null ? chatResult.mimeType : null;
     const voice = typeof chatResult === 'object' && chatResult !== null ? chatResult.voice : null;
 
-    // 5. Automatic Knowledge Pipeline (Asynchronous Background Execution)
+    // 5. Automatic Knowledge Pipeline (Asynchronous Background Execution & Continuous Self-Learning)
     (async () => {
       try {
-        const topic = knowledgePipelineService.extractTopic(prompt);
-        if (knowledgePipelineService.isLearnIntent(prompt)) {
-          await knowledgePipelineService.digestToWiki(topic, prompt, reply, providerInstance);
-        } else {
-          await knowledgePipelineService.saveRawKnowledge(topic, prompt, reply);
-        }
+        await knowledgePipelineService.learnFromConversation({
+          prompt,
+          reply,
+          providerInstance
+        });
       } catch (err) {
         console.warn('[KnowledgePipeline Background Error]:', err.message);
       }
