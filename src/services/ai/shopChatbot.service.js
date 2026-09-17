@@ -96,7 +96,7 @@ class ShopChatbotService {
     // -------------------------------------------------------------
     // BƯỚC 0: CHỦ SHOP HỎI BÁO CÁO DOANH THU & XUẤT FILE EXCEL KHO
     // -------------------------------------------------------------
-    const reportRegex = /(hôm nay.*(bán được|doanh thu|bán bao nhiêu|bao nhiêu sản phẩm|tiền bán)|doanh thu.*hôm nay|báo cáo (doanh thu|bán hàng|kho)|tồn kho.*(còn lại|bao nhiêu|thế nào)|xuất.*(file|excel)|tải.*(file|excel)|thống kê bán hàng)/i;
+    const reportRegex = /(hôm nay.*(bán được|doanh thu|bán bao nhiêu|bao nhiêu sản phẩm|tiền bán)|doanh thu|báo cáo.*(doanh thu|bán hàng|kho|tổng quan)|tồn kho.*(còn lại|bao nhiêu|thế nào|hiện tại)|tổng quan.*kho|xuất.*(file|excel|báo cáo)|tải.*(file|excel|báo cáo)|thống kê.*(bán hàng|kho|doanh thu)|giá trị tồn kho)/i;
 
     if (reportRegex.test(cleanQuestion)) {
       try {

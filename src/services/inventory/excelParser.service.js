@@ -84,7 +84,7 @@ class ExcelParserService {
    * Tự động nhận diện và map tên cột tiếng Việt/Anh sang schema chuẩn
    */
   normalizeRows(rawRows) {
-    const junkRegex = /^(ghi chú|lưu ý|hướng dẫn|chú ý|tổng cộng|header|footer|note|cảnh báo|ô tồn kho)\b/i;
+    const junkRegex = /(ghi chú|lưu ý|hướng dẫn|chú ý|tổng cộng|header|footer|note|cảnh báo|ô tồn kho)/i;
 
     return rawRows
       .filter(row => {

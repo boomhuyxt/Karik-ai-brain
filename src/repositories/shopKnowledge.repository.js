@@ -77,16 +77,18 @@ class ShopKnowledgeRepository {
     }
   }
 
-  // 2. Lấy danh sách file và dữ liệu kho của một Shop
+  // 2. Lấy danh sách file và dữ liệu kho của một Shop (Đảm bảo cách ly đa shop 100%)
   async getFilesByShop(shop_id) {
     let files = [];
+    const targetShopId = shop_id || 'default_shop';
+
     if (supabase) {
       try {
-        const { data, error } = await supabase
-          .from('shop_knowledge_files')
-          .select('*')
-          .eq('shop_id', shop_id)
-          .order('updated_at', { ascending: false });
+        let query = supabase.from('shop_knowledge_files').select('*');
+        if (targetShopId !== 'all') {
+          query = query.eq('shop_id', targetShopId);
+        }
+        const { data, error } = await query.order('updated_at', { ascending: false });
 
         if (!error && Array.isArray(data)) {
           files = data;
@@ -97,7 +99,7 @@ class ShopKnowledgeRepository {
     // Merge memory files for this shop
     const existingIds = new Set(files.map(f => f.id));
     for (const memFile of this.memoryFiles.values()) {
-      if (memFile.shop_id === shop_id) {
+      if (targetShopId === 'all' || memFile.shop_id === targetShopId) {
         if (!existingIds.has(memFile.id)) {
           files.push(memFile);
           existingIds.add(memFile.id);
@@ -110,7 +112,7 @@ class ShopKnowledgeRepository {
       }
     }
 
-    return files.length > 0 ? files : Array.from(this.memoryFiles.values()).filter(f => f.shop_id === shop_id);
+    return files;
   }
 
   // 2.1 Lấy toàn bộ file của tất cả các shop (Dành cho Admin Dashboard / File Manager / Bưu Cục)

@@ -37,7 +37,62 @@ class AIManagerService {
     const targetProvider = options.provider || routerService.selectProvider(prompt, category);
     const providerInstance = this.providers[targetProvider] || geminiService;
 
-    // 2. AI Karik analyzes user request and engineers a detailed task prompt for the agent
+    // 2. Special handling for Shop Inventory Agent
+    if (delegatedAgent.id === 'inventory') {
+      const shopChatbotService = require('./shopChatbot.service');
+      const shopKnowledgeRepo = require('../../repositories/shopKnowledge.repository');
+      const shopId = options.shop_id || options.user?.email || 'default_shop';
+
+      const isReport = /(hôm nay.*(bán được|doanh thu|bán bao nhiêu|bao nhiêu sản phẩm|tiền bán)|doanh thu.*hôm nay|báo cáo (doanh thu|bán hàng|kho)|tồn kho.*(còn lại|bao nhiêu|thế nào)|xuất.*(file|excel|báo cáo)|tải.*(file|excel)|thống kê bán hàng|tổng quan kho)/i.test(prompt);
+      const isDirectQuestionOrOrder = /(mua|lấy|chốt|đặt|order|cho|giao|ship|giá|bao nhiêu|còn hàng|hết hàng|nhớt|bugi|lốp|phụ tùng|bảng tính|tồn kho|sản phẩm)/i.test(prompt);
+
+      if (isReport || isDirectQuestionOrOrder) {
+        try {
+          const shopRes = await shopChatbotService.answerCustomerQuestion({
+            shop_id: shopId,
+            question: prompt,
+            session_id: options.session_id || shopId
+          });
+
+          if (shopRes && shopRes.found) {
+            const reply = shopRes.reply;
+            conversationService.addMessage('assistant', reply, 'gemini');
+            const tokenStats = await tokenService.trackTokens('gemini', prompt, reply, null);
+
+            return {
+              reply,
+              agent: delegatedAgent,
+              model: targetModel,
+              provider: 'gemini',
+              excel_url: shopRes.excel_url || null,
+              tokens: {
+                inputTokens: tokenStats.inputTokens,
+                outputTokens: tokenStats.outputTokens,
+                totalTokens: tokenStats.totalTokens,
+                mode: 'token_based'
+              },
+              cost: costService.calculateCost('gemini', tokenStats.inputTokens, tokenStats.outputTokens),
+              timestamp: new Date().toLocaleTimeString('vi-VN')
+            };
+          }
+        } catch (shopErr) {
+          console.warn('[AIManagerService] Shop chatbot handling error:', shopErr.message);
+        }
+      }
+
+      // Enrich context with shop files for general LLM questions
+      try {
+        const shopFiles = await shopKnowledgeRepo.getFilesByShop(shopId);
+        if (shopFiles && shopFiles.length > 0) {
+          const topChunks = shopFiles.map(f => f.semantic_chunks || '').join('\n---\n');
+          options.context = (options.context || '') + `\n\n[DỮ LIỆU KHO HÀNG THỰC TẾ TRONG HỆ THỐNG]:\n${topChunks}`;
+        }
+      } catch (ctxErr) {
+        console.warn('[AIManagerService] Context enrichment error:', ctxErr.message);
+      }
+    }
+
+    // 3. AI Karik analyzes user request and engineers a detailed task prompt for the agent
     const orchestratedPrompt = routerService.buildOrchestratedPrompt(prompt, delegatedAgent, options.context);
 
     const requestOptions = {

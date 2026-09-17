@@ -474,8 +474,19 @@
   </main>
 
   <script>
-    let currentShopId = 'shop_honda_01';
+    const userInfo = (() => {
+      try { return JSON.parse(localStorage.getItem('user_info') || '{}'); } catch(e) { return {}; }
+    })();
+    let currentShopId = userInfo.email || 'shop_honda_01';
     let sessionId = 'customer_' + Math.floor(Math.random() * 1000000);
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const input = document.getElementById('shopIdInput');
+      if (input) {
+        input.value = currentShopId;
+      }
+      clearChat();
+    });
 
     function onShopChanged() {
       const input = document.getElementById('shopIdInput');

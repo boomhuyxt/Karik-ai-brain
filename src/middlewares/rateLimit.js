@@ -194,8 +194,8 @@ const apiLimiter = rateLimit({
 
 const authLimiter = rateLimit({
   windowMs: 60000,
-  max: 60,
-  burstMax: 15,
+  max: 15,
+  burstMax: 8,
   burstWindowMs: 2000,
   cooldownMs: 60000,
   maxViolations: 5

@@ -47,15 +47,16 @@ class ShopReportService {
 
     // Lấy tình hình tồn kho thực tế hiện tại
     const files = await shopKnowledgeRepo.getFilesByShop(shop_id);
+    const junkRegex = /(ghi chú|lưu ý|hướng dẫn|chú ý|tổng cộng|header|footer|note|cảnh báo|ô tồn kho)/i;
     let allCurrentItems = [];
     for (const f of files) {
       if (Array.isArray(f.inventory_data)) {
-        allCurrentItems.push(...f.inventory_data);
+        allCurrentItems.push(...f.inventory_data.filter(i => i.name && !junkRegex.test(i.name)));
       }
     }
 
     const outOfStockItems = allCurrentItems.filter(i => Number(i.quantity || 0) <= 0);
-    const lowStockItems = allCurrentItems.filter(i => Number(i.quantity || 0) > 0 && Number(i.quantity || 0) <= Number(i.min_threshold || 3));
+    const lowStockItems = allCurrentItems.filter(i => Number(i.quantity || 0) > 0 && Number(i.quantity || 0) <= Number(i.min_threshold || 15));
 
     return {
       shop_id,

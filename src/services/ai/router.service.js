@@ -71,17 +71,29 @@ class RouterService {
       return geminiConfig.agents.social;
     }
 
-    // 3. Ad Project Progress & Risk Management Agent
-    const riskKeywords = [
-      'rủi ro', 'tiến độ', 'quảng cáo', 'dự án quảng cáo', 'chiến dịch',
-      'ads', 'campaign', 'cpc', 'ctr', 'roas', 'cpa', 'ngân sách',
-      'độ rủi ro', 'kiểm tra tiến độ', 'bão hòa quảng cáo', 'lead ads'
+    // 3. Shop Smart Inventory & Sales Consulting Agent (Gemini 3.5 Flash Lite)
+    const inventoryKeywords = [
+      'tồn kho', 'kho hàng', 'danh sách kho', 'danh mục sản phẩm', 'phụ tùng',
+      'nhớt', 'bugi', 'lốp xe', 'báo giá', 'giá bao nhiêu', 'còn hàng', 'hết hàng',
+      'chốt đơn', 'đặt mua', 'mua hàng', 'lên đơn', 'xuất kho', 'nhập kho',
+      'tư vấn bán hàng', 'doanh thu', 'báo cáo kho', 'xuất file', 'xuất báo cáo',
+      'bảng tính excel', 'danh sách sản phẩm'
     ];
-    if (riskKeywords.some(kw => text.includes(kw))) {
+    if (category === 'excel' || text.includes('.xlsx') || text.includes('.xls') || text.includes('.csv') || inventoryKeywords.some(kw => text.includes(kw))) {
+      return geminiConfig.agents.inventory;
+    }
+
+    // 4. Ad Project Progress & Risk Management Agent
+    const riskKeywords = [
+      'rủi ro', 'tiến độ quảng cáo', 'dự án quảng cáo', 'chiến dịch quảng cáo',
+      'độ rủi ro', 'kiểm tra tiến độ ads', 'bão hòa quảng cáo', 'lead ads'
+    ];
+    const riskRegex = /\b(ads|campaign|cpc|ctr|roas|cpa|chạy ads)\b/i;
+    if (riskKeywords.some(kw => text.includes(kw)) || riskRegex.test(text)) {
       return geminiConfig.agents.risk;
     }
 
-    // 4. Mặc định: AI Karik Main Orchestrator
+    // 5. Mặc định: AI Karik Main Orchestrator
     return geminiConfig.agents.orchestrator;
   }
 
@@ -91,6 +103,18 @@ class RouterService {
   buildOrchestratedPrompt(prompt = '', agent = null, context = '') {
     if (!agent || agent.id === 'orchestrator') {
       return prompt;
+    }
+
+    if (agent.id === 'inventory') {
+      return `[CHỈ THỊ ĐIỀU PHỐI TỪ AI KARIK ORCHESTRATOR -> AGENT QUẢN LÝ KHO & BÁN HÀNG (Model: ${agent.model})]:
+- Mục tiêu: Quản lý danh mục kho hàng đa shop, tư vấn bán hàng chuyên nghiệp, báo giá chính xác, chốt đơn và lập báo cáo tồn kho cho chủ shop.
+- Yêu cầu / Câu hỏi của người dùng: "${prompt}"
+- Hướng dẫn thực thi:
+  1. Nếu người dùng vừa gửi file Excel kho hàng: Xác nhận đã nạp và lưu trữ file an toàn, tổng hợp nhanh số lượng mặt hàng, tổng sản phẩm và danh mục chính.
+  2. Nếu khách hỏi sản phẩm / báo giá: Báo giá bán lẻ chuẩn xác (VNĐ), dòng xe tương thích. TUYỆT ĐỐI KHÔNG LỘ GIÁ NHẬP VÀ VỊ TRÍ KHO.
+  3. Nếu khách có ý định đặt mua: Thu thập Họ tên, SĐT, Địa chỉ để lên đơn và tính tổng tiền.
+  4. Nếu chủ shop yêu cầu kiểm tra hàng sắp hết hoặc xuất báo cáo: Liệt kê các sản phẩm tồn dưới 15 cái (kèm vị trí kệ) hoặc tổng hợp doanh thu kèm đường dẫn tải file Excel tồn kho cập nhật.
+  5. Tuân thủ nghiêm ngặt quy chuẩn tại inventory.prompt.md.`;
     }
 
     if (agent.id === 'image') {

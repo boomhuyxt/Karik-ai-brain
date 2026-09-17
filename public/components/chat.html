@@ -484,8 +484,8 @@
         </button>
     </div>
 
-    <!-- Hidden File Input -->
-    <input type="file" id="chatFileInput" accept="image/*,video/*,.pdf,.doc,.docx" class="hidden">
+    <!-- Hidden File Input (Supports Images, Videos, PDF, Word, and Excel .xlsx .xls .csv) -->
+    <input type="file" id="chatFileInput" accept="image/*,video/*,.pdf,.doc,.docx,.xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv" class="hidden">
 
     <!-- Chat Footer Container -->
     <div class="chat-footer-inner flex flex-col gap-2 w-full pt-1">
@@ -498,7 +498,7 @@
             </button>
 
             <!-- Attach File Button -->
-            <button type="button" id="btnAttachFile" title="Đính kèm file (Ảnh, Video, Word, PDF dưới 50MB)"
+            <button type="button" id="btnAttachFile" title="Đính kèm file (Excel .xlsx/.csv, Ảnh, Video, Word, PDF dưới 50MB)"
                 class="bg-purple-100 hover:bg-purple-200 dark:bg-purple-500/20 dark:hover:bg-purple-500/40 border border-purple-300 dark:border-purple-400/40 text-purple-700 dark:text-purple-300 p-1.5 rounded-lg transition-all active:scale-95 flex items-center justify-center flex-shrink-0 shadow-sm">
                 <span class="material-symbols-outlined text-base">attach_file</span>
             </button>
