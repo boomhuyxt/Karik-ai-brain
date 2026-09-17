@@ -88,8 +88,9 @@ const authMiddleware = async (req, res, next) => {
 const isUserAdmin = (user) => {
   if (!user) return false;
   const role = String(user.role || '').toLowerCase();
-  const email = String(user.email || '').toLowerCase();
-  return role === '1' || role === 'admin' || email === 'adminai' || email === 'admin@ai-brain.local';
+  const email = String(user.email || '').toLowerCase().trim();
+  const isRootAdmin = email === 'adminai' || email === 'admin@ai-brain.local' || email === 'adminai@ai-brain.local';
+  return role === '1' || role === 'admin' || isRootAdmin;
 };
 
 /**

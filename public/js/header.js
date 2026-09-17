@@ -1,51 +1,65 @@
-function initHeaderModule() {
+function renderHeaderRBAC(user) {
+    if (!user) return;
     let userRole = 'user';
+    const email = (user.email || '').toLowerCase();
+    const rawRole = String(user.role || '').toLowerCase();
 
-    // 1. Parse logged in user info & role
-    try {
-        const userInfoRaw = localStorage.getItem('user_info');
-        if (userInfoRaw) {
-            const user = JSON.parse(userInfoRaw);
-            const email = (user.email || '').toLowerCase();
-            const rawRole = String(user.role || '').toLowerCase();
+    // Check if user is Admin ('1', 'admin', or root admin accounts)
+    const isRootAdmin = email === 'adminai' || email === 'admin@ai-brain.local' || email === 'adminai@ai-brain.local';
+    const isAdminRole = isRootAdmin || rawRole === '1' || rawRole === 'admin';
+    const isPostOfficeRole = !isAdminRole && (rawRole === '2' || rawRole === 'post_office' || rawRole === 'buu_cuc');
 
-            // Check if user is Admin ('1', 'admin', or root admin accounts)
-            const isAdminRole = rawRole === '1' || rawRole === 'admin' || email === 'adminai' || email === 'admin@ai-brain.local';
-            userRole = isAdminRole ? 'admin' : 'user';
-            const name = user.fullName || user.email || (isAdminRole ? 'AI Admin' : 'User');
-
-            const userNameDisplay = document.getElementById('userNameDisplay');
-            const userNameDisplayMobile = document.getElementById('userNameDisplayMobile');
-            const userRoleTag = document.getElementById('userRoleTag');
-            const userRoleTagMobile = document.getElementById('userRoleTagMobile');
-
-            if (userNameDisplay) userNameDisplay.textContent = name;
-            if (userNameDisplayMobile) userNameDisplayMobile.textContent = name;
-
-            if (userRoleTag) {
-                userRoleTag.textContent = isAdminRole ? 'ADMIN' : 'USER';
-                if (!isAdminRole) {
-                    userRoleTag.className = "text-[9px] font-mono px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-400/30";
-                }
-            }
-            if (userRoleTagMobile) {
-                userRoleTagMobile.textContent = isAdminRole ? 'ADMIN' : 'USER';
-                if (!isAdminRole) {
-                    userRoleTagMobile.className = "text-[10px] text-cyan-400 font-mono bg-cyan-900/40 px-2 py-0.5 rounded border border-cyan-500/30";
-                }
-            }
-        }
-    } catch (e) {
-        console.warn('[Header Module] Failed to parse user info:', e);
+    if (isAdminRole) {
+        userRole = 'admin';
+    } else if (isPostOfficeRole) {
+        userRole = 'post_office';
+    } else {
+        userRole = 'user';
     }
 
-    // 2. Apply Role-Based Access Control (RBAC) UI Separation
+    const name = user.fullName || user.email || (isAdminRole ? 'AI Admin' : (isPostOfficeRole ? 'Bưu Cục Viên' : 'Chủ Shop'));
+
+    const userNameDisplay = document.getElementById('userNameDisplay');
+    const userNameDisplayMobile = document.getElementById('userNameDisplayMobile');
+    const userRoleTag = document.getElementById('userRoleTag');
+    const userRoleTagMobile = document.getElementById('userRoleTagMobile');
+
+    if (userNameDisplay) userNameDisplay.textContent = name;
+    if (userNameDisplayMobile) userNameDisplayMobile.textContent = name;
+
+    let roleText = 'CHỦ SHOP';
+    let roleBadgeClass = "text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-cyan-100 dark:bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 border border-cyan-300 dark:border-cyan-400/30";
+    let roleBadgeMobileClass = "text-[10px] text-cyan-400 font-mono bg-cyan-900/40 px-2 py-0.5 rounded border border-cyan-500/30";
+
+    if (isAdminRole) {
+        roleText = 'ADMIN';
+        roleBadgeClass = "text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-purple-100 dark:bg-purple-500/20 text-purple-800 dark:text-purple-300 border border-purple-300 dark:border-purple-400/30";
+        roleBadgeMobileClass = "text-[10px] text-purple-400 font-mono bg-purple-900/40 px-2 py-0.5 rounded border border-purple-500/30";
+    } else if (isPostOfficeRole) {
+        roleText = 'BƯU CỤC';
+        roleBadgeClass = "text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-400/30";
+        roleBadgeMobileClass = "text-[10px] text-amber-400 font-mono bg-amber-900/40 px-2 py-0.5 rounded border border-amber-500/30";
+    }
+
+    if (userRoleTag) {
+        userRoleTag.textContent = roleText;
+        userRoleTag.className = roleBadgeClass;
+    }
+    if (userRoleTagMobile) {
+        userRoleTagMobile.textContent = roleText;
+        userRoleTagMobile.className = roleBadgeMobileClass;
+    }
+
+    // Apply Role-Based Access Control (RBAC) UI Separation
     const isAdmin = (userRole === 'admin');
+    const isPostOffice = (userRole === 'post_office');
     const isGraphviewPage = window.location.pathname.includes('graphview');
 
     const adminHeaderActions = document.getElementById('adminHeaderActions');
     const adminMobileActions = document.getElementById('adminMobileActions');
     const btnRefreshGraphMobile = document.getElementById('btnRefreshGraphMobile');
+    const btnPostOfficeOnly = document.getElementById('btnPostOfficeOnly');
+    const btnPostOfficeMobileOnly = document.getElementById('btnPostOfficeMobileOnly');
 
     if (!isAdmin) {
         // Hide Admin-only controls
@@ -53,11 +67,62 @@ function initHeaderModule() {
         if (adminMobileActions) adminMobileActions.style.display = 'none';
         if (btnRefreshGraphMobile) btnRefreshGraphMobile.style.display = 'none';
 
+        // Show Post Office quick action button if user has Post Office role
+        if (isPostOffice) {
+            if (btnPostOfficeOnly) btnPostOfficeOnly.style.display = 'inline-flex';
+            if (btnPostOfficeMobileOnly) btnPostOfficeMobileOnly.style.display = 'flex';
+        } else {
+            if (btnPostOfficeOnly) btnPostOfficeOnly.style.display = 'none';
+            if (btnPostOfficeMobileOnly) btnPostOfficeMobileOnly.style.display = 'none';
+        }
+
         // If on the main dashboard (/ or /index.html), apply dedicated User AI Assistant UI
         if (!isGraphviewPage) {
             applyUserAssistantLayout();
         }
+    } else {
+        if (adminHeaderActions) adminHeaderActions.style.display = 'flex';
+        if (adminMobileActions) adminMobileActions.style.display = 'block';
+        if (btnPostOfficeOnly) btnPostOfficeOnly.style.display = 'none';
+        if (btnPostOfficeMobileOnly) btnPostOfficeMobileOnly.style.display = 'none';
     }
+}
+
+async function syncLatestUserProfile() {
+    const token = localStorage.getItem('auth_token');
+    if (!token) return;
+    try {
+        const res = await fetch(`/api/auth/me?t=${Date.now()}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Cache-Control': 'no-cache'
+            }
+        });
+        if (res.ok) {
+            const data = await res.json();
+            if (data.success && data.user) {
+                localStorage.setItem('user_info', JSON.stringify(data.user));
+                renderHeaderRBAC(data.user);
+            }
+        }
+    } catch (err) {
+        console.warn('[Header Module] Profile sync notice:', err.message);
+    }
+}
+
+function initHeaderModule() {
+    // 1. Initial immediate render from localStorage (zero UI flicker)
+    try {
+        const userInfoRaw = localStorage.getItem('user_info');
+        if (userInfoRaw) {
+            renderHeaderRBAC(JSON.parse(userInfoRaw));
+        }
+    } catch (e) {
+        console.warn('[Header Module] Failed to parse cached user info:', e);
+    }
+
+    // 2. Real-time background sync with backend DB to ensure freshest role
+    syncLatestUserProfile();
 
     // 3. Mobile Menu Toggle Handler
     const btnMobileMenuToggle = document.getElementById('btnMobileMenuToggle');

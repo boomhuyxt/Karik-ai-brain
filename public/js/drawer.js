@@ -189,6 +189,22 @@ function initNoteDrawer() {
                     </div>
                 `;
             };
+            renderer.link = function (tokenOrHref, maybeTitle, maybeText) {
+                let href = '';
+                let text = '';
+                if (typeof tokenOrHref === 'object' && tokenOrHref !== null) {
+                    href = tokenOrHref.href || '';
+                    text = tokenOrHref.text || tokenOrHref.title || href;
+                } else {
+                    href = tokenOrHref || '';
+                    text = maybeText || maybeTitle || href;
+                }
+                const lower = href.toLowerCase();
+                if (lower.includes('.xlsx') || lower.includes('.xls') || lower.includes('.csv')) {
+                    return `<a href="${href}" target="_blank" download class="my-2 inline-flex items-center gap-2 bg-emerald-950/90 hover:bg-emerald-900 border border-emerald-400/60 text-emerald-200 font-semibold px-4 py-2 rounded-xl text-xs sm:text-sm shadow-lg transition-all hover:scale-102 cursor-pointer"><span class="material-symbols-outlined text-emerald-400 text-lg">download</span> <span>${text}</span></a>`;
+                }
+                return `<a href="${href}" target="_blank" rel="noopener noreferrer" class="text-cyan-400 hover:text-cyan-300 underline font-medium">${text}</a>`;
+            };
             return marked.parse(processed, {
                 renderer,
                 breaks: true,

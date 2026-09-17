@@ -12,7 +12,7 @@ const middleware = rateLimit({ windowMs: 60000, max: 200, maxTpm: 20 });
 
 let resStatus = null;
 let resJson = null;
-const req = { ip: '127.0.0.1', body: { prompt: 'A very long prompt string testing TPM limits' } };
+const req = { ip: '192.168.1.100', body: { prompt: 'A very long prompt string testing TPM limits' } };
 const res = {
   status: (code) => {
     resStatus = code;

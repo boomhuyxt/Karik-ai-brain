@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS shop_knowledge_files (
     id TEXT PRIMARY KEY,
     shop_id VARCHAR(100) NOT NULL,               -- Mã nhận diện riêng của từng Shop (VD: shop_01, shop_honda)
     file_name VARCHAR(255) NOT NULL,              -- Tên file gửi qua chat (VD: kho_nhot_wave.xlsx)
-    file_path TEXT NOT NULL,                      -- Đường dẫn file đã lưu trên server
+    file_path TEXT NOT NULL,                      -- Đường dẫn vĩnh viễn trên Supabase Storage Cloud (Bucket 'kho')
     file_type VARCHAR(50) DEFAULT 'excel',        -- excel, csv, text, pdf
     inventory_data JSONB DEFAULT '[]'::jsonb,     -- Dữ liệu sản phẩm & số lượng tồn kho (JSON)
     semantic_chunks TEXT,                         -- Văn bản mô tả để AI học
@@ -89,47 +89,48 @@ sequenceDiagram
   }
   ```
 
-### 2. Khách hàng Chat hỏi tồn kho
+### 2. Khách hàng Chat hỏi tồn kho & Quy trình Chốt đơn Đa Bước
 - **`POST /api/inventory/shop-query`**
-- **Body (JSON):**
-  ```json
-  {
-    "shop_id": "shop_01",
-    "question": "Chai nhớt dùng cho xe Wave còn không shop?"
-  }
-  ```
+- **Quy trình hội thoại 4 bước (Tự nhiên qua Chat):**
+  1. **Tư vấn tồn kho**: Khách hỏi *"Nhớt xe Wave còn không shop?"* $\rightarrow$ AI tra cứu kho và trả lời *"Dạ bên em CÒN HÀNG..."*
+  2. **Khách hỏi mua**: Khách nhắn *"Tôi muốn mua 2 chai"* $\rightarrow$ AI xin thông tin: *"Dạ để lên đơn, anh/chị vui lòng cho em xin Họ tên, Địa chỉ nhận hàng và SĐT nhé ạ!"*
+  3. **Xác nhận đơn**: Khách gửi thông tin (ví dụ: *"Nguyễn Văn A, 123 Lê Lợi Q1 HCM, 0901234567"*) $\rightarrow$ AI xuất mẫu xác nhận:
+     ```text
+     Họ tên: Nguyễn Văn A
+     Địa chỉ: 123 Lê Lợi Q1 HCM
+     Sđt: 0901234567
+     Thông tin đơn hàng:
+     (Tên sản phẩm: Nhớt Castrol Power 1 0.8L
+     Số lượng: 2 chai X 95.000 VNĐ = 190.000 VNĐ)
 
-### 3. Khách hàng chốt mua (Trừ kho & Bắn thông báo)
-- **`POST /api/inventory/shop-order`**
-- **Body (JSON):**
-  ```json
-  {
-    "shop_id": "shop_01",
-    "item_identifier": "CASTROL-WAVE-08L",
-    "quantity": 2,
-    "customer_name": "Anh Nam",
-    "customer_phone": "0912.345.678"
-  }
-  ```
+     Mời khách hàng check xem có sai sót gì không để lên đơn cho khách hàng.
+     ```
+  4. **Chốt đơn & Gợi ý mua thêm**: Khách gõ *"OK"* $\rightarrow$ AI tự động **trừ kho**, gửi cảnh báo đến Chủ Shop và hỏi: *"Dạ anh/chị có quan tâm đến sản phẩm nào khác bên shop nữa không để em hỗ trợ lên đơn chung luôn cho mình ạ? 😊"*
 
-### 4. Chủ shop xem lịch sử thông báo biến động
+### 3. Chủ shop xem lịch sử thông báo biến động
 - **`GET /api/inventory/shop-alerts?shop_id=shop_01`**
+
+### 4. Chủ shop xem Báo cáo doanh thu & Thống kê bán hàng hôm nay
+- **`GET /api/inventory/daily-report?shop_id=shop_01`**
+- Hoặc hỏi AI trực tiếp trong Chat: *"Hôm nay tôi bán được bao nhiêu sản phẩm và doanh thu bao nhiêu?"*
+
+### 5. Xuất file Excel tồn kho mới nhất đã tự động trừ kho
+- **`GET /api/inventory/export-excel?shop_id=shop_01`**
+- Trả về file `.xlsx` được lưu trữ vĩnh viễn trên Supabase Storage bucket `kho` với số lượng tồn kho thực tế mới nhất.
 
 ---
 
-## 🧪 5. Hướng Dẫn Kiểm Thử (Testing)
+## 🧪 6. Hướng Dẫn Kiểm Thử (Testing)
 
 ### Cách 1: Test qua Giao diện Web Localhost
-1. Chạy lệnh: `npm run dev` (hoặc `npm start`).
+1. Khởi động server: `npm run dev` (hoặc `npm start`).
 2. Mở trình duyệt: `http://localhost:3000/shop-test` (hoặc `http://localhost:3000/shop-test.html`).
-3. Bấm **"✨ Nạp Dữ liệu Mẫu"** $\rightarrow$ Gõ câu hỏi chat $\rightarrow$ Bấm **"🛒 Chốt mua ngay"** để xem biến động kho thời gian thực.
+3. Tải lên file Excel kho hàng của bạn (hoặc bấm **"✨ Nạp Dữ liệu Mẫu"**) $\rightarrow$ Chat hỏi tư vấn $\rightarrow$ Trải nghiệm luồng chốt đơn $\rightarrow$ Bấm nút **"Xuất File Excel Kho"** hoặc bấm **"📊 Báo cáo doanh thu"** để xem tổng kết tức thì!
 
 ### Cách 2: Test qua Terminal
-Chạy script mô phỏng:
-```bash
-node scripts/test-shop-demo.js
-```
-Chạy bộ Unit Test tự động:
+Chạy toàn bộ test suites tự động:
 ```bash
 npm test
 ```
+
+

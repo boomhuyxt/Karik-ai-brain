@@ -26,6 +26,9 @@ async function chat(prompt, options = {}) {
         } else if (options.agent.id === 'risk') {
           const riskDoc = promptService.readPromptMd('risk.prompt.md');
           agentInstruction = `\n\n--- CHỈ THỊ CHUYÊN BIỆT TỪ FILE: risk.prompt.md (Model: ${modelName}) ---\n${riskDoc}`;
+        } else if (options.agent.id === 'inventory') {
+          const invDoc = promptService.readPromptMd('inventory.prompt.md');
+          agentInstruction = `\n\n--- CHỈ THỊ CHUYÊN BIỆT TỪ FILE: inventory.prompt.md (Model: ${modelName}) ---\n${invDoc}`;
         }
       }
 

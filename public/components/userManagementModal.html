@@ -1,90 +1,55 @@
-<!-- User Management Modal Component for Admin (Mobile Responsive) -->
-<style>
-    html:not(.dark) #userManagementModal > div,
-    html.light #userManagementModal > div {
-        background: #ffffff !important;
-        border-color: rgba(109, 40, 217, 0.25) !important;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12) !important;
-    }
-    html:not(.dark) #userManagementModal h2,
-    html.light #userManagementModal h2 {
-        color: #0f172a !important;
-        text-shadow: none !important;
-    }
-    html:not(.dark) #userManagementModal #userSearchInput,
-    html.light #userManagementModal #userSearchInput {
-        background-color: #f8fafc !important;
-        color: #0f172a !important;
-        border-color: #cbd5e1 !important;
-    }
-    html:not(.dark) #userManagementModal thead,
-    html.light #userManagementModal thead {
-        background-color: #f1f5f9 !important;
-        color: #334155 !important;
-        border-bottom-color: #e2e8f0 !important;
-    }
-    html:not(.dark) #userTableBody,
-    html.light #userTableBody {
-        color: #1e293b !important;
-    }
-    html:not(.dark) #userTableBody tr,
-    html.light #userTableBody tr {
-        border-bottom-color: #f1f5f9 !important;
-    }
-    html:not(.dark) #userManagementModal strong#statTotalUsers {
-        color: #0f172a !important;
-        text-shadow: none !important;
-    }
-</style>
-<div id="userManagementModal" class="hidden fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-2 sm:p-6 animate-fadeIn overflow-y-auto">
-    <div class="glass-panel w-full max-w-4xl max-h-[94vh] sm:max-h-[90vh] rounded-2xl sm:rounded-3xl p-3.5 sm:p-6 flex flex-col gap-3 sm:gap-4 shadow-2xl border border-purple-500/40 bg-slate-950/95 overflow-hidden my-auto">
+<!-- User Management Modal Component for Admin (Responsive Light & Dark Mode) -->
+<div id="userManagementModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center p-2 sm:p-6 animate-fadeIn overflow-y-auto">
+    <div class="relative w-full max-w-4xl max-h-[94vh] sm:max-h-[90vh] rounded-2xl sm:rounded-3xl p-3.5 sm:p-6 flex flex-col gap-3 sm:gap-4 shadow-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151821] text-slate-800 dark:text-slate-100 overflow-hidden my-auto">
         
         <!-- Header -->
-        <div class="flex items-center justify-between pb-2.5 sm:pb-3 border-b border-purple-500/25">
+        <div class="flex items-center justify-between pb-2.5 sm:pb-3 border-b border-slate-200 dark:border-white/10">
             <div class="flex items-center gap-2 sm:gap-3 min-w-0">
-                <span class="material-symbols-outlined text-purple-400 text-xl sm:text-2xl text-glow animate-pulse flex-shrink-0">manage_accounts</span>
+                <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-purple-100 dark:bg-purple-500/20 border border-purple-200 dark:border-purple-400/30 flex items-center justify-center text-purple-600 dark:text-purple-300 flex-shrink-0">
+                    <span class="material-symbols-outlined text-lg sm:text-2xl">manage_accounts</span>
+                </div>
                 <div class="min-w-0">
-                    <h2 class="font-headline-md text-sm sm:text-lg font-bold text-white text-glow truncate">Quản lý Người dùng & Thống kê</h2>
-                    <p class="text-[10px] sm:text-xs text-slate-400 font-mono truncate">Thống kê số lượng đăng ký, phân quyền Admin & quản lý khóa tài khoản</p>
+                    <h2 class="font-headline-md text-sm sm:text-lg font-bold text-slate-900 dark:text-white truncate">Quản lý Người dùng & Thống kê</h2>
+                    <p class="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 font-mono truncate">Thống kê số lượng đăng ký, phân quyền Admin & quản lý khóa tài khoản</p>
                 </div>
             </div>
-            <button type="button" id="btnCloseUserModal" title="Đóng cửa sổ" class="text-slate-400 hover:text-white p-1 sm:p-1.5 rounded-xl hover:bg-white/10 transition-all active:scale-95 flex-shrink-0">
+            <button type="button" id="btnCloseUserModal" title="Đóng cửa sổ" class="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1 sm:p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-white/10 transition-all active:scale-95 flex-shrink-0 cursor-pointer">
                 <span class="material-symbols-outlined text-lg sm:text-xl">close</span>
             </button>
         </div>
 
-        <!-- 3 Stat Cards (Thống kê số lượng người dùng - Optimized for Mobile) -->
+        <!-- 3 Stat Cards (Thống kê số lượng người dùng) -->
         <div class="grid grid-cols-3 gap-1.5 sm:gap-4">
             <!-- Total Users Card -->
-            <div class="bg-purple-950/40 border border-purple-500/30 rounded-xl sm:rounded-2xl p-2 sm:p-4 flex items-center gap-1.5 sm:gap-3 shadow-md min-w-0">
-                <div class="w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-purple-500/20 border border-purple-400/30 flex items-center justify-center text-purple-300 flex-shrink-0">
+            <div class="bg-purple-50/80 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800/40 rounded-xl sm:rounded-2xl p-2 sm:p-4 flex items-center gap-1.5 sm:gap-3 shadow-xs min-w-0">
+                <div class="w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-purple-100 dark:bg-purple-500/20 border border-purple-200 dark:border-purple-400/30 flex items-center justify-center text-purple-600 dark:text-purple-300 flex-shrink-0">
                     <span class="material-symbols-outlined text-sm sm:text-xl">group</span>
                 </div>
                 <div class="min-w-0 overflow-hidden">
-                    <span class="text-[8px] sm:text-xs text-purple-300 font-mono block uppercase tracking-wider truncate">Tổng Đăng ký</span>
-                    <strong id="statTotalUsers" class="text-sm sm:text-2xl font-bold text-white font-mono text-glow block leading-tight">0</strong>
+                    <span class="text-[8px] sm:text-xs text-purple-700 dark:text-purple-300 font-semibold font-mono block uppercase tracking-wider truncate">Tổng Đăng ký</span>
+                    <strong id="statTotalUsers" class="text-sm sm:text-2xl font-bold text-purple-950 dark:text-purple-100 font-mono block leading-tight">0</strong>
                 </div>
             </div>
 
             <!-- Active Users Card -->
-            <div class="bg-emerald-950/40 border border-emerald-500/30 rounded-xl sm:rounded-2xl p-2 sm:p-4 flex items-center gap-1.5 sm:gap-3 shadow-md min-w-0">
-                <div class="w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center text-emerald-300 flex-shrink-0">
+            <div class="bg-emerald-50/80 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/40 rounded-xl sm:rounded-2xl p-2 sm:p-4 flex items-center gap-1.5 sm:gap-3 shadow-xs min-w-0">
+                <div class="w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-emerald-100 dark:bg-emerald-500/20 border border-emerald-200 dark:border-emerald-400/30 flex items-center justify-center text-emerald-600 dark:text-emerald-300 flex-shrink-0">
                     <span class="material-symbols-outlined text-sm sm:text-xl">check_circle</span>
                 </div>
                 <div class="min-w-0 overflow-hidden">
-                    <span class="text-[8px] sm:text-xs text-emerald-300 font-mono block uppercase tracking-wider truncate">Hoạt động</span>
-                    <strong id="statActiveUsers" class="text-sm sm:text-2xl font-bold text-emerald-400 font-mono text-glow block leading-tight">0</strong>
+                    <span class="text-[8px] sm:text-xs text-emerald-700 dark:text-emerald-300 font-semibold font-mono block uppercase tracking-wider truncate">Hoạt động</span>
+                    <strong id="statActiveUsers" class="text-sm sm:text-2xl font-bold text-emerald-900 dark:text-emerald-300 font-mono block leading-tight">0</strong>
                 </div>
             </div>
 
             <!-- Blocked Users Card -->
-            <div class="bg-red-950/40 border border-red-500/30 rounded-xl sm:rounded-2xl p-2 sm:p-4 flex items-center gap-1.5 sm:gap-3 shadow-md min-w-0">
-                <div class="w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-red-500/20 border border-red-400/30 flex items-center justify-center text-red-300 flex-shrink-0">
+            <div class="bg-red-50/80 dark:bg-red-950/30 border border-red-200 dark:border-red-800/40 rounded-xl sm:rounded-2xl p-2 sm:p-4 flex items-center gap-1.5 sm:gap-3 shadow-xs min-w-0">
+                <div class="w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-red-100 dark:bg-red-500/20 border border-red-200 dark:border-red-400/30 flex items-center justify-center text-red-600 dark:text-red-300 flex-shrink-0">
                     <span class="material-symbols-outlined text-sm sm:text-xl">block</span>
                 </div>
                 <div class="min-w-0 overflow-hidden">
-                    <span class="text-[8px] sm:text-xs text-red-300 font-mono block uppercase tracking-wider truncate">Bị khóa</span>
-                    <strong id="statBlockedUsers" class="text-sm sm:text-2xl font-bold text-red-400 font-mono text-glow block leading-tight">0</strong>
+                    <span class="text-[8px] sm:text-xs text-red-700 dark:text-red-300 font-semibold font-mono block uppercase tracking-wider truncate">Bị khóa</span>
+                    <strong id="statBlockedUsers" class="text-sm sm:text-2xl font-bold text-red-900 dark:text-red-300 font-mono block leading-tight">0</strong>
                 </div>
             </div>
         </div>
@@ -93,25 +58,25 @@
         <div class="relative">
             <span class="material-symbols-outlined absolute left-3 top-2 sm:top-2.5 text-slate-400 text-sm sm:text-base">search</span>
             <input id="userSearchInput" type="text" placeholder="Tìm kiếm người dùng theo Email hoặc Họ tên..."
-                class="w-full bg-slate-900/90 border border-purple-500/30 rounded-xl pl-8 sm:pl-9 pr-3 sm:pr-4 py-1.5 sm:py-2 text-xs sm:text-sm text-white placeholder:text-slate-400 outline-none focus:border-cyan-400 transition-all">
+                class="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl pl-8 sm:pl-9 pr-3 sm:pr-4 py-1.5 sm:py-2 text-xs sm:text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 outline-none focus:border-purple-500 transition-all">
         </div>
 
         <!-- Users Table Container with Horizontal and Vertical Scrolling -->
-        <div class="flex-1 overflow-x-auto overflow-y-auto min-h-0 border border-purple-500/20 rounded-xl sm:rounded-2xl bg-slate-900/60">
+        <div class="flex-1 overflow-x-auto overflow-y-auto min-h-0 border border-slate-200 dark:border-white/10 rounded-xl sm:rounded-2xl bg-slate-50/50 dark:bg-black/20">
             <table class="w-full min-w-[500px] sm:min-w-full text-left text-xs border-collapse">
-                <thead class="bg-slate-950/90 sticky top-0 border-b border-purple-500/20 text-slate-300 font-mono">
+                <thead class="bg-slate-100 dark:bg-white/5 sticky top-0 border-b border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300 font-semibold z-10 backdrop-blur-md">
                     <tr>
-                        <th class="py-2 px-2.5 sm:px-3">Người dùng</th>
-                        <th class="py-2 px-2 sm:px-3">Vai trò</th>
-                        <th class="py-2 px-2 sm:px-3">Trạng thái</th>
-                        <th class="py-2 px-2 sm:px-3 hidden sm:table-cell">Ngày tạo</th>
-                        <th class="py-2 px-2.5 sm:px-3 text-right">Hành động & Phân quyền</th>
+                        <th class="py-2.5 px-3">Người dùng</th>
+                        <th class="py-2.5 px-3">Vai trò</th>
+                        <th class="py-2.5 px-3">Trạng thái</th>
+                        <th class="py-2.5 px-3 hidden sm:table-cell">Ngày tạo</th>
+                        <th class="py-2.5 px-3 text-right">Hành động & Phân quyền</th>
                     </tr>
                 </thead>
-                <tbody id="userTableBody" class="divide-y divide-purple-500/10 text-slate-200">
+                <tbody id="userTableBody" class="divide-y divide-slate-200 dark:divide-white/5 text-slate-700 dark:text-slate-200 font-sans">
                     <tr>
                         <td colspan="5" class="py-8 text-center text-slate-400 font-mono">
-                            <span class="material-symbols-outlined animate-spin text-xl text-purple-400 mb-1">sync</span>
+                            <span class="material-symbols-outlined animate-spin text-xl text-purple-500 mb-1">sync</span>
                             <p>Đang tải danh sách người dùng...</p>
                         </td>
                     </tr>

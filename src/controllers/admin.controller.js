@@ -49,11 +49,15 @@ class AdminController {
         return res.status(400).json({ success: false, error: 'Thiếu thông tin người dùng.' });
       }
 
-      if (role === undefined || role === null || !['0', '1', 'admin', 'user'].includes(String(role).toLowerCase())) {
-        return res.status(400).json({ success: false, error: 'Vai trò (role) không hợp lệ. Giá trị hợp lệ: "0" (User), "1" (Admin).' });
+      if (role === undefined || role === null || !['0', '1', '2', 'admin', 'user', 'post_office', 'buu_cuc'].includes(String(role).toLowerCase())) {
+        return res.status(400).json({ success: false, error: 'Vai trò (role) không hợp lệ. Giá trị hợp lệ: "0" (User / Chủ Shop), "1" (Admin), "2" (Bưu Cục Đơn Hàng).' });
       }
 
-      const targetRole = (String(role) === '1' || String(role) === 'admin') ? '1' : '0';
+      const roleStr = String(role).toLowerCase();
+      let targetRole = '0';
+      if (roleStr === '1' || roleStr === 'admin') targetRole = '1';
+      else if (roleStr === '2' || roleStr === 'post_office' || roleStr === 'buu_cuc') targetRole = '2';
+
       const targetUser = await userRepository.findById(id);
 
       if (!targetUser) {
@@ -64,24 +68,34 @@ class AdminController {
       const isRootAdmin = targetUser.id === 'usr_admin' || targetUser.id === 'usr_adminAI' || targetEmail === 'adminai' || targetEmail === 'admin@ai-brain.local';
 
       // Protection: Protect Root Admin from demotion
-      if (isRootAdmin && targetRole === '0') {
+      if (isRootAdmin && targetRole !== '1') {
         return res.status(400).json({ success: false, error: 'Không thể hạ quyền tài khoản Quản trị viên hệ thống (Root Admin).' });
       }
 
       // Protection: Self-demotion check
-      if (req.user?.id === id && targetRole === '0') {
+      if (req.user?.id === id && targetRole !== '1') {
         return res.status(400).json({ success: false, error: 'Bạn không thể tự hạ quyền Admin của chính mình.' });
       }
 
       await userRepository.updateUserRole(id, targetRole);
 
+      let roleLabel = 'Chủ Shop (User)';
+      if (targetRole === '1') roleLabel = 'Quản trị viên (Admin)';
+      else if (targetRole === '2') roleLabel = 'Bưu Cục Đơn Hàng';
+
       return res.json({
         success: true,
-        message: targetRole === '1' ? 'Đã thăng cấp người dùng lên Quản trị viên (Admin) thành công!' : 'Đã hạ quyền người dùng xuống User thành công!'
+        message: `Đã cập nhật vai trò người dùng thành "${roleLabel}" thành công!`,
+        role: targetRole
       });
     } catch (err) {
       next(err);
     }
+  }
+
+  // Alias method for updateUserRole
+  async changeUserRole(req, res, next) {
+    return this.updateUserRole(req, res, next);
   }
 
   async deleteUser(req, res, next) {

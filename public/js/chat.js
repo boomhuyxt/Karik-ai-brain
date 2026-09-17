@@ -106,6 +106,8 @@ function initAIChat() {
                     filePreviewIcon.textContent = 'movie';
                 } else if (ext === 'pdf') {
                     filePreviewIcon.textContent = 'picture_as_pdf';
+                } else if (['xlsx', 'xls', 'csv'].includes(ext)) {
+                    filePreviewIcon.textContent = 'table_chart';
                 } else if (['doc', 'docx'].includes(ext)) {
                     filePreviewIcon.textContent = 'description';
                 } else {
@@ -315,6 +317,9 @@ function initAIChat() {
                         attachmentHtml = `<div class="mt-1.5"><video src="${url}" controls class="max-h-48 w-full rounded-xl border border-purple-500/40 shadow-lg"></video></div>`;
                     } else if (cat === 'pdf') {
                         attachmentHtml = `<div class="mt-1.5"><a href="${url}" target="_blank" download class="inline-flex items-center gap-2 bg-purple-900/60 hover:bg-purple-800/80 border border-cyan-400/40 px-3 py-1.5 rounded-xl text-cyan-200 text-xs font-mono transition-all"><span class="material-symbols-outlined text-base text-red-400">picture_as_pdf</span> <span>${name}</span> <span class="text-[10px] opacity-75">(${mb}MB)</span></a></div>`;
+                    } else if (cat === 'excel') {
+                        const excelDetail = attachedFileResult.excelInfo ? ` • ${attachedFileResult.excelInfo.total_items} sản phẩm` : '';
+                        attachmentHtml = `<div class="mt-1.5"><a href="${url}" target="_blank" download class="inline-flex items-center gap-2 bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-400/50 px-3 py-1.5 rounded-xl text-emerald-200 text-xs font-mono transition-all shadow-sm"><span class="material-symbols-outlined text-base text-emerald-400">table_chart</span> <span>${name}</span> <span class="text-[10px] opacity-75">(${mb}MB - Bảng tính Excel${excelDetail})</span></a></div>`;
                     } else {
                         attachmentHtml = `<div class="mt-1.5"><a href="${url}" target="_blank" download class="inline-flex items-center gap-2 bg-purple-900/60 hover:bg-purple-800/80 border border-cyan-400/40 px-3 py-1.5 rounded-xl text-cyan-200 text-xs font-mono transition-all"><span class="material-symbols-outlined text-base text-blue-400">description</span> <span>${name}</span> <span class="text-[10px] opacity-75">(${mb}MB)</span></a></div>`;
                     }
@@ -367,12 +372,23 @@ function initAIChat() {
             fullPrompt += `\n[Đính kèm file: ${attachedFileResult.name} (${attachedFileResult.category}) tại ${attachedFileResult.url}]`;
         }
 
+        const userInfo = (() => {
+            try { return JSON.parse(localStorage.getItem('user_info') || '{}'); } catch(e) { return {}; }
+        })();
+        const activeShopId = userInfo.email || 'default_shop';
+
         try {
             const res = await fetch('/api/chat', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-shop-id': activeShopId,
+                    'x-user-email': userInfo.email || ''
+                },
                 body: JSON.stringify({
-                    message: fullPrompt
+                    message: fullPrompt,
+                    category: attachedFileResult ? attachedFileResult.category : '',
+                    shop_id: activeShopId
                 })
             });
             const result = await res.json();

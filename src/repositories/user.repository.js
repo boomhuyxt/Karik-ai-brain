@@ -5,31 +5,19 @@ class UserRepository {
   constructor() {
     this.memoryUsers = new Map();
 
-    const adminHash = hashPassword('admin123456');
-
-    // Admin user 1: adminAI
-    const adminUser = {
-      id: 'usr_adminAI',
-      email: 'adminai',
-      fullName: 'AI Admin',
-      passwordHash: adminHash,
+    // Root Admin System Account
+    const rootAdmin = {
+      id: 'usr_admin',
+      email: 'adminAI@ai-brain.local',
+      fullName: 'Root Admin',
+      passwordHash: hashPassword('admin123456'),
       role: '1',
       status: 'active',
       createdAt: new Date().toISOString()
     };
-    this.memoryUsers.set('adminai', adminUser);
-    this.memoryUsers.set('adminai@ai-brain.local', adminUser);
-
-    // Admin user 2: admin@ai-brain.local
-    this.memoryUsers.set('admin@ai-brain.local', {
-      id: 'usr_admin',
-      email: 'admin@ai-brain.local',
-      fullName: 'AI Admin',
-      passwordHash: hashPassword('admin123'),
-      role: '1',
-      status: 'active',
-      createdAt: new Date().toISOString()
-    });
+    this.memoryUsers.set('adminai@ai-brain.local', rootAdmin);
+    this.memoryUsers.set('admin@ai-brain.local', { ...rootAdmin, email: 'admin@ai-brain.local' });
+    this.memoryUsers.set('adminai', { ...rootAdmin, email: 'adminai' });
   }
 
   async findByEmail(email) {
@@ -40,12 +28,15 @@ class UserRepository {
       try {
         const { data, error } = await supabase.from('users').select('*').eq('email', key).maybeSingle();
         if (!error && data) {
+          const rawRole = (data.role !== undefined && data.role !== null && data.role !== '') 
+            ? data.role 
+            : ((data.role_id !== undefined && data.role_id !== null && data.role_id !== '') ? data.role_id : '0');
           user = {
             id: data.id,
             email: data.email,
             fullName: data.full_name || data.fullName || 'User',
             passwordHash: data.password_hash || data.password,
-            role: String(data.role_id || data.role || (key.includes('admin') ? '1' : '0')),
+            role: String(rawRole),
             status: data.status || 'active',
             createdAt: data.created_at
           };
@@ -61,10 +52,14 @@ class UserRepository {
       user = this.memoryUsers.get(key) || null;
     }
 
-    // Apply memory status override if present
+    // Apply memory status, role and password override for Root Admin and active users
     const memUser = this.memoryUsers.get(key);
-    if (user && memUser && memUser.status) {
-      user.status = memUser.status;
+    if (user && memUser) {
+      if (memUser.status) user.status = memUser.status;
+      if (memUser.role !== undefined) user.role = String(memUser.role);
+      if (memUser.passwordHash && (key === 'adminai@ai-brain.local' || key === 'admin@ai-brain.local' || key === 'adminai')) {
+        user.passwordHash = memUser.passwordHash;
+      }
     }
 
     return user;
@@ -102,8 +97,9 @@ class UserRepository {
 
     if (user) {
       const memUser = this.memoryUsers.get((user.email || '').toLowerCase());
-      if (memUser && memUser.status) {
-        user.status = memUser.status;
+      if (memUser) {
+        if (memUser.status) user.status = memUser.status;
+        if (memUser.role !== undefined) user.role = String(memUser.role);
       }
     }
 
@@ -241,13 +237,16 @@ class UserRepository {
   }
 
   async updateUserRole(userId, role) {
-    const validRole = String(role === '1' || role === 'admin' ? '1' : '0');
+    let validRole = '0';
+    const r = String(role || '').toLowerCase();
+    if (r === '1' || r === 'admin') validRole = '1';
+    else if (r === '2' || r === 'post_office' || r === 'buu_cuc') validRole = '2';
 
     if (supabase) {
       try {
         let res = await supabase.from('users').update({ role: validRole, role_id: validRole }).eq('id', userId).select();
-        if (res.error) {
-          await supabase.from('users').update({ role: validRole }).eq('id', userId);
+        if (res.error || !res.data || res.data.length === 0) {
+          await supabase.from('users').update({ role: validRole, role_id: validRole }).eq('email', userId);
         }
       } catch (err) {
         console.warn('[UserRepository] Supabase updateUserRole notice:', err.message);
@@ -257,19 +256,19 @@ class UserRepository {
     // Update in memory users map
     let foundInMem = false;
     for (const [key, memUser] of this.memoryUsers.entries()) {
-      if (memUser.id === userId) {
+      if (memUser && (memUser.id === userId || key === userId || (memUser.email && memUser.email.toLowerCase() === String(userId).toLowerCase()))) {
         memUser.role = validRole;
-        this.memoryUsers.set(key, memUser);
+        this.memoryUsers.set(key, { ...memUser, role: validRole });
         foundInMem = true;
       }
     }
 
     // If user is from Supabase and not in memoryUsers Map yet, fetch & store role override
     if (!foundInMem) {
-      const user = await this.findById(userId);
+      const user = (await this.findById(userId)) || (await this.findByEmail(userId));
       if (user) {
         user.role = validRole;
-        this.memoryUsers.set((user.email || '').toLowerCase(), user);
+        this.memoryUsers.set((user.email || '').toLowerCase(), { ...user, role: validRole });
       }
     }
 
@@ -305,45 +304,6 @@ class UserRepository {
       const user = await this.findById(userId);
       if (user) {
         user.status = validStatus;
-        this.memoryUsers.set((user.email || '').toLowerCase(), user);
-      }
-    }
-
-    return true;
-  }
-
-  async updateUserRole(userId, role) {
-    const validRole = String(role) === '1' || String(role) === 'admin' ? '1' : '0';
-
-    if (supabase) {
-      try {
-        let res = await supabase.from('users').update({ role_id: validRole, role: validRole }).eq('id', userId).select();
-        if (res.error && res.error.message.includes('role_id')) {
-          res = await supabase.from('users').update({ role: validRole }).eq('id', userId).select();
-        }
-        if (res.error) {
-          console.warn('[UserRepository] Supabase updateUserRole notice:', res.error.message);
-        }
-      } catch (err) {
-        console.warn('[UserRepository] Supabase updateUserRole notice:', err.message);
-      }
-    }
-
-    // Update in memory users map
-    let foundInMem = false;
-    for (const [key, memUser] of this.memoryUsers.entries()) {
-      if (memUser.id === userId) {
-        memUser.role = validRole;
-        this.memoryUsers.set(key, memUser);
-        foundInMem = true;
-      }
-    }
-
-    // If user is from Supabase and not in memoryUsers Map yet, fetch & store role override
-    if (!foundInMem) {
-      const user = await this.findById(userId);
-      if (user) {
-        user.role = validRole;
         this.memoryUsers.set((user.email || '').toLowerCase(), user);
       }
     }

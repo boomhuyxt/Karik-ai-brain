@@ -70,6 +70,14 @@ const rateLimit = (options = {}) => {
       req.ip ||
       'global';
 
+    const isLocalhost = ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1' || ip === 'localhost' || ip === 'global';
+    const isDev = process.env.NODE_ENV !== 'production';
+
+    // Allow smooth local development & testing without lockouts
+    if (isLocalhost && isDev) {
+      return next();
+    }
+
     const now = Date.now();
 
     // 1. Check if IP is under active Cooldown Ban
@@ -186,11 +194,11 @@ const apiLimiter = rateLimit({
 
 const authLimiter = rateLimit({
   windowMs: 60000,
-  max: 10,
-  burstMax: 5,
-  burstWindowMs: 5000,
-  cooldownMs: 300000,
-  maxViolations: 3
+  max: 15,
+  burstMax: 8,
+  burstWindowMs: 2000,
+  cooldownMs: 60000,
+  maxViolations: 5
 });
 
 const heavyAiLimiter = rateLimit({

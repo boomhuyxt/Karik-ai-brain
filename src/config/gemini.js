@@ -38,6 +38,13 @@ module.exports = {
       model: 'gemini-3.5-flash-lite',
       role: 'Đo lường chỉ số ads (CTR, CPC, ROAS), cảnh báo rủi ro & tiến độ',
       badge: 'Agent Rủi Ro & Tiến Độ (Gemini 3.5 Flash Lite)'
+    },
+    inventory: {
+      id: 'inventory',
+      name: 'Agent Quản Lý Kho & Bán Hàng',
+      model: 'gemini-3.5-flash-lite',
+      role: 'Tư vấn phụ tùng/sản phẩm kho hàng, báo giá khách hàng, kiểm tra tồn kho, tiếp nhận đơn đặt hàng & cảnh báo nhập hàng',
+      badge: 'Agent Quản Lý Kho & Bán Hàng (Smart Inventory)'
     }
   },
 
