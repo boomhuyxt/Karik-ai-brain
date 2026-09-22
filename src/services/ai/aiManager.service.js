@@ -35,6 +35,7 @@ class AIManagerService {
     const delegatedAgent = routerService.dispatchAgent(prompt, category);
     const targetModel = options.model || delegatedAgent.model;
     const targetProvider = options.provider || routerService.selectProvider(prompt, category);
+    const providerInstance = this.providers[targetProvider] || this.providers.gemini;
     // 1.5. RAG Semantic Recall: Quét tri thức đã lưu trong Obsidian để nạp vào Context cho AI
     let enrichedContext = options.context || '';
     try {
@@ -59,12 +60,35 @@ class AIManagerService {
     if (delegatedAgent.id === 'inventory') {
       const shopChatbotService = require('./shopChatbot.service');
       const shopKnowledgeRepo = require('../../repositories/shopKnowledge.repository');
-      const shopId = options.shop_id || options.user?.email || 'default_shop';
 
-      const isReport = /(hôm nay.*(bán được|doanh thu|bán bao nhiêu|bao nhiêu sản phẩm|tiền bán)|doanh thu.*hôm nay|báo cáo (doanh thu|bán hàng|kho)|tồn kho.*(còn lại|bao nhiêu|thế nào)|xuất.*(file|excel|báo cáo)|tải.*(file|excel)|thống kê bán hàng|tổng quan kho)/i.test(prompt);
-      const isDirectQuestionOrOrder = /(mua|lấy|chốt|đặt|order|cho|giao|ship|giá|bao nhiêu|còn hàng|hết hàng|nhớt|bugi|lốp|phụ tùng|bảng tính|tồn kho|sản phẩm)/i.test(prompt);
+      // Tự động bóc tách tên shop từ câu hỏi người dùng nếu có (vd: "shop huyQ7", "của shop huyQ7"...)
+      let extractedShopId = null;
+      const shopPattern = /(?:của\s+shop|shop|cửa\s+hàng)\s*[:\-]?\s*([a-zA-Z0-9_\-]+)/i;
+      const shopMatch = prompt.match(shopPattern);
+      const ignoreWords = ['nào', 'đó', 'n', '1', 'một', 'tôi', 'mình', 'nay', 'hôm', 'này', 'online', 'của', 'khác', 'bất', 'kỳ'];
+      if (shopMatch && shopMatch[1] && !ignoreWords.includes(shopMatch[1].toLowerCase()) && shopMatch[1].length > 1) {
+        extractedShopId = shopMatch[1].trim();
+      }
 
-      if (isReport || isDirectQuestionOrOrder) {
+      let shopId = extractedShopId || options.shop_id || options.user?.email;
+      if (!shopId || shopId === 'default_shop') {
+        try {
+          const allFiles = await shopKnowledgeRepo.getAllFiles();
+          if (allFiles && allFiles.length > 0 && allFiles[0].shop_id) {
+            shopId = allFiles[0].shop_id;
+          } else {
+            shopId = 'default_shop';
+          }
+        } catch (e) {
+          shopId = 'default_shop';
+        }
+      }
+
+      const isReport = /(hôm (nay|đó|qua).*(bán được|doanh thu|danh thu|bán bao nhiêu|bao nhiêu sản phẩm|tiền bán)|(doanh thu|danh thu).*(hôm nay|hôm đó|hôm qua|ra sao|thế nào)|bán được gì|đã bán được gì|báo cáo.*(doanh thu|danh thu|bán hàng|kho|tổng quan)|tồn kho.*(còn lại|bao nhiêu|thế nào)|(xuất|tải|đưa ra|cho).*file.*(danh thu|doanh thu|excel|báo cáo|kho)|file (danh thu|doanh thu|excel)|thống kê.*(bán hàng|kho|doanh thu|danh thu)|tổng quan kho)/i.test(prompt);
+      const isDirectQuestionOrOrder = /(mua|lấy|chốt|đặt|order|cho|giao|ship|giá|bao nhiêu|còn hàng|hết hàng|nhớt|bugi|lốp|phụ tùng|bảng tính|tồn kho|sản phẩm|bưu cục|vận đơn)/i.test(prompt);
+      const hasContactInfo = /(?:\+84|84|0)[\s.-]*(?:3[2-9]|5[6|8|9]|7[0|6-9]|8[1-5|8|9]|9[0-4|6-9])(?:[\s.-]*\d){7}/.test(prompt) || /(họ tên|địa chỉ|sđt|số điện thoại|người nhận)/i.test(prompt);
+
+      if (isReport || isDirectQuestionOrOrder || hasContactInfo) {
         try {
           const shopRes = await shopChatbotService.answerCustomerQuestion({
             shop_id: shopId,
@@ -72,7 +96,7 @@ class AIManagerService {
             session_id: options.session_id || shopId
           });
 
-          if (shopRes && shopRes.found) {
+          if (shopRes && shopRes.reply) {
             const reply = shopRes.reply;
             conversationService.addMessage('assistant', reply, 'gemini');
             const tokenStats = await tokenService.trackTokens('gemini', prompt, reply, null);

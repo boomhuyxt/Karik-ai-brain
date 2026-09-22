@@ -76,8 +76,11 @@ class RouterService {
       'tồn kho', 'kho hàng', 'danh sách kho', 'danh mục sản phẩm', 'phụ tùng',
       'nhớt', 'bugi', 'lốp xe', 'báo giá', 'giá bao nhiêu', 'còn hàng', 'hết hàng',
       'chốt đơn', 'đặt mua', 'mua hàng', 'lên đơn', 'xuất kho', 'nhập kho',
-      'tư vấn bán hàng', 'doanh thu', 'báo cáo kho', 'xuất file', 'xuất báo cáo',
-      'bảng tính excel', 'danh sách sản phẩm'
+      'tư vấn bán hàng', 'doanh thu', 'danh thu', 'bán được gì', 'đã bán được gì',
+      'bán bao nhiêu', 'tiền bán', 'báo cáo kho', 'báo cáo bán hàng', 'báo cáo doanh thu',
+      'báo cáo danh thu', 'xuất file', 'xuất báo cáo', 'đưa ra file', 'tải file',
+      'file danh thu', 'file doanh thu', 'file excel', 'bảng tính excel', 'danh sách sản phẩm',
+      'bưu cục', 'vận đơn', 'mã vận đơn', 'đơn hàng'
     ];
     if (category === 'excel' || text.includes('.xlsx') || text.includes('.xls') || text.includes('.csv') || inventoryKeywords.some(kw => text.includes(kw))) {
       return geminiConfig.agents.inventory;

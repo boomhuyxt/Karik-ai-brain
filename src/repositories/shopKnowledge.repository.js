@@ -345,6 +345,14 @@ class ShopKnowledgeRepository {
           } catch (e) {}
         }
 
+        // Tự động cập nhật file Excel của chính shop đó: thêm sheet đơn hàng đã bán & tổng hợp doanh thu ngày/tháng
+        try {
+          const shopReportService = require('../services/inventory/shopReport.service');
+          shopReportService.syncAndSaveShopExcelFile(shop_id).catch(err => {
+            console.warn(`[AutoExcelSync] Lỗi background sync file Excel shop "${shop_id}":`, err.message);
+          });
+        } catch (e) {}
+
         return {
           success: true,
           item: foundItem,
