@@ -764,11 +764,13 @@
     <script src="/js/newNote.js"></script>
     <script src="/js/voice.js"></script>
     <script src="/js/chat.js"></script>
-    <script src="/js/imageEditor.js?v=2.7.0"></script>
+    <script src="/js/imageStudioPersonalization.js?v=1.0.0"></script>
+    <script src="/js/imageBackgroundRemoval.js?v=1.1.0"></script>
+    <script src="/js/imageEditor.js?v=2.9.0"></script>
     <script src="/js/systemMonitoring.js"></script>
     <script src="/js/fileManager.js"></script>
     <script src="/js/postOffice.js"></script>
-    <script src="/js/socialPublish.js"></script>
+    <script src="/js/socialPublish.js?v=1.1.0"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             // Helper function to load external component HTML files
@@ -793,8 +795,8 @@
                 loadComponent('systemMonitoringModalContainer', '/components/systemMonitoringModal.html'),
                 loadComponent('fileManagerModalContainer', '/components/fileManagerModal.html'),
                 loadComponent('postOfficeModalContainer', '/components/postOfficeModal.html'),
-                loadComponent('imageEditorModalContainer', '/components/imageEditorModal.html'),
-                loadComponent('socialPublishModalContainer', '/components/socialPublishModal.html')
+                loadComponent('imageEditorModalContainer', '/components/imageEditorModal.html?v=2.9.0'),
+                loadComponent('socialPublishModalContainer', '/components/socialPublishModal.html?v=1.1.0')
             ]);
 
             // Initialize all feature modules
@@ -808,6 +810,7 @@
             initNewNoteModal();
             initAIChat();
             if (typeof initImageEditorModule === 'function') initImageEditorModule();
+            if (typeof initImageStudioPersonalization === 'function') initImageStudioPersonalization();
 
             // Bind Refresh Graph action
             const btnRefreshGraph = document.getElementById('btnRefreshGraph');

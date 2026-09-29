@@ -12,6 +12,7 @@
     let isCropping = false;
     let cropRect = null;
     let cropRatio = 'free';
+    let posterRenderVersion = 0;
 
     // History undo/redo state
     const history = [];
@@ -1645,6 +1646,7 @@
         const btnRemoveBg = document.getElementById('btnRemoveBackground');
         const sliderTolerance = document.getElementById('sliderBgTolerance');
         const valTolerance = document.getElementById('valBgTolerance');
+        const detailProtectionSelect = document.getElementById('bgDetailProtection');
         const bgColorPicker = document.getElementById('canvasBgColorPicker');
         const btnTransparent = document.getElementById('btnTransparentBg');
         const gradBtns = document.querySelectorAll('.bg-grad-btn');
@@ -1668,11 +1670,12 @@
                 if (btnText) btnText.textContent = 'Đang phân tích & tách nền... 🪄';
 
                 try {
-                    const tolerance = parseInt(sliderTolerance.value, 10) || 30;
-                    await processClientSideBackgroundRemoval(active, tolerance);
+                    const tolerance = parseInt(sliderTolerance.value, 10) || 24;
+                    const detailProtection = detailProtectionSelect?.value || 'high';
+                    await processClientSideBackgroundRemoval(active, tolerance, detailProtection);
                 } catch (err) {
                     console.error('[ImageStudio] Remove BG error:', err);
-                    alert('Không thể tách nền ảnh này. Vui lòng thử lại!');
+                    alert(err.message || 'Không thể tách nền ảnh này. Vui lòng thử lại!');
                 } finally {
                     btnRemoveBg.disabled = false;
                     if (btnText) btnText.textContent = 'Xóa Nền Layer Đang Chọn';
@@ -1713,11 +1716,9 @@
         });
     }
 
-    /**
-     * Smart Pixel-level Background Removal Algorithm (Chroma & Alpha Threshold)
-     */
-    function processClientSideBackgroundRemoval(imageObj, tolerance) {
-        return new Promise((resolve) => {
+    /** Edge-aware background removal. Only border-connected pixels are removed. */
+    function processClientSideBackgroundRemoval(imageObj, tolerance, detailProtection = 'high') {
+        return new Promise((resolve, reject) => {
             const imgElement = imageObj.getElement();
             const tempCanvas = document.createElement('canvas');
             const ctx = tempCanvas.getContext('2d');
@@ -1727,46 +1728,22 @@
 
             ctx.drawImage(imgElement, 0, 0);
             const imgData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
-            const data = imgData.data;
-            const w = tempCanvas.width;
-            const h = tempCanvas.height;
-
-            // Sample 4 corners to detect dominant background color
-            const cornerIndices = [
-                0, // top-left
-                (w - 1) * 4, // top-right
-                ((h - 1) * w) * 4, // bottom-left
-                ((h - 1) * w + (w - 1)) * 4 // bottom-right
-            ];
-
-            let avgR = 0, avgG = 0, avgB = 0;
-            cornerIndices.forEach(idx => {
-                avgR += data[idx];
-                avgG += data[idx + 1];
-                avgB += data[idx + 2];
-            });
-            avgR = Math.round(avgR / 4);
-            avgG = Math.round(avgG / 4);
-            avgB = Math.round(avgB / 4);
-
-            const tolSq = (tolerance * 2.5) ** 2;
-
-            // Loop through pixels and make background alpha = 0
-            for (let i = 0; i < data.length; i += 4) {
-                const r = data[i];
-                const g = data[i + 1];
-                const b = data[i + 2];
-
-                const distSq = (r - avgR) ** 2 + (g - avgG) ** 2 + (b - avgB) ** 2;
-
-                if (distSq < tolSq) {
-                    data[i + 3] = 0; // Transparent
-                } else if (distSq < tolSq * 1.5) {
-                    // Soft edge feathering
-                    const alphaRatio = (distSq - tolSq) / (tolSq * 0.5);
-                    data[i + 3] = Math.round(data[i + 3] * alphaRatio);
-                }
+            const remover = window.imageBackgroundRemoval;
+            if (!remover || typeof remover.removeBackgroundPixels !== 'function') {
+                reject(new Error('Bộ tách nền chưa được tải.'));
+                return;
             }
+            const result = remover.removeBackgroundPixels(
+                imgData.data,
+                tempCanvas.width,
+                tempCanvas.height,
+                { tolerance, detailProtection }
+            );
+            if (!result.applied) {
+                reject(new Error(result.reason || 'Không thể tách nền an toàn.'));
+                return;
+            }
+            imgData.data.set(result.pixels);
 
             ctx.putImageData(imgData, 0, 0);
             const processedUrl = tempCanvas.toDataURL('image/png');
@@ -1793,7 +1770,7 @@
                 canvas.setActiveObject(newImg);
                 canvas.renderAll();
                 saveHistoryState();
-                resolve();
+                resolve(newImg);
             });
         });
     }
@@ -2002,8 +1979,67 @@
         const btnDownload = document.getElementById('btnDownloadImage');
         const btnSendToChat = document.getElementById('btnSendToChat');
         const btnPostFB = document.getElementById('btnPostFacebookFromStudio');
+        const btnSaveAndContinue = document.getElementById('btnSaveAndContinueStudio');
         const formatSelect = document.getElementById('exportFormatSelect');
         const scaleSelect = document.getElementById('exportScaleSelect');
+
+        const saveStudioPoster = () => {
+            if (!canvas) throw new Error('Canvas Studio chưa sẵn sàng.');
+            canvas.discardActiveObject();
+            canvas.renderAll();
+            const dataUrl = canvas.toDataURL({ format: 'png', multiplier: 1, quality: 1 });
+            const savedPoster = {
+                url: dataUrl,
+                mediaType: 'image',
+                width: canvasWidth,
+                height: canvasHeight,
+                aspectRatio: `${canvasWidth}:${canvasHeight}`,
+                savedAt: new Date().toISOString()
+            };
+            window.lastStudioEditedImage = dataUrl;
+            window.lastUploadedImageUrl = dataUrl;
+            window.lastStudioPoster = savedPoster;
+            try {
+                sessionStorage.setItem('karik_last_studio_poster_meta', JSON.stringify({ ...savedPoster, url: '' }));
+            } catch (error) {
+                console.warn('[ImageStudio] Could not persist poster metadata:', error.message);
+            }
+            window.dispatchEvent(new CustomEvent('studio:image-saved', { detail: savedPoster }));
+            return savedPoster;
+        };
+
+        window.saveStudioPoster = saveStudioPoster;
+
+        if (btnSaveAndContinue) {
+            btnSaveAndContinue.addEventListener('click', () => {
+                const originalHtml = btnSaveAndContinue.innerHTML;
+                btnSaveAndContinue.disabled = true;
+                btnSaveAndContinue.innerHTML = '<span class="material-symbols-outlined text-base animate-spin">sync</span><span>Đang lưu poster...</span>';
+                try {
+                    const poster = saveStudioPoster();
+                    const platform = window.lastSelectedPlatform || 'facebook';
+                    window.closeImageEditor();
+                    setTimeout(() => {
+                        if (window.socialPublish && typeof window.socialPublish.openModal === 'function') {
+                            window.socialPublish.openModal({
+                                ...poster,
+                                caption: window.lastProductCaption || '',
+                                hashtags: window.lastProductHashtags || ['#aikarik', '#sanpham', '#viral', platform === 'tiktok' ? '#tiktok' : '#facebook'],
+                                platform
+                            });
+                        } else if (typeof window.triggerSocialPublishFromChat === 'function') {
+                            window.triggerSocialPublishFromChat(platform, 'preview');
+                        }
+                    }, 120);
+                } catch (error) {
+                    console.error('[ImageStudio] Save poster error:', error);
+                    showStudioToast(`Không thể lưu poster: ${error.message}`);
+                } finally {
+                    btnSaveAndContinue.disabled = false;
+                    btnSaveAndContinue.innerHTML = originalHtml;
+                }
+            });
+        }
 
         // 1. Tải ảnh về máy
         if (btnDownload) {
@@ -2143,6 +2179,9 @@
             return;
         }
 
+        const renderVersion = ++posterRenderVersion;
+        const isStaleRender = () => renderVersion !== posterRenderVersion;
+
         // 1. Dimensions
         const targetW = config.width || (config.canvas && config.canvas.width) || (config.preset === 'instagram' ? 1080 : 1080);
         const targetH = config.height || (config.canvas && config.canvas.height) || (config.preset === 'instagram' ? 1080 : 1350);
@@ -2176,6 +2215,7 @@
         }
 
         const buildLayers = (userImg) => {
+            if (isStaleRender()) return;
             if (Array.isArray(config.layers) && config.layers.length > 0) {
                 config.layers.forEach((layer) => {
                     const lx = (layer.x !== undefined ? (layer.x / 100) * canvasWidth : canvasWidth / 2);
@@ -2194,6 +2234,9 @@
                             originY: 'center',
                             fill: layer.fill || '#6366F1',
                             opacity: layer.opacity !== undefined ? layer.opacity : 1,
+                            angle: layer.angle || 0,
+                            stroke: layer.stroke || null,
+                            strokeWidth: layer.strokeWidth || 0,
                             layerName: layer.id || 'Khối Đồ Họa',
                             layerType: 'shape'
                         };
@@ -2217,7 +2260,9 @@
                         if (userImg) {
                             const maxW = lw || (canvasWidth * 0.85);
                             const maxH = lh || (canvasHeight * 0.55);
-                            const scale = Math.min(maxW / userImg.width, maxH / userImg.height);
+                            const scale = layer.fit === 'cover'
+                                ? Math.max(maxW / userImg.width, maxH / userImg.height)
+                                : Math.min(maxW / userImg.width, maxH / userImg.height);
                             userImg.set({
                                 left: lx,
                                 top: ly,
@@ -2253,9 +2298,10 @@
                             canvas.add(userImg);
                         }
                     } else if (layer.type === 'text') {
-                        const textObj = new fabric.IText(layer.text || '', {
+                        const textObj = new fabric.Textbox(layer.text || '', {
                             left: lx,
                             top: ly,
+                            width: Math.max(80, lw),
                             originX: originX,
                             originY: 'center',
                             fontSize: layer.fontSize || 30,
@@ -2264,10 +2310,19 @@
                             fill: layer.color || '#ffffff',
                             textAlign: align,
                             lineHeight: layer.lineHeight || 1.15,
-                            shadow: new fabric.Shadow({ color: 'rgba(0, 0, 0, 0.65)', blur: 12, offsetX: 0, offsetY: 3 }),
+                            charSpacing: layer.charSpacing || 0,
+                            angle: layer.angle || 0,
+                            stroke: layer.stroke || null,
+                            strokeWidth: layer.strokeWidth || 0,
+                            shadow: layer.shadow ? new fabric.Shadow(layer.shadow) : null,
                             layerName: layer.id || 'Lớp Chữ',
                             layerType: 'text'
                         });
+                        const minFontSize = Math.max(11, layer.minFontSize || Math.round((layer.fontSize || 30) * 0.55));
+                        while (textObj.height > lh && textObj.fontSize > minFontSize) {
+                            textObj.set('fontSize', textObj.fontSize - 2);
+                            if (typeof textObj.initDimensions === 'function') textObj.initDimensions();
+                        }
                         canvas.add(textObj);
                     }
                 });
@@ -2371,6 +2426,7 @@
 
             if (isAutoExport) {
                 setTimeout(() => {
+                    if (isStaleRender()) return;
                     try {
                         const completedDataUrl = canvas.toDataURL({ format: 'png', multiplier: 1.5 });
                         window.lastStudioEditedImage = completedDataUrl;
@@ -2406,44 +2462,16 @@
 
                     ctx.drawImage(imgElement, 0, 0, w, h);
                     const imgData = ctx.getImageData(0, 0, w, h);
-                    const data = imgData.data;
-
-                    // Sample 4 corners to detect dominant background color
-                    const cornerIndices = [
-                        0, // top-left
-                        (w - 1) * 4, // top-right
-                        ((h - 1) * w) * 4, // bottom-left
-                        ((h - 1) * w + (w - 1)) * 4 // bottom-right
-                    ];
-
-                    let avgR = 0, avgG = 0, avgB = 0;
-                    cornerIndices.forEach(idx => {
-                        avgR += data[idx];
-                        avgG += data[idx + 1];
-                        avgB += data[idx + 2];
-                    });
-                    avgR = Math.round(avgR / 4);
-                    avgG = Math.round(avgG / 4);
-                    avgB = Math.round(avgB / 4);
-
-                    const tolSq = (tolerance * 2.5) ** 2;
-
-                    // Loop through pixels and make background alpha = 0
-                    for (let i = 0; i < data.length; i += 4) {
-                        const r = data[i];
-                        const g = data[i + 1];
-                        const b = data[i + 2];
-
-                        const distSq = (r - avgR) ** 2 + (g - avgG) ** 2 + (b - avgB) ** 2;
-
-                        if (distSq < tolSq) {
-                            data[i + 3] = 0; // Transparent
-                        } else if (distSq < tolSq * 1.5) {
-                            // Soft edge feathering
-                            const alphaRatio = (distSq - tolSq) / (tolSq * 0.5);
-                            data[i + 3] = Math.round(data[i + 3] * alphaRatio);
-                        }
+                    const remover = window.imageBackgroundRemoval;
+                    if (!remover || typeof remover.removeBackgroundPixels !== 'function') {
+                        return resolve(fabImg);
                     }
+                    const result = remover.removeBackgroundPixels(imgData.data, w, h, { tolerance, detailProtection: 'high' });
+                    if (!result.applied) {
+                        showStudioToast(`⚠️ ${result.reason} Studio giữ lại ảnh gốc.`);
+                        return resolve(fabImg);
+                    }
+                    imgData.data.set(result.pixels);
 
                     ctx.putImageData(imgData, 0, 0);
                     const processedUrl = tempCanvas.toDataURL('image/png');
@@ -2465,22 +2493,24 @@
         };
 
         const placeLoadedImg = async (loadedImg) => {
+            if (isStaleRender()) return;
             let finalImg = loadedImg;
             
             // Check if poster configuration requires background removal (default: true for poster creation)
             const shouldRemoveBg = config.removeBackground === true || 
-                (Array.isArray(config.layers) && config.layers.some(l => l.type === 'image' && l.removeBackground !== false)) ||
+                (Array.isArray(config.layers) && config.layers.some(l => l.type === 'image' && l.removeBackground === true)) ||
                 (!config.layers && config.removeBackground !== false);
 
             if (loadedImg && shouldRemoveBg) {
                 showStudioToast('🪄 Đang tự động tách nền chủ thể & thiết kế...');
                 try {
-                    finalImg = await cutoutFabricImage(loadedImg, 35);
+                    finalImg = await cutoutFabricImage(loadedImg, 24);
                 } catch (e) {
                     console.warn('[Studio] Auto-cutout failed, continuing with original image:', e);
                 }
             }
 
+            if (isStaleRender()) return;
             buildLayers(finalImg);
         };
 

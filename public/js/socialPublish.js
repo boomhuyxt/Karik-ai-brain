@@ -110,6 +110,45 @@
         }
     }
 
+    function updatePlatformImageFit(width, height) {
+        if (!width || !height) return;
+        const ratio = width / height;
+        const sizeLabel = document.getElementById('socialMediaSize');
+        const fbStatus = document.getElementById('fbPreviewFitStatus');
+        const ttStatus = document.getElementById('ttPreviewFitStatus');
+        if (sizeLabel) sizeLabel.textContent = `${width}x${height}`;
+
+        const isFacebook45 = Math.abs(ratio - 0.8) <= 0.035;
+        const isFacebookSquare = Math.abs(ratio - 1) <= 0.035;
+        const isTikTok916 = Math.abs(ratio - (9 / 16)) <= 0.025;
+        if (fbStatus) {
+            fbStatus.textContent = isFacebook45
+                ? 'Tối ưu Facebook Feed: tỷ lệ 4:5, hiển thị toàn khung.'
+                : (isFacebookSquare
+                    ? 'Tương thích Facebook Feed: ảnh vuông 1:1.'
+                    : 'Facebook xem trước trong khung 4:5. Ảnh được giữ nguyên, không cắt nội dung.');
+            fbStatus.className = `text-[10px] text-center ${isFacebook45 || isFacebookSquare ? 'text-emerald-400' : 'text-amber-300'}`;
+        }
+        if (ttStatus) {
+            ttStatus.textContent = isTikTok916
+                ? 'Tối ưu TikTok: tỷ lệ 9:16, nội dung nằm trong vùng an toàn.'
+                : 'TikTok dùng khung 9:16. Preview giữ toàn bộ ảnh nên có thể xuất hiện khoảng trống.';
+            ttStatus.className = `text-[10px] ${isTikTok916 ? 'text-emerald-400' : 'text-amber-300'}`;
+        }
+    }
+
+    function setPreviewImageSource(image, url) {
+        if (!image) return;
+        if (!url || !(url.startsWith('data:') || url.startsWith('http') || url.startsWith('/uploads'))) {
+            image.classList.add('hidden');
+            return;
+        }
+        image.onload = () => updatePlatformImageFit(image.naturalWidth, image.naturalHeight);
+        if (image.src !== url) image.src = url;
+        image.classList.remove('hidden');
+        if (image.complete && image.naturalWidth) updatePlatformImageFit(image.naturalWidth, image.naturalHeight);
+    }
+
     /**
      * Cập nhật bản xem trước Bảng tin (Facebook / TikTok) và bộ đếm ký tự trong thời gian thực
      */
@@ -149,14 +188,7 @@
             }
         }
 
-        if (fbPreviewImg) {
-            if (targetUrl && (targetUrl.startsWith('data:') || targetUrl.startsWith('http') || targetUrl.startsWith('/uploads'))) {
-                fbPreviewImg.src = targetUrl;
-                fbPreviewImg.classList.remove('hidden');
-            } else {
-                fbPreviewImg.classList.add('hidden');
-            }
-        }
+        setPreviewImageSource(fbPreviewImg, targetUrl);
 
         // 2. Cập nhật TikTok Live Preview
         if (ttPreviewTextDiv) {
@@ -169,16 +201,8 @@
             }
         }
 
-        if (ttPreviewImg) {
-            if (targetUrl && (targetUrl.startsWith('data:') || targetUrl.startsWith('http') || targetUrl.startsWith('/uploads'))) {
-                ttPreviewImg.src = targetUrl;
-                ttPreviewImg.classList.remove('hidden');
-                if (ttPlaceholder) ttPlaceholder.classList.add('hidden');
-            } else {
-                ttPreviewImg.classList.add('hidden');
-                if (ttPlaceholder) ttPlaceholder.classList.remove('hidden');
-            }
-        }
+        setPreviewImageSource(ttPreviewImg, targetUrl);
+        if (ttPlaceholder) ttPlaceholder.classList.toggle('hidden', Boolean(targetUrl));
     }
 
     /**
@@ -268,7 +292,7 @@
                 document.body.appendChild(container);
             }
             try {
-                const res = await fetch('/components/socialPublishModal.html');
+                const res = await fetch('/components/socialPublishModal.html?v=1.1.0');
                 if (res.ok) {
                     container.innerHTML = await res.text();
                     initSocialPublishModule();
@@ -308,7 +332,13 @@
                 ? activeMediaData.hashtags.join(' ') 
                 : (activeMediaData.hashtags || '');
         }
-        if (mediaUrlInput) mediaUrlInput.value = activeMediaData.url;
+        if (mediaUrlInput) {
+            const isEmbeddedImage = activeMediaData.url.startsWith('data:');
+            mediaUrlInput.value = isEmbeddedImage ? '' : activeMediaData.url;
+            mediaUrlInput.placeholder = isEmbeddedImage
+                ? 'Ảnh PNG đã lưu từ Karik Studio'
+                : 'URL media hoặc chọn ảnh từ Studio...';
+        }
 
         // Render preview media
         if (mediaPreviewBox) {
@@ -373,7 +403,12 @@
         const mediaPreviewBox = document.getElementById('socialMediaPreviewBox');
         const mediaBadge = document.getElementById('socialMediaBadge');
 
-        if (mediaUrlInput) mediaUrlInput.value = latestImg;
+        if (mediaUrlInput) {
+            mediaUrlInput.value = latestImg.startsWith('data:') ? '' : latestImg;
+            mediaUrlInput.placeholder = latestImg.startsWith('data:')
+                ? 'Ảnh PNG đã lưu từ Karik Studio'
+                : 'URL media hoặc chọn ảnh từ Studio...';
+        }
         if (mediaPreviewBox) {
             mediaPreviewBox.innerHTML = `<img src="${latestImg}" alt="Studio Preview" class="w-full h-full object-contain rounded-lg" />`;
         }
@@ -397,6 +432,7 @@
      */
     function switchPlatform(platform) {
         currentPlatform = platform;
+        window.lastSelectedPlatform = platform;
 
         const modal = document.getElementById('socialPublishModal');
         const tabBtnFb = document.getElementById('tabBtnFacebook');
@@ -870,7 +906,7 @@
                 document.body.appendChild(container);
             }
             try {
-                const res = await fetch('/components/socialPublishModal.html');
+                const res = await fetch('/components/socialPublishModal.html?v=1.1.0');
                 if (res.ok) {
                     container.innerHTML = await res.text();
                     initSocialPublishModule();

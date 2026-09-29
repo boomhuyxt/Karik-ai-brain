@@ -13,8 +13,12 @@ test('Gemini Imagen 3 Dedicated Image Provider Suite', async (t) => {
   const result = await geminiImageService.generateImage('Mèo vàng dễ thương');
   assert.ok(result);
   assert.strictEqual(result.provider, 'gemini-image');
-  assert.ok(result.imageData);
-  assert.ok(result.imageData.startsWith('data:image/'));
+  if (result.imageData) {
+    assert.ok(result.imageData.startsWith('data:image/'));
+  } else {
+    assert.strictEqual(result.success, false);
+    assert.match(result.message, /Không thể sinh key visual/);
+  }
 
   console.log('✅ Gemini Imagen 3 dedicated image unit tests passed successfully!');
 });

@@ -14,7 +14,7 @@ Thư mục này chứa **toàn bộ các chỉ thị mẫu (Prompts) định d�
 | Tên File | Vai Trò / Mục Đích | Biến Động (Variables) |
 | :--- | :--- | :--- |
 | [`system.prompt.md`](./system.prompt.md) | Định danh AI Karik, năng lực cốt lõi, phong cách giao tiếp và giới hạn an toàn | Tĩnh (Không biến) |
-| [`image.prompt.md`](./image.prompt.md) | Chỉ thị Agent Studio Ảnh: Thiết kế concept, bảng màu, layers & studio biên tập ảnh | `{{topic}}`, `{{aspect_ratio}}` |
+| [`image.prompt.md`](./image.prompt.md) | Art Director hybrid schema 3.0: key visual không chữ, layer typography, cá nhân hoá và chống lặp | Hồ sơ/lịch sử được orchestration layer truyền vào |
 | [`social.prompt.md`](./social.prompt.md) | Chỉ thị Agent Đăng Bài MXH: Tạo Caption, Viral Hook & Tự động vào trình duyệt đăng Facebook/TikTok | `{{topic}}`, `{{platform}}` |
 | [`risk.prompt.md`](./risk.prompt.md) | Chỉ thị Agent Rủi Ro & Tiến Độ: Phân tích chỉ số Ads (CTR, CPC, ROAS) & Ma trận rủi ro | `{{campaign}}`, `{{metrics}}` |
 | [`coding.prompt.md`](./coding.prompt.md) | Chỉ thị Kỹ Sư Trưởng viết code sạch, refactor chuẩn Clean Architecture | `{{instruction}}`, `{{code}}` |

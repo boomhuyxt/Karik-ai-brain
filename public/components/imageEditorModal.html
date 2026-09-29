@@ -219,6 +219,46 @@
 
                 <!-- TAB 0: PRESET PHONG CÁCH & BẢNG MÀU CHUYÊN NGHIỆP -->
                 <div id="tab-styles" class="studio-tab-pane space-y-4">
+                    <section class="p-3 bg-gradient-to-br from-indigo-950/90 via-slate-900 to-cyan-950/70 border border-cyan-400/40 rounded-xl space-y-3" aria-labelledby="studioCreativeHeading">
+                        <div class="flex items-start justify-between gap-2">
+                            <div>
+                                <h3 id="studioCreativeHeading" class="text-xs font-bold text-white flex items-center gap-1.5"><span class="material-symbols-outlined text-base text-cyan-300">auto_awesome</span>Art Director cá nhân hoá</h3>
+                                <p class="text-[9px] text-slate-400 mt-0.5">Tạo 3 hướng khác nhau, ghi nhớ gu và tránh lặp thiết kế gần đây.</p>
+                            </div>
+                            <span class="text-[8px] px-1.5 py-0.5 rounded-full border border-emerald-400/30 bg-emerald-500/10 text-emerald-300">HYBRID</span>
+                        </div>
+                        <label class="block text-[10px] font-semibold text-slate-200">Mục tiêu poster
+                            <textarea id="studioCreativeBrief" rows="3" maxlength="800" placeholder="VD: Poster ra mắt cà phê rang thủ công, tạo cảm giác ấm áp và cao cấp..." class="mt-1 w-full resize-none bg-slate-950/80 border border-slate-700 focus:border-cyan-400 rounded-lg p-2 text-[10px] text-white outline-none"></textarea>
+                        </label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <label class="text-[9px] text-slate-300">Ngành hàng<input id="studioIndustry" maxlength="80" placeholder="Cà phê, mỹ phẩm..." class="mt-1 w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-[10px] text-white outline-none focus:border-cyan-400"></label>
+                            <label class="text-[9px] text-slate-300">Đối tượng<input id="studioAudience" maxlength="120" placeholder="Gen Z, chủ doanh nghiệp..." class="mt-1 w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-[10px] text-white outline-none focus:border-cyan-400"></label>
+                            <label class="text-[9px] text-slate-300">Cảm xúc<input id="studioMood" maxlength="80" placeholder="Tinh tế, vui, mạnh mẽ..." class="mt-1 w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-[10px] text-white outline-none focus:border-cyan-400"></label>
+                            <label class="text-[9px] text-slate-300">Gu ưu tiên
+                                <select id="studioPreferredStyle" class="mt-1 w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-[10px] text-white outline-none focus:border-cyan-400">
+                                    <option value="">AI tự chọn</option><option value="editorial_luxury">Editorial Luxury</option><option value="neo_brutalism">Neo Brutalism</option><option value="organic_minimal">Organic Minimal</option><option value="kinetic_sport">Kinetic Sport</option><option value="retro_future">Retro Future</option><option value="swiss_grid">Swiss Grid</option><option value="cinematic_noir">Cinematic Noir</option><option value="y2k_chrome">Y2K Chrome</option><option value="paper_collage">Paper Collage</option><option value="soft_3d">Soft 3D</option><option value="heritage_craft">Heritage Craft</option><option value="data_futurism">Data Futurism</option>
+                                </select>
+                            </label>
+                        </div>
+                        <details class="group rounded-lg border border-slate-700/80 bg-slate-950/50 p-2">
+                            <summary class="cursor-pointer text-[10px] font-semibold text-purple-200">Nội dung, màu thương hiệu và mật độ</summary>
+                            <div class="mt-2 grid grid-cols-2 gap-2">
+                                <input id="studioPosterTitle" maxlength="70" placeholder="Tiêu đề poster" class="col-span-2 bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-[10px] text-white outline-none focus:border-cyan-400">
+                                <input id="studioPosterSubtitle" maxlength="110" placeholder="Mô tả ngắn" class="col-span-2 bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-[10px] text-white outline-none focus:border-cyan-400">
+                                <input id="studioPosterCta" maxlength="28" placeholder="CTA" class="col-span-2 bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-[10px] text-white outline-none focus:border-cyan-400">
+                                <label class="text-[9px] text-slate-300">Màu chính<input type="color" id="studioBrandColorPrimary" value="#1D4ED8" class="mt-1 block w-full h-7 bg-transparent border-0 cursor-pointer"></label>
+                                <label class="text-[9px] text-slate-300">Màu nhấn<input type="color" id="studioBrandColorAccent" value="#F59E0B" class="mt-1 block w-full h-7 bg-transparent border-0 cursor-pointer"></label>
+                                <select id="studioDensity" class="col-span-2 bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-[10px] text-white outline-none"><option value="airy">Thoáng</option><option value="balanced" selected>Cân bằng</option><option value="dense">Nhiều thông tin</option></select>
+                            </div>
+                        </details>
+                        <label class="flex items-center gap-2 text-[9px] text-slate-300 cursor-pointer"><input id="studioRememberPreferences" type="checkbox" checked class="accent-cyan-500">Ghi nhớ gu này cho các poster sau</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button id="btnStudioCreateVariants" type="button" class="px-2 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 text-[10px] font-bold text-white transition-all">Tạo 3 phương án</button>
+                            <button id="btnStudioGenerateVisual" type="button" class="px-2 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-[10px] font-bold text-white transition-all">Sinh key visual</button>
+                        </div>
+                        <p id="studioCreativeStatus" class="text-[10px] text-cyan-300" aria-live="polite">Sẵn sàng tạo thiết kế theo gu của bạn.</p>
+                        <div id="studioAiVariants" class="hidden space-y-1.5"></div>
+                    </section>
                     <!-- Quick Style Presets 1-Click -->
                     <div class="space-y-2">
                         <label class="text-xs font-bold text-cyan-300 flex items-center justify-between">
@@ -725,9 +765,19 @@
                         <div class="space-y-1">
                             <div class="flex justify-between text-[10px] text-slate-400">
                                 <span>Độ nhạy tách viền (Tolerance):</span>
-                                <span id="valBgTolerance" class="text-cyan-300 font-mono">30</span>
+                                <span id="valBgTolerance" class="text-cyan-300 font-mono">24</span>
                             </div>
-                            <input type="range" id="sliderBgTolerance" min="5" max="100" value="30" class="studio-slider w-full">
+                            <input type="range" id="sliderBgTolerance" min="5" max="100" value="24" class="studio-slider w-full">
+                        </div>
+
+                        <div class="space-y-1">
+                            <label for="bgDetailProtection" class="text-[10px] text-slate-400">Bảo toàn chi tiết chủ thể:</label>
+                            <select id="bgDetailProtection" class="w-full bg-slate-900 text-xs text-cyan-300 border border-purple-500/40 rounded-lg px-2 py-1.5 outline-none focus:border-cyan-400">
+                                <option value="high" selected>Cao - sản phẩm kim loại, tóc, chi tiết mảnh</option>
+                                <option value="balanced">Cân bằng - sản phẩm thông thường</option>
+                                <option value="low">Mạnh - nền phẳng, chủ thể tương phản cao</option>
+                            </select>
+                            <p class="text-[9px] leading-relaxed text-slate-500">Nên bắt đầu ở mức Cao. Tăng độ nhạy chỉ khi nền vẫn còn viền.</p>
                         </div>
 
                         <button id="btnRemoveBackground" class="w-full bg-gradient-to-r from-purple-600 via-indigo-600 to-cyan-600 hover:opacity-90 text-white font-semibold text-xs py-2 rounded-lg shadow-lg flex items-center justify-center gap-2 transition-all active:scale-98">
@@ -756,10 +806,10 @@
                         <div class="space-y-1.5 pt-1 border-t border-purple-500/20">
                             <label class="text-[10px] text-slate-400">Dải chuyển màu (Gradients):</label>
                             <div class="grid grid-cols-4 gap-1.5">
-                                <button data-bg-grad="linear-gradient(135deg, #090c13 0%, #1e1b4b 100%)" class="h-8 rounded-lg border border-white/20 hover:border-cyan-400 bg-gradient-to-br from-[#090c13] to-[#1e1b4b] bg-grad-btn" title="Midnight Purple"></button>
-                                <button data-bg-grad="linear-gradient(135deg, #18002e 0%, #4c0519 100%)" class="h-8 rounded-lg border border-white/20 hover:border-cyan-400 bg-gradient-to-br from-[#18002e] to-[#4c0519] bg-grad-btn" title="Cyber Crimson"></button>
-                                <button data-bg-grad="linear-gradient(135deg, #022c22 0%, #082f49 100%)" class="h-8 rounded-lg border border-white/20 hover:border-cyan-400 bg-gradient-to-br from-[#022c22] to-[#082f49] bg-grad-btn" title="Deep Emerald"></button>
-                                <button data-bg-grad="linear-gradient(135deg, #1c1917 0%, #451a03 100%)" class="h-8 rounded-lg border border-white/20 hover:border-cyan-400 bg-gradient-to-br from-[#1c1917] to-[#451a03] bg-grad-btn" title="Warm Amber"></button>
+                                <button aria-label="Chọn nền Midnight Purple" data-bg-grad="linear-gradient(135deg, #090c13 0%, #1e1b4b 100%)" class="h-8 rounded-lg border border-white/20 hover:border-cyan-400 bg-gradient-to-br from-[#090c13] to-[#1e1b4b] bg-grad-btn" title="Midnight Purple"></button>
+                                <button aria-label="Chọn nền Cyber Crimson" data-bg-grad="linear-gradient(135deg, #18002e 0%, #4c0519 100%)" class="h-8 rounded-lg border border-white/20 hover:border-cyan-400 bg-gradient-to-br from-[#18002e] to-[#4c0519] bg-grad-btn" title="Cyber Crimson"></button>
+                                <button aria-label="Chọn nền Deep Emerald" data-bg-grad="linear-gradient(135deg, #022c22 0%, #082f49 100%)" class="h-8 rounded-lg border border-white/20 hover:border-cyan-400 bg-gradient-to-br from-[#022c22] to-[#082f49] bg-grad-btn" title="Deep Emerald"></button>
+                                <button aria-label="Chọn nền Warm Amber" data-bg-grad="linear-gradient(135deg, #1c1917 0%, #451a03 100%)" class="h-8 rounded-lg border border-white/20 hover:border-cyan-400 bg-gradient-to-br from-[#1c1917] to-[#451a03] bg-grad-btn" title="Warm Amber"></button>
                             </div>
                         </div>
                     </div>
@@ -919,6 +969,12 @@
 
                 <!-- Export Action Buttons -->
                 <div class="space-y-1.5 pt-1">
+                    <button id="btnSaveAndContinueStudio" type="button" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs py-2.5 rounded-xl flex items-center justify-center gap-1.5 transition-all active:scale-98 cursor-pointer border border-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:ring-offset-2 focus:ring-offset-slate-950">
+                        <span class="material-symbols-outlined text-base">save</span>
+                        <span>Lưu & tiếp tục đăng bài</span>
+                    </button>
+                    <p class="text-[9px] leading-relaxed text-slate-500 text-center">Lưu bản thiết kế cuối, đóng Studio và mở màn hình xem trước Facebook/TikTok.</p>
+
                     <!-- Post directly to Facebook via AI Browser Bot -->
                     <button id="btnPostFacebookFromStudio" class="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-bold text-xs py-2 rounded-xl shadow-[0_0_15px_rgba(59,130,246,0.4)] flex items-center justify-center gap-1.5 transition-all active:scale-98 cursor-pointer border border-blue-400/40">
                         <span class="material-symbols-outlined text-sm text-cyan-200">smart_toy</span>

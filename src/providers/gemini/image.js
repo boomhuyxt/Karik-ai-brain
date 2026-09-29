@@ -3,7 +3,7 @@ const geminiImageConfig = require('../../config/geminiImage');
 async function generateImage(prompt, options = {}) {
   const apiKey = geminiImageConfig.apiKey;
   if (!apiKey) {
-    return generateFallbackImageResponse(prompt, 'No GEMINI_IMAGE_API_KEY provided');
+    return unavailableImageResponse('Chưa cấu hình GEMINI_IMAGE_API_KEY.');
   }
 
   const model = options.model || geminiImageConfig.defaultModel;
@@ -46,11 +46,23 @@ async function generateImage(prompt, options = {}) {
     }
 
     // 2. Fallback: Generate SVG dynamic art placeholder if model predict rate-limited or quota exceeded
-    return generateFallbackImageResponse(prompt, data.error?.message || 'Quota/Model notice');
+    return unavailableImageResponse(data.error?.message || 'Dịch vụ tạo ảnh chưa trả về dữ liệu.');
   } catch (err) {
     console.error('❌ [Gemini Image Generation Error]:', err.message);
-    return generateFallbackImageResponse(prompt, err.message);
+    return unavailableImageResponse(err.message);
   }
+}
+
+function unavailableImageResponse(reason) {
+  return {
+    success: false,
+    imageData: null,
+    mimeType: null,
+    provider: 'gemini-image',
+    model: 'imagen-3.0-generate-002',
+    usage: null,
+    message: `Không thể sinh key visual lúc này: ${reason}`
+  };
 }
 
 function generateFallbackImageResponse(prompt, reason) {

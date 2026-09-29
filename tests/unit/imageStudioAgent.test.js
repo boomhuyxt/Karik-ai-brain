@@ -11,8 +11,10 @@ test('Image Studio Agent - should be mapped to Studio Designer Persona with Gemi
 });
 
 test('RouterService - buildOrchestratedPrompt for image agent includes Studio instructions', () => {
-  const prompt = routerService.buildOrchestratedPrompt('Tạo poster quán cà phê', geminiConfig.agents.image);
+  const prompt = routerService.buildOrchestratedPrompt('Tạo poster quán cà phê', geminiConfig.agents.image, '[STUDIO PERSONALIZATION]: {"mood":"warm"}');
   assert.ok(prompt.includes('AGENT STUDIO ẢNH & POSTER DESIGNER'));
   assert.ok(prompt.includes('image.prompt.md'));
   assert.ok(prompt.includes('Layer Specifications'));
+  assert.ok(prompt.includes('STUDIO PERSONALIZATION'));
+  assert.ok(prompt.includes('schema 3.0'));
 });
