@@ -29,6 +29,8 @@ describe('Image & Poster Editor Studio Module', () => {
     assert.ok(html.includes('id="btnDownloadImage"'), 'Should have Download button');
     assert.ok(html.includes('id="btnSendToChat"'), 'Should have Send to Chat button');
     assert.ok(html.includes('id="btnPostFacebookFromStudio"'), 'Should have Post Facebook button in Studio');
+    assert.ok(html.includes('id="btnSaveAndContinueStudio"'), 'Should save the final poster and continue to publishing');
+    assert.ok(html.includes('id="bgDetailProtection"'), 'Should expose detail protection for background removal');
   });
 
   test('JavaScript engine file exists and exposes global API', () => {
@@ -43,6 +45,23 @@ describe('Image & Poster Editor Studio Module', () => {
     assert.ok(jsContent.includes('window.autoBuildAndSendPoster'), 'Should export autoBuildAndSendPoster');
     assert.ok(jsContent.includes('fabric.Canvas'), 'Should use Fabric.js Canvas');
     assert.ok(jsContent.includes('processClientSideBackgroundRemoval'), 'Should include background removal engine');
+    assert.ok(jsContent.includes('posterRenderVersion'), 'Should discard stale asynchronous poster renders');
+    assert.ok(jsContent.includes('new fabric.Textbox'), 'Should wrap and auto-fit generated poster typography');
+    assert.ok(jsContent.includes('window.saveStudioPoster'), 'Should expose the save-and-exit workflow');
+    assert.ok(jsContent.includes("window.dispatchEvent(new CustomEvent('studio:image-saved'"), 'Should notify downstream publishing UI after save');
+  });
+
+  test('Personalized hybrid workflow exposes preferences, history and AI controls', () => {
+    const personalizationPath = path.join(__dirname, '../../public/js/imageStudioPersonalization.js');
+    const personalizationJs = fs.readFileSync(personalizationPath, 'utf8');
+    const modalHtml = fs.readFileSync(path.join(__dirname, '../../public/components/imageEditorModal.html'), 'utf8');
+
+    assert.ok(personalizationJs.includes('imageStudioPersonalization'), 'Should expose personalization API');
+    assert.ok(personalizationJs.includes('/api/image/design'), 'Should request diverse design variants');
+    assert.ok(personalizationJs.includes('/api/image/generate'), 'Should generate a text-free key visual');
+    assert.ok(modalHtml.includes('id="studioCreativeBrief"'), 'Should include creative brief input');
+    assert.ok(modalHtml.includes('id="btnStudioCreateVariants"'), 'Should include variant action');
+    assert.ok(modalHtml.includes('id="btnStudioGenerateVisual"'), 'Should include hybrid generation action');
   });
 
   test('Chat component and JS include Studio button and bridge', () => {
@@ -62,10 +81,12 @@ describe('Image & Poster Editor Studio Module', () => {
     assert.ok(indexHtml.includes('fabric.min.js'), 'index.html should include Fabric.js CDN');
     assert.ok(indexHtml.includes('imageEditorModalContainer'), 'index.html should have modal container');
     assert.ok(indexHtml.includes('imageEditor.js'), 'index.html should load imageEditor.js');
+    assert.ok(indexHtml.includes('imageBackgroundRemoval.js'), 'index.html should load edge-aware background removal');
 
     const graphviewHtml = fs.readFileSync(path.join(__dirname, '../../public/graphview.html'), 'utf8');
     assert.ok(graphviewHtml.includes('fabric.min.js'), 'graphview.html should include Fabric.js CDN');
     assert.ok(graphviewHtml.includes('imageEditorModalContainer'), 'graphview.html should have modal container');
     assert.ok(graphviewHtml.includes('imageEditor.js'), 'graphview.html should load imageEditor.js');
+    assert.ok(graphviewHtml.includes('imageBackgroundRemoval.js'), 'graphview.html should load edge-aware background removal');
   });
 });

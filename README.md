@@ -50,7 +50,7 @@ npm test
 ## Key Features
 
 - 🤖 **AI Multi-Model Router**: Intelligent and automatic routing of requests to the most optimal AI provider (Coding -> ChatGPT, Research -> Gemini, Ultra-fast -> Groq, Complex Analysis -> Claude, Reasoning -> TokenRouter/DeepSeek, Multi-model -> OpenRouter).
-- 🎨 **Image Generation Suite**: Integrated with multiple image providers including Cloudflare Workers AI (Flux 2), Gemini Image, Pollinations (Free), and Stable Diffusion (Local SD WebUI).
+- 🎨 **Personalized Hybrid Image Studio**: Tạo ba art direction theo sở thích và lịch sử; AI sinh key visual không chữ, còn Studio dựng typography/layer chỉnh sửa được. Hỗ trợ Gemini Image cùng các provider ảnh hiện có.
 - 📚 **RAG System & Knowledge Base**: Extraction of Markdown note data from GitHub Private Repo -> Pre-processing (Chunking) -> Vector Embedding -> Semantic search & storage via Supabase (pgvector).
 - 🔄 **Obsidian Vault Sync**: Automated two-way note synchronization from personal Obsidian Vault via GitHub Webhooks and scheduled cron jobs.
 - 🗣️ **Voice (TTS) & Mail Services**: Text-to-Speech integration for vivid voice generation and automated email notification system via SMTP (Gmail).

@@ -31,6 +31,26 @@ CREATE TABLE IF NOT EXISTS public.users (
 CREATE INDEX IF NOT EXISTS idx_users_email ON public.users(email);
 CREATE INDEX IF NOT EXISTS idx_users_role_id ON public.users(role_id);
 
+-- Hồ sơ cá nhân hoá và lịch sử chống lặp của Image Studio
+CREATE TABLE IF NOT EXISTS public.image_studio_profiles (
+  user_id VARCHAR(100) PRIMARY KEY REFERENCES public.users(id) ON DELETE CASCADE,
+  preferences JSONB NOT NULL DEFAULT '{}'::jsonb,
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS public.image_studio_history (
+  id BIGSERIAL PRIMARY KEY,
+  user_id VARCHAR(100) REFERENCES public.users(id) ON DELETE CASCADE,
+  style VARCHAR(80) NOT NULL,
+  layout VARCHAR(80) NOT NULL,
+  palette VARCHAR(100) NOT NULL,
+  signature VARCHAR(255) NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_image_studio_history_user_created
+  ON public.image_studio_history(user_id, created_at DESC);
+
 
 -- 3. Bảng Token Usage (Theo dõi lượng token AI sử dụng)
 CREATE TABLE IF NOT EXISTS public.token_usage (

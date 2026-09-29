@@ -35,8 +35,17 @@ class AIManagerService {
     const delegatedAgent = routerService.dispatchAgent(prompt, category);
     const targetModel = options.model || delegatedAgent.model;
     const targetProvider = options.provider || routerService.selectProvider(prompt, category);
+    const providerInstance = this.providers[targetProvider] || geminiService;
     // 1.5. RAG Semantic Recall: Quét tri thức đã lưu trong Obsidian để nạp vào Context cho AI
     let enrichedContext = options.context || '';
+    if (delegatedAgent.id === 'image' && options.studioContext) {
+      const imageDesignService = require('../image/imageDesign.service');
+      const studioContext = {
+        preferences: imageDesignService.normalizePreferences(options.studioContext.preferences),
+        recentDesigns: imageDesignService.normalizeHistory(options.studioContext.history)
+      };
+      enrichedContext = `${enrichedContext}\n[STUDIO PERSONALIZATION]: ${JSON.stringify(studioContext)}`.trim();
+    }
     try {
       const searchService = require('../knowledge/search.service');
       const relevantNotes = await searchService.vectorSearch(prompt, 2);

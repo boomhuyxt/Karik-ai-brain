@@ -42,6 +42,10 @@ test('Social Publish Modal HTML - has live Facebook preview card and auto format
   assert.ok(html.includes('id="fbLivePreviewCard"'), 'Should have Facebook Live Feed Preview card');
   assert.ok(html.includes('id="btnAutoFormatFB"'), 'Should have 1-click Auto Format FB button');
   assert.ok(html.includes('id="tabViewPreview"'), 'Should have preview tab');
+  assert.ok(html.includes('aspect-[4/5]'), 'Facebook preview should use the 4:5 feed frame');
+  assert.ok(html.includes('aspect-[9/16]'), 'TikTok preview should use the 9:16 frame');
+  assert.ok(html.includes('id="fbPreviewFitStatus"'), 'Should explain Facebook image fit');
+  assert.ok(html.includes('id="ttPreviewFitStatus"'), 'Should explain TikTok image fit and safe area');
 });
 
 test('Social Publish JS - contains auto format and live feed preview handlers', () => {
@@ -52,6 +56,8 @@ test('Social Publish JS - contains auto format and live feed preview handlers', 
   assert.ok(js.includes('autoFormatFacebookText'), 'Should contain autoFormatFacebookText function');
   assert.ok(js.includes('updateLivePreview'), 'Should contain updateLivePreview function');
   assert.ok(js.includes('toggleViewMode'), 'Should contain toggleViewMode function');
+  assert.ok(js.includes('updatePlatformImageFit'), 'Should validate image ratios for each platform');
+  assert.ok(js.includes("window.lastSelectedPlatform = platform"), 'Should remember the selected publishing platform');
 });
 
 test('Frontend Markdown - drawer enables breaks: true and index has chat-markdown styling', () => {
@@ -100,4 +106,5 @@ test('Image Editor JS - passes product caption when posting to Facebook from Stu
 
   assert.ok(js.includes('window.lastProductCaption'), 'Image editor should pass product caption to social modal');
   assert.ok(js.includes('window.lastStudioEditedImage'), 'Image editor should set lastStudioEditedImage');
+  assert.ok(js.includes('btnSaveAndContinueStudio'), 'Image editor should support save, close, and continue to publishing');
 });

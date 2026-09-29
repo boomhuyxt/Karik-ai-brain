@@ -445,13 +445,14 @@
                                     <span>Công khai</span>
                                 </div>
                             </div>
+                        </div>
                         <div class="flex items-center gap-2">
                             <button type="button" onclick="window.socialPublish.toggleViewMode('editor')"
                                 class="flex items-center gap-1 text-[11px] text-blue-600 dark:text-cyan-300 hover:text-blue-700 dark:hover:text-white bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900/80 border border-blue-300 dark:border-blue-500/40 px-2 py-1 rounded-lg transition-all cursor-pointer font-bold shadow-xs active:scale-95" title="Chuyển sang tab Soạn Thảo để chỉnh sửa nội dung bài viết">
                                 <span class="material-symbols-outlined text-xs">edit_note</span>
                                 <span>Sửa nội dung</span>
                             </button>
-                            <button type="button" class="text-slate-400 hover:text-slate-800 dark:hover:text-white p-1 rounded-full hover:bg-slate-100 dark:hover:bg-white/10">
+                            <button type="button" aria-label="Tùy chọn bài đăng" class="text-slate-400 hover:text-slate-800 dark:hover:text-white p-1 rounded-full hover:bg-slate-100 dark:hover:bg-white/10">
                                 <span class="material-symbols-outlined text-lg">more_horiz</span>
                             </button>
                         </div>
@@ -461,9 +462,10 @@
                     <div id="fbPreviewPostText" class="fb-post-preview text-slate-900 dark:text-slate-100 text-xs sm:text-[13px] leading-relaxed pt-1"></div>
 
                     <!-- FB Media Box -->
-                    <div id="fbPreviewMediaContainer" class="fb-media-box rounded-xl overflow-hidden bg-black/60 border border-white/10 flex justify-center max-h-96">
-                        <img id="fbPreviewMediaImg" src="" alt="Facebook Post Media" class="w-full h-auto object-contain max-h-96 hidden" />
+                    <div id="fbPreviewMediaContainer" class="fb-media-box relative mx-auto w-full max-w-[420px] aspect-[4/5] rounded-xl overflow-hidden bg-black/60 border border-white/10 flex items-center justify-center">
+                        <img id="fbPreviewMediaImg" src="" alt="Xem trước ảnh bài đăng Facebook" class="w-full h-full object-contain hidden" />
                     </div>
+                    <div id="fbPreviewFitStatus" class="text-[10px] text-slate-400 text-center" aria-live="polite">Khung Facebook Feed 4:5</div>
 
                     <!-- FB Action Bar (Likes, Comments, Shares) -->
                     <div class="fb-action-bar pt-2 border-t border-white/10 flex items-center justify-between text-[11px] text-slate-400 font-semibold px-2">
@@ -487,8 +489,8 @@
                     <!-- TikTok Card Container -->
                     <div class="relative rounded-xl overflow-hidden bg-black/80 border border-white/15 flex flex-col md:flex-row gap-4 p-3 min-h-[340px]">
                         <!-- Left: TikTok Media Frame with Overlays -->
-                        <div class="relative w-full md:w-64 h-80 rounded-lg overflow-hidden bg-slate-950 flex items-center justify-center flex-shrink-0 border border-white/10">
-                            <img id="ttPreviewMediaImg" src="" alt="TikTok Media Preview" class="w-full h-full object-contain hidden" />
+                        <div class="relative w-full max-w-[270px] md:w-[270px] aspect-[9/16] mx-auto md:mx-0 rounded-lg overflow-hidden bg-slate-950 flex items-center justify-center flex-shrink-0 border border-white/10">
+                            <img id="ttPreviewMediaImg" src="" alt="Xem trước ảnh bài đăng TikTok" class="w-full h-full object-contain hidden" />
                             <div id="ttPreviewMediaPlaceholder" class="flex flex-col items-center gap-2 text-slate-500">
                                 <span class="material-symbols-outlined text-4xl text-pink-500/70">movie</span>
                                 <span class="text-[11px] font-medium">TikTok Photo/Video Preview</span>
@@ -516,6 +518,7 @@
                                     <span class="text-[10px] font-bold drop-shadow">850</span>
                                 </div>
                             </div>
+                            <div class="absolute inset-x-[8%] top-[7%] bottom-[16%] border border-dashed border-white/30 rounded pointer-events-none" aria-hidden="true"></div>
                         </div>
 
                         <!-- Right: TikTok Post Details & Caption -->
@@ -550,6 +553,7 @@
                                 <span class="material-symbols-outlined text-xs text-pink-400 animate-pulse">music_note</span>
                                 <span class="font-medium">Âm thanh gốc - AI Karik Trending Audio</span>
                             </div>
+                            <div id="ttPreviewFitStatus" class="text-[10px] text-slate-400" aria-live="polite">Khung TikTok 9:16, vùng nét đứt là vùng an toàn.</div>
                         </div>
                     </div>
                 </div>

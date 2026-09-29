@@ -121,10 +121,11 @@ class RouterService {
       return `[CHỈ THỊ ĐIỀU PHỐI TỪ AI KARIK ORCHESTRATOR -> AGENT STUDIO ẢNH & POSTER DESIGNER / ART DIRECTOR (Model: ${agent.model})]:
 - Mục tiêu: Phân tích sâu yêu cầu của người dùng, sản phẩm và tự do sáng tạo bộ Concept Visual, bảng màu, typography và cấu trúc Layers độc bản cho AI Karik Studio.
 - Yêu cầu ban đầu của người dùng: "${prompt}"
+- Hồ sơ sở thích và lịch sử thiết kế gần đây: ${context || 'Chưa có dữ liệu; tự chọn hướng phù hợp và tạo signature mới.'}
 - Hướng dẫn thực thi:
-  1. Phân tích Concept & Bố cục Visual: Phân tích ngành hàng và chọn 1 phong cách thiết kế phù hợp (Minimalist Fresh, Cyberpunk Tech, Luxury Editorial, Bold Commercial, Warm Vintage...). Tuyệt đối không rập khuôn một kiểu màu/bố cục.
-  2. Xây dựng Bảng màu (Color Palette 60-30-10) và Phông chữ đề xuất tương ứng với cảm xúc của sản phẩm.
-  3. Lập Bảng phân lớp thiết kế (Layer Specifications: Nền, Hình ảnh, Typography, Shapes/Huy hiệu, Hiệu ứng Filters, Tách nền Magic Cut) và xuất cấu hình json:poster-config chuẩn xác.
+  1. Chọn art direction theo ngành hàng, đối tượng, sở thích và lịch sử; không lặp bộ ba style + layout + palette gần nhất.
+  2. Thiết kế theo pipeline hybrid: key visual không chữ do image model tạo; typography, badge và CTA là layer chỉnh sửa được.
+  3. Lập Bảng phân lớp thiết kế (Layer Specifications: Nền, Hình ảnh, Typography, Shapes/Huy hiệu, Hiệu ứng Filters, Tách nền Magic Cut) và xuất cấu hình json:poster-config schema 3.0 chuẩn xác.
   4. Hướng dẫn người dùng thao tác trực tiếp trên AI Karik Studio (bấm nút Studio Ảnh trên khung chat).
   5. Tuân thủ nghiêm ngặt quy chuẩn tại image.prompt.md.`;
     }

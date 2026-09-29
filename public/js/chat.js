@@ -376,6 +376,9 @@ function initAIChat() {
             try { return JSON.parse(localStorage.getItem('user_info') || '{}'); } catch(e) { return {}; }
         })();
         const activeShopId = userInfo.email || 'default_shop';
+        const studioContext = window.imageStudioPersonalization
+            ? window.imageStudioPersonalization.getContext()
+            : null;
 
         try {
             const res = await fetch('/api/chat', {
@@ -388,7 +391,8 @@ function initAIChat() {
                 body: JSON.stringify({
                     message: fullPrompt,
                     category: attachedFileResult ? attachedFileResult.category : '',
-                    shop_id: activeShopId
+                    shop_id: activeShopId,
+                    studioContext
                 })
             });
             const result = await res.json();
