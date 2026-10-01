@@ -250,13 +250,44 @@ const CATEGORY_RULES = [
   }
 ];
 
+const obsidianPosterService = require('./obsidianPoster.service');
+
 function matchTemplateForProduct(brief, preferences = {}) {
+  // 1. Explicit backdrop/template ID specified
+  const targetId = preferences.backdropId || preferences.templateId;
+  if (targetId) {
+    const bd = obsidianPosterService.getBackdropById(targetId);
+    if (bd) {
+      return {
+        template: { id: bd.id, title: bd.title, localPath: bd.url, category: bd.category, source: 'obsidian', safeZone: bd.safeZone, recommendedColors: bd.recommendedColors },
+        categoryMatch: bd.category,
+        matchedKeyword: bd.id,
+        source: 'obsidian'
+      };
+    }
+  }
+
   const allTemplates = getPicsartTemplates();
+  const text = `${brief || ''} ${preferences.industry || ''} ${preferences.mood || ''}`.toLowerCase();
+
+  // 2. Prioritize Obsidian Vault backdrops for automotive, bike, mechanical, garage, and meme intents
+  const isObsidianDomain = /(?:nhớt|dầu nhớt|phụ tùng|biker|xe máy|gara|sửa xe|đua xe|harley|bugi|pô|castrol|motul|cơ khí|thép|drift|meme|drake|bateman|akira|truman)/i.test(text);
+  if (isObsidianDomain) {
+    const obsidianMatch = obsidianPosterService.matchBackdrop(brief, preferences);
+    if (obsidianMatch && obsidianMatch.score > 0) {
+      const bd = obsidianMatch.backdrop;
+      return {
+        template: { id: bd.id, title: bd.title, localPath: bd.url, category: bd.category, source: 'obsidian', safeZone: bd.safeZone, recommendedColors: bd.recommendedColors },
+        categoryMatch: bd.category,
+        matchedKeyword: obsidianMatch.matchedKeywords[0] || 'automotive',
+        source: 'obsidian'
+      };
+    }
+  }
+
   if (!allTemplates || allTemplates.length === 0) {
     return { template: null, categoryMatch: 'general', matchedKeyword: 'default' };
   }
-
-  const text = `${brief || ''} ${preferences.industry || ''} ${preferences.mood || ''}`.toLowerCase();
 
   for (const rule of CATEGORY_RULES) {
     const matchedKw = rule.keywords.find(k => text.includes(k));
@@ -311,7 +342,9 @@ function createVariant({ brief, preferences, copy, style, palette, layout, aspec
     templateUrl: template ? template.localPath : null,
     templateTitle: template ? template.title : null,
     artDirection: template
-      ? `Lấy cảm hứng từ mẫu Picsart "${template.title}" kết hợp phong cách ${style.label} và bố cục ${layout.replace(/_/g, ' ')}.`
+      ? (template.source === 'obsidian' || /^(ART|MEME|XE)-/i.test(template.id)
+          ? `Áp dụng mẫu nền Obsidian "${template.title}" thuộc kho mẫu Admin kết hợp phong cách ${style.label} và bố cục ${layout.replace(/_/g, ' ')}.`
+          : `Lấy cảm hứng từ mẫu Picsart "${template.title}" kết hợp phong cách ${style.label} và bố cục ${layout.replace(/_/g, ' ')}.`)
       : `${style.label} với bố cục ${layout.replace(/_/g, ' ')} để khác biệt rõ với các thiết kế gần đây.`,
     keyVisual: {
       mode: 'generate_without_text',
@@ -348,10 +381,18 @@ function createDesignSet(input = {}) {
   const usedPalettes = new Set(history.slice(-4).map(item => item.palette));
   const seed = hashString(`${brief}:${history.length}`);
 
-  const matchedResult = input.templateId
-    ? { template: getPicsartTemplates().find(t => t.id === input.templateId) || null }
-    : matchTemplateForProduct(brief, preferences);
-  const matchedTemplate = matchedResult.template;
+  let matchedTemplate = null;
+  const targetId = input.templateId || input.backdropId;
+  if (targetId) {
+    const bd = obsidianPosterService.getBackdropById(targetId);
+    if (bd) {
+      matchedTemplate = { id: bd.id, title: bd.title, localPath: bd.url, category: bd.category, source: 'obsidian', safeZone: bd.safeZone, recommendedColors: bd.recommendedColors };
+    } else {
+      matchedTemplate = getPicsartTemplates().find(t => t.id === targetId) || null;
+    }
+  } else {
+    matchedTemplate = matchTemplateForProduct(brief, preferences).template;
+  }
 
   return styles.map((style, index) => {
     const layout = chooseUnused(LAYOUTS, usedLayouts, seed + index * 3);
@@ -396,8 +437,9 @@ function getCatalog() {
     palettes: PALETTES,
     layouts: LAYOUTS,
     aspectRatios: Object.keys(SIZES),
-    templates: getPicsartTemplates()
+    templates: getPicsartTemplates(),
+    obsidianBackdrops: obsidianPosterService.getBackdrops()
   };
 }
 
-module.exports = { createDesignSet, getCatalog, normalizePreferences, normalizeHistory, buildKeyVisualPrompt, getPicsartTemplates, matchTemplateForProduct };
+module.exports = { createDesignSet, getCatalog, normalizePreferences, normalizeHistory, buildKeyVisualPrompt, getPicsartTemplates, matchTemplateForProduct, obsidianPosterService };

@@ -2,6 +2,8 @@ const geminiImageService = require('../services/providers/geminiImage.service');
 const imageDesignService = require('../services/image/imageDesign.service');
 const imageStudioRepository = require('../repositories/imageStudio.repository');
 
+const obsidianPosterService = require('../services/image/obsidianPoster.service');
+
 function requireUser(req) {
   if (req.user?.id) return req.user.id;
   const error = new Error('Vui lòng đăng nhập để đồng bộ hồ sơ Studio.');
@@ -20,11 +22,33 @@ class ImageController {
     return res.json({ success: true, count: templates.length, templates });
   }
 
+  getObsidianTemplates(req, res) {
+    const category = req.query?.category;
+    const backdrops = obsidianPosterService.getBackdrops(category);
+    return res.json({ success: true, count: backdrops.length, backdrops });
+  }
+
   matchTemplate(req, res) {
     const brief = req.body?.brief || req.query?.brief || '';
     const preferences = req.body?.preferences || {};
     const result = imageDesignService.matchTemplateForProduct(brief, preferences);
     return res.json({ success: true, ...result });
+  }
+
+  matchObsidianTemplate(req, res) {
+    const brief = req.body?.brief || req.query?.brief || '';
+    const preferences = req.body?.preferences || {};
+    const result = obsidianPosterService.matchBackdrop(brief, preferences);
+    return res.json({ success: true, ...result });
+  }
+
+  createObsidianPoster(req, res) {
+    const { backdropId, brief, copy, productImageUrl, options } = req.body || {};
+    const backdrop = backdropId
+      ? obsidianPosterService.getBackdropById(backdropId)
+      : obsidianPosterService.matchBackdrop(brief, req.body?.preferences).backdrop;
+    const posterConfig = obsidianPosterService.buildPosterConfig({ backdrop, brief, copy, productImageUrl, options });
+    return res.json({ success: true, posterConfig });
   }
 
   async getProfile(req, res, next) {

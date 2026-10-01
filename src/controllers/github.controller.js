@@ -70,6 +70,35 @@ class GithubController {
       next(err);
     }
   }
+
+  async getRaw(req, res, next) {
+    try {
+      const filePath = req.query.path || req.params[0] || req.params.path;
+      if (!filePath) {
+        return res.status(400).json({ error: 'File path is required' });
+      }
+      const buffer = await githubRepository.getRawBuffer(filePath);
+      if (!buffer) {
+        return res.status(404).send('File not found');
+      }
+      const pathModule = require('path');
+      const ext = pathModule.extname(filePath).toLowerCase();
+      const mimeTypes = {
+        '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.png': 'image/png',
+        '.webp': 'image/webp',
+        '.gif': 'image/gif',
+        '.svg': 'image/svg+xml'
+      };
+      const contentType = mimeTypes[ext] || 'application/octet-stream';
+      res.setHeader('Content-Type', contentType);
+      res.setHeader('Cache-Control', 'public, max-age=86400');
+      return res.end(buffer);
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 module.exports = new GithubController();

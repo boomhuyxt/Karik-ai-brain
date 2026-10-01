@@ -130,7 +130,8 @@ class RouterService {
   2. Thiết kế theo pipeline hybrid: key visual không chữ do image model tạo; typography, badge và CTA là layer chỉnh sửa được.
   3. Lập Bảng phân lớp thiết kế (Layer Specifications: Nền, Hình ảnh, Typography, Shapes/Huy hiệu, Hiệu ứng Filters, Tách nền Magic Cut) và xuất cấu hình json:poster-config schema 3.0 chuẩn xác.
   4. Hướng dẫn người dùng thao tác trực tiếp trên AI Karik Studio (bấm nút Studio Ảnh trên khung chat).
-  5. Tuân thủ nghiêm ngặt quy chuẩn tại image.prompt.md.`;
+  5. Chủ động áp dụng Kho 24 Mẫu Nền Poster (Nhóm XE: XE-01 đến XE-08; Nhóm MEME: MEME-01 đến MEME-08; Nhóm ART: ART-01 đến ART-08) và các nguyên lý phân cấp Typography, Gradient Masking, Contact Shadow đã học từ Obsidian Vault của Admin.
+  6. Tuân thủ nghiêm ngặt quy chuẩn tại image.prompt.md.`;
     }
 
     if (agent.id === 'social') {

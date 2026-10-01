@@ -933,6 +933,9 @@
 
             grid.innerHTML = filtered.map(item => {
                 const catLabel = {
+                    xe: '🏁 Obsidian Xe',
+                    meme: '🎭 Obsidian Meme',
+                    art: '🎨 Obsidian Art',
                     fashion: 'Thời trang',
                     sale: 'Khuyến mãi',
                     events: 'Sự kiện',
@@ -941,6 +944,9 @@
                 }[item.category] || 'Mẫu Poster';
 
                 const catColor = {
+                    xe: 'bg-amber-500/30 text-amber-200 border-amber-400/50',
+                    meme: 'bg-pink-500/30 text-pink-200 border-pink-400/50',
+                    art: 'bg-indigo-500/30 text-indigo-200 border-indigo-400/50',
                     fashion: 'bg-rose-500/30 text-rose-300 border-rose-400/40',
                     sale: 'bg-amber-500/30 text-amber-300 border-amber-400/40',
                     events: 'bg-purple-500/30 text-purple-300 border-purple-400/40',
@@ -992,12 +998,32 @@
             };
         }
 
-        // Fetch templates
-        fetch('/api/image/templates')
-            .then(res => res.json())
-            .then(data => {
-                if (data.success && Array.isArray(data.templates) && data.templates.length > 0) {
-                    _allPicsartTemplates = data.templates;
+        // Fetch templates from both Picsart and Admin Obsidian Vault
+        Promise.allSettled([
+            fetch('/api/image/templates').then(r => r.json()),
+            fetch('/api/image/obsidian-templates').then(r => r.json())
+        ])
+            .then(([picsartRes, obsidianRes]) => {
+                const combined = [];
+                // Add Obsidian backdrops first
+                if (obsidianRes.status === 'fulfilled' && obsidianRes.value?.success && Array.isArray(obsidianRes.value?.backdrops)) {
+                    combined.push(...obsidianRes.value.backdrops.map(item => ({
+                        id: item.id,
+                        title: item.title,
+                        localPath: item.url,
+                        category: item.category,
+                        source: 'obsidian',
+                        safeZone: item.safeZone,
+                        recommendedColors: item.recommendedColors
+                    })));
+                }
+                // Add Picsart templates
+                if (picsartRes.status === 'fulfilled' && picsartRes.value?.success && Array.isArray(picsartRes.value?.templates)) {
+                    combined.push(...picsartRes.value.templates);
+                }
+
+                if (combined.length > 0) {
+                    _allPicsartTemplates = combined;
                 } else {
                     return fetch('/templates/posters/posters.json').then(r => r.json()).then(items => { _allPicsartTemplates = items; });
                 }
