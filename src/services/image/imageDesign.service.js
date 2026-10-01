@@ -185,10 +185,13 @@ function createLayers(layout, palette, style, copy) {
   const ctaCenter = ctaAlign === 'left' ? ctaX + 13 : ctaX;
   return [
     ...motif,
+    { id: 'backlight_glow', type: 'shape', shape: 'ellipse', x: subjectX, y: subjectY, width: subjectW * 0.92, height: subjectH * 0.85, fill: accent, opacity: 0.18 },
+    { id: 'contact_shadow', type: 'shape', shape: 'ellipse', x: subjectX, y: subjectY + (subjectH / 2) - 2.5, width: subjectW * 0.76, height: 4.8, fill: '#000000', opacity: 0.45 },
     { id: 'main_subject', type: 'image', x: subjectX, y: subjectY, width: subjectW, height: subjectH, fit: 'contain', removeBackground: true },
     { id: 'eyebrow', type: 'text', text: copy.eyebrow, x: textX, y: textY, width: textW, height: 4, align: textAlign, fontFamily: style.fonts[1], fontWeight: 700, fontSize: 17, charSpacing: 90, color: accent },
     { id: 'headline', type: 'text', text: copy.title, x: textX, y: textY + 9, width: textW, height: 17, align: textAlign, fontFamily: style.fonts[0], fontWeight: 800, fontSize: 64, minFontSize: 34, lineHeight: 0.96, color: palette.text },
     { id: 'subtext', type: 'text', text: copy.subtitle, x: textX, y: textY + 24, width: Math.min(textW, 48), height: 10, align: textAlign, fontFamily: style.fonts[1], fontWeight: 400, fontSize: 21, minFontSize: 15, lineHeight: 1.3, color: palette.subtext },
+    { id: 'feature_bar', type: 'text', text: '⚡ Chính Hãng 100%  •  🔥 Hiệu Năng Cao  •  🛡️ Bảo Hành Uy Tín', x: ctaCenter, y: ctaY - 6.5, width: Math.min(textW + 30, 88), height: 3.5, align: 'center', fontFamily: style.fonts[1], fontWeight: 500, fontSize: 15, color: palette.subtext },
     { id: 'cta_bg', type: 'shape', shape: style.id === 'neo_brutalism' ? 'rect' : 'roundedRect', x: ctaCenter, y: ctaY, width: 26, height: 5.6, fill: accent, cornerRadius: style.id === 'neo_brutalism' ? 0 : 16 },
     { id: 'cta_text', type: 'text', text: copy.cta, x: ctaCenter, y: ctaY, width: 22, height: 3.8, align: 'center', fontFamily: style.fonts[1], fontWeight: 700, fontSize: 17, minFontSize: 13, color: background }
   ];
@@ -250,13 +253,44 @@ const CATEGORY_RULES = [
   }
 ];
 
+const obsidianPosterService = require('./obsidianPoster.service');
+
 function matchTemplateForProduct(brief, preferences = {}) {
+  // 1. Explicit backdrop/template ID specified
+  const targetId = preferences.backdropId || preferences.templateId;
+  if (targetId) {
+    const bd = obsidianPosterService.getBackdropById(targetId);
+    if (bd) {
+      return {
+        template: { id: bd.id, title: bd.title, localPath: bd.url, category: bd.category, source: 'obsidian', safeZone: bd.safeZone, recommendedColors: bd.recommendedColors },
+        categoryMatch: bd.category,
+        matchedKeyword: bd.id,
+        source: 'obsidian'
+      };
+    }
+  }
+
   const allTemplates = getPicsartTemplates();
+  const text = `${brief || ''} ${preferences.industry || ''} ${preferences.mood || ''}`.toLowerCase();
+
+  // 2. Prioritize Obsidian Vault backdrops for automotive, bike, mechanical, garage, and meme intents
+  const isObsidianDomain = /(?:nhớt|dầu nhớt|phụ tùng|biker|xe máy|gara|sửa xe|đua xe|harley|bugi|pô|castrol|motul|cơ khí|thép|drift|meme|drake|bateman|akira|truman)/i.test(text);
+  if (isObsidianDomain) {
+    const obsidianMatch = obsidianPosterService.matchBackdrop(brief, preferences);
+    if (obsidianMatch && obsidianMatch.score > 0) {
+      const bd = obsidianMatch.backdrop;
+      return {
+        template: { id: bd.id, title: bd.title, localPath: bd.url, category: bd.category, source: 'obsidian', safeZone: bd.safeZone, recommendedColors: bd.recommendedColors },
+        categoryMatch: bd.category,
+        matchedKeyword: obsidianMatch.matchedKeywords[0] || 'automotive',
+        source: 'obsidian'
+      };
+    }
+  }
+
   if (!allTemplates || allTemplates.length === 0) {
     return { template: null, categoryMatch: 'general', matchedKeyword: 'default' };
   }
-
-  const text = `${brief || ''} ${preferences.industry || ''} ${preferences.mood || ''}`.toLowerCase();
 
   for (const rule of CATEGORY_RULES) {
     const matchedKw = rule.keywords.find(k => text.includes(k));
@@ -311,7 +345,9 @@ function createVariant({ brief, preferences, copy, style, palette, layout, aspec
     templateUrl: template ? template.localPath : null,
     templateTitle: template ? template.title : null,
     artDirection: template
-      ? `Lấy cảm hứng từ mẫu Picsart "${template.title}" kết hợp phong cách ${style.label} và bố cục ${layout.replace(/_/g, ' ')}.`
+      ? (template.source === 'obsidian' || /^(ART|MEME|XE)-/i.test(template.id)
+          ? `Áp dụng mẫu nền Obsidian "${template.title}" thuộc kho mẫu Admin kết hợp phong cách ${style.label} và bố cục ${layout.replace(/_/g, ' ')}.`
+          : `Lấy cảm hứng từ mẫu Picsart "${template.title}" kết hợp phong cách ${style.label} và bố cục ${layout.replace(/_/g, ' ')}.`)
       : `${style.label} với bố cục ${layout.replace(/_/g, ' ')} để khác biệt rõ với các thiết kế gần đây.`,
     keyVisual: {
       mode: 'generate_without_text',
@@ -348,10 +384,18 @@ function createDesignSet(input = {}) {
   const usedPalettes = new Set(history.slice(-4).map(item => item.palette));
   const seed = hashString(`${brief}:${history.length}`);
 
-  const matchedResult = input.templateId
-    ? { template: getPicsartTemplates().find(t => t.id === input.templateId) || null }
-    : matchTemplateForProduct(brief, preferences);
-  const matchedTemplate = matchedResult.template;
+  let matchedTemplate = null;
+  const targetId = input.templateId || input.backdropId;
+  if (targetId) {
+    const bd = obsidianPosterService.getBackdropById(targetId);
+    if (bd) {
+      matchedTemplate = { id: bd.id, title: bd.title, localPath: bd.url, category: bd.category, source: 'obsidian', safeZone: bd.safeZone, recommendedColors: bd.recommendedColors };
+    } else {
+      matchedTemplate = getPicsartTemplates().find(t => t.id === targetId) || null;
+    }
+  } else {
+    matchedTemplate = matchTemplateForProduct(brief, preferences).template;
+  }
 
   return styles.map((style, index) => {
     const layout = chooseUnused(LAYOUTS, usedLayouts, seed + index * 3);
@@ -396,8 +440,9 @@ function getCatalog() {
     palettes: PALETTES,
     layouts: LAYOUTS,
     aspectRatios: Object.keys(SIZES),
-    templates: getPicsartTemplates()
+    templates: getPicsartTemplates(),
+    obsidianBackdrops: obsidianPosterService.getBackdrops()
   };
 }
 
-module.exports = { createDesignSet, getCatalog, normalizePreferences, normalizeHistory, buildKeyVisualPrompt, getPicsartTemplates, matchTemplateForProduct };
+module.exports = { createDesignSet, getCatalog, normalizePreferences, normalizeHistory, buildKeyVisualPrompt, getPicsartTemplates, matchTemplateForProduct, obsidianPosterService };

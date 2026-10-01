@@ -34,6 +34,20 @@ Không chọn lại cùng bộ ba `style + layout + palette` trong lịch sử g
 
 Style taxonomy có thể dùng hoặc phối hợp: Editorial Luxury, Neo Brutalism, Organic Minimal, Kinetic Sport, Retro Future, Swiss Grid, Cinematic Noir, Y2K Chrome, Paper Collage, Soft 3D, Heritage Craft, Data Futurism. Đây là vocabulary định hướng, không phải 12 template cố định.
 
+## 3.1. Kho Mẫu Nền Poster & Tri Thức Huấn Luyện Từ Obsidian Vault (Admin)
+
+Hệ thống đã học và đồng bộ toàn bộ kho tri thức thiết kế chuyên sâu từ Obsidian Vault của Admin:
+1. **Kho 24 Mẫu Nền Thực Chiến (`raw/nền poster/`)**:
+   - **Nhóm XE (Cơ khí & Đường đua)**: `XE-01` (Thép nhám kim cương), `XE-02` (Vải rủ studio đen cao cấp), `XE-03` (NASCAR tốc độ), `XE-04` (Khúc cua F1 Kerb), `XE-05` (Khói Burnout & Lửa đêm), `XE-06` (Đường đua đô thị sương mù), `XE-07` (Studio xám loang), `XE-08` (Ma trận lưới Cyber Grid).
+   - **Nhóm MEME (Viral & So sánh)**: `MEME-01` (Akira Kaneda xe đỏ), `MEME-02` (Bateman sofa quý ông), `MEME-03` (Saul Goodman hotline 24/7), `MEME-04` (Truman nấc thang bứt phá), `MEME-05` (Drake Hotline Bling 2 khung), `MEME-06` (Tony Stark donut), `MEME-07` (Scorsese Cinema 5 sao), `MEME-08` (Tony Jericho bão sale bom nổ).
+   - **Nhóm ART (Nghệ thuật & Biker)**: `ART-01` (Biker rừng đêm), `ART-02` (Harley hầm xe), `ART-03` (Chọc trời mù sương), `ART-04` (Cruiser sa mạc), `ART-05` (Sportbike bão tố), `ART-06` (Chopper sàn đen), `ART-07` (Dodge Challenger khói mờ), `ART-08` (Scrambler hangar).
+2. **Quy Trình 5 Bước Thực Chiến (wiki/Kho Mẫu Nền Poster/02)**:
+   - **B1**: Chọn nền tương ứng ngành hàng (Dầu nhớt/phụ tùng &rarr; `XE-02`, `XE-01`, `XE-05`, `ART-02`; Bão sale &rarr; `MEME-08`; Hotline cứu hộ &rarr; `MEME-03`).
+   - **B2**: Áp dụng Gradient Masking làm dịu vùng đặt chữ.
+   - **B3**: Ghép sản phẩm `main_subject` tách nền `removeBackground: true` và đặt đúng vùng trọng tâm (1/3 dưới hoặc trung tâm).
+   - **B4**: Phân cấp chữ 3 tầng (Headline in hoa tương phản cao + Subtitle làm rõ giá trị + Tính năng nổi bật + CTA button bắt mắt).
+   - **B5**: Hoàn thiện ánh sáng, shadow và xuất `json:poster-config`.
+
 Layout taxonomy: `editorial_split`, `hero_center`, `diagonal_motion`, `frame_within_frame`, `asymmetric_grid`, `bottom_stage`. Điều chỉnh vị trí theo nội dung thực tế; không sao chép toạ độ giữa các lần tạo.
 
 ## 4. Prompt cho key visual

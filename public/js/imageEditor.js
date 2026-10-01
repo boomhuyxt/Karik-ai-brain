@@ -933,6 +933,9 @@
 
             grid.innerHTML = filtered.map(item => {
                 const catLabel = {
+                    xe: '🏁 Obsidian Xe',
+                    meme: '🎭 Obsidian Meme',
+                    art: '🎨 Obsidian Art',
                     fashion: 'Thời trang',
                     sale: 'Khuyến mãi',
                     events: 'Sự kiện',
@@ -941,6 +944,9 @@
                 }[item.category] || 'Mẫu Poster';
 
                 const catColor = {
+                    xe: 'bg-amber-500/30 text-amber-200 border-amber-400/50',
+                    meme: 'bg-pink-500/30 text-pink-200 border-pink-400/50',
+                    art: 'bg-indigo-500/30 text-indigo-200 border-indigo-400/50',
                     fashion: 'bg-rose-500/30 text-rose-300 border-rose-400/40',
                     sale: 'bg-amber-500/30 text-amber-300 border-amber-400/40',
                     events: 'bg-purple-500/30 text-purple-300 border-purple-400/40',
@@ -992,12 +998,32 @@
             };
         }
 
-        // Fetch templates
-        fetch('/api/image/templates')
-            .then(res => res.json())
-            .then(data => {
-                if (data.success && Array.isArray(data.templates) && data.templates.length > 0) {
-                    _allPicsartTemplates = data.templates;
+        // Fetch templates from both Picsart and Admin Obsidian Vault
+        Promise.allSettled([
+            fetch('/api/image/templates').then(r => r.json()),
+            fetch('/api/image/obsidian-templates').then(r => r.json())
+        ])
+            .then(([picsartRes, obsidianRes]) => {
+                const combined = [];
+                // Add Obsidian backdrops first
+                if (obsidianRes.status === 'fulfilled' && obsidianRes.value?.success && Array.isArray(obsidianRes.value?.backdrops)) {
+                    combined.push(...obsidianRes.value.backdrops.map(item => ({
+                        id: item.id,
+                        title: item.title,
+                        localPath: item.url,
+                        category: item.category,
+                        source: 'obsidian',
+                        safeZone: item.safeZone,
+                        recommendedColors: item.recommendedColors
+                    })));
+                }
+                // Add Picsart templates
+                if (picsartRes.status === 'fulfilled' && picsartRes.value?.success && Array.isArray(picsartRes.value?.templates)) {
+                    combined.push(...picsartRes.value.templates);
+                }
+
+                if (combined.length > 0) {
+                    _allPicsartTemplates = combined;
                 } else {
                     return fetch('/templates/posters/posters.json').then(r => r.json()).then(items => { _allPicsartTemplates = items; });
                 }
@@ -2579,15 +2605,87 @@
                     }
                 });
             } else {
-                // Fallback default poster layout (Enhanced for Picsart Templates & Custom Composites)
+                // Fallback default poster layout (Enhanced with Obsidian 5-step rules & aesthetic polish)
                 const isTemplateMode = Boolean(templateUrl);
+                const safeZone = config.safeZone || (config.template && config.template.safeZone) || {
+                    xMin: 10, xMax: 90, yMin: isTemplateMode ? 10 : 12, yMax: 88, align: 'center', ctaY: 90
+                };
+                const isAlignLeft = safeZone.align === 'left';
+                const textCenterX = isAlignLeft ? (canvasWidth * ((safeZone.xMin || 10) / 100)) : (canvasWidth / 2);
+                const textAlign = isAlignLeft ? 'left' : 'center';
+                const originX = isAlignLeft ? 'left' : 'center';
 
+                const colors = (config.template && config.template.recommendedColors) ? config.template.recommendedColors : {
+                    text: config.titleColor || '#ffffff',
+                    accent: config.ctaBg || '#f59e0b',
+                    secondary: config.subtitleColor || '#38bdf8',
+                    background: '#0f172a'
+                };
+
+                // 1. Gradient Scrim / Contrast Masking (Step 2 from Obsidian Guide)
+                const scrimTop = isTemplateMode ? (canvasHeight * 0.18) : (canvasHeight * 0.15);
+                const scrimObj = new fabric.Rect({
+                    left: canvasWidth / 2,
+                    top: scrimTop,
+                    width: canvasWidth,
+                    height: canvasHeight * 0.38,
+                    originX: 'center',
+                    originY: 'center',
+                    fill: '#000000',
+                    opacity: isTemplateMode ? 0.32 : 0.22,
+                    selectable: false,
+                    evented: false,
+                    layerName: 'Mặt Nạ Chuyển Sắc (Gradient Scrim)',
+                    layerType: 'shape'
+                });
+                canvas.add(scrimObj);
+
+                // 2. Product Compositing with Contact Shadow & Backlight Aura (Step 3 from Obsidian Guide)
                 if (userImg) {
-                    const heroCenterY = isTemplateMode ? (canvasHeight * 0.52) : (canvasHeight * 0.56);
-                    const maxImgW = canvasWidth * 0.74;
-                    const maxImgH = canvasHeight * 0.56;
+                    const heroCenterY = isTemplateMode ? (canvasHeight * 0.54) : (canvasHeight * 0.56);
+                    const maxImgW = canvasWidth * 0.72;
+                    const maxImgH = canvasHeight * 0.52;
                     const scale = Math.min(maxImgW / (userImg.width || 1), maxImgH / (userImg.height || 1));
+                    const imgRenderW = (userImg.width || 1) * scale;
+                    const imgRenderH = (userImg.height || 1) * scale;
 
+                    // 2a. Backlight Aura (Spotlight Glow behind subject)
+                    const auraObj = new fabric.Ellipse({
+                        left: canvasWidth / 2,
+                        top: heroCenterY,
+                        originX: 'center',
+                        originY: 'center',
+                        rx: imgRenderW * 0.44,
+                        ry: imgRenderH * 0.40,
+                        fill: colors.accent || '#f59e0b',
+                        opacity: 0.22,
+                        selectable: false,
+                        evented: false,
+                        layerName: 'Hào Quang Ngược Sáng (Backlight Aura)',
+                        layerType: 'shape'
+                    });
+                    canvas.add(auraObj);
+
+                    // 2b. Ground Contact Shadow (Under product base)
+                    const shadowY = heroCenterY + (imgRenderH / 2) - 6;
+                    const contactShadow = new fabric.Ellipse({
+                        left: canvasWidth / 2,
+                        top: shadowY,
+                        originX: 'center',
+                        originY: 'center',
+                        rx: imgRenderW * 0.38,
+                        ry: 14,
+                        fill: '#000000',
+                        opacity: 0.65,
+                        selectable: false,
+                        evented: false,
+                        shadow: new fabric.Shadow({ color: '#000000', blur: 24, offsetY: 2 }),
+                        layerName: 'Bóng Đổ Tiếp Đất (Contact Shadow)',
+                        layerType: 'shape'
+                    });
+                    canvas.add(contactShadow);
+
+                    // 2c. Main Product Cutout Image
                     userImg.set({
                         left: canvasWidth / 2,
                         top: heroCenterY,
@@ -2596,10 +2694,10 @@
                         scaleX: scale,
                         scaleY: scale,
                         shadow: new fabric.Shadow({
-                            color: 'rgba(0, 0, 0, 0.55)',
-                            blur: 28,
+                            color: 'rgba(0, 0, 0, 0.45)',
+                            blur: 24,
                             offsetX: 0,
-                            offsetY: 10
+                            offsetY: 8
                         }),
                         layerName: 'Ảnh Sản Phẩm (Tách Nền)',
                         layerType: 'image'
@@ -2607,30 +2705,34 @@
                     canvas.add(userImg);
                 }
 
-                // Badge / Eyebrow Pill
+                // 3. Visual Hierarchy - Eyebrow / Badge Pill
                 const badgeVal = config.badge || config.eyebrow;
+                const badgeTop = isTemplateMode ? (canvasHeight * ((safeZone.yMin || 10) / 100) + 10) : 75;
                 if (badgeVal) {
-                    const badgeTop = isTemplateMode ? (canvasHeight * 0.12) : 75;
+                    const badgeTextContent = `★ ${String(badgeVal).toUpperCase()}`;
+                    const badgeBoxW = Math.min(360, badgeTextContent.length * 13 + 40);
                     const badgeBox = new fabric.Rect({
-                        width: Math.min(340, String(badgeVal).length * 14 + 44),
-                        height: 44,
-                        rx: 22,
-                        ry: 22,
-                        fill: config.badgeBg || '#ef4444',
-                        left: canvasWidth / 2,
+                        width: badgeBoxW,
+                        height: 42,
+                        rx: 21,
+                        ry: 21,
+                        fill: colors.accent || config.badgeBg || '#ef4444',
+                        stroke: 'rgba(255, 255, 255, 0.35)',
+                        strokeWidth: 1.5,
+                        left: isAlignLeft ? textCenterX + (badgeBoxW / 2) : canvasWidth / 2,
                         top: badgeTop,
                         originX: 'center',
                         originY: 'center',
-                        shadow: new fabric.Shadow({ color: 'rgba(0, 0, 0, 0.4)', blur: 12, offsetY: 4 }),
+                        shadow: new fabric.Shadow({ color: 'rgba(0, 0, 0, 0.45)', blur: 14, offsetY: 4 }),
                         layerName: 'Khung Huy Hiệu',
                         layerType: 'shape'
                     });
-                    const badgeText = new fabric.IText(`★ ${String(badgeVal).toUpperCase()}`, {
-                        fontSize: 18,
-                        fontWeight: 'bold',
+                    const badgeText = new fabric.IText(badgeTextContent, {
+                        fontSize: 16,
+                        fontWeight: '800',
                         fontFamily: config.fontFamily || 'Montserrat',
-                        fill: '#ffffff',
-                        left: canvasWidth / 2,
+                        fill: colors.background || '#020617',
+                        left: isAlignLeft ? textCenterX + (badgeBoxW / 2) : canvasWidth / 2,
                         top: badgeTop,
                         originX: 'center',
                         originY: 'center',
@@ -2641,75 +2743,117 @@
                     canvas.add(badgeText);
                 }
 
-                // Title / Headline
+                // 4. Headline / Tiêu Đề Lớn (Tier 1 Hierarchy)
                 const titleVal = config.title || 'SIÊU PHẨM MỚI';
-                const titleTop = badgeVal ? (isTemplateMode ? canvasHeight * 0.20 : 155) : (isTemplateMode ? canvasHeight * 0.16 : 100);
+                const titleTop = badgeVal ? (badgeTop + 54) : (canvasHeight * 0.14);
                 const titleObj = new fabric.Textbox(titleVal, {
-                    fontSize: 52,
-                    fontWeight: 'bold',
+                    fontSize: 54,
+                    fontWeight: '900',
                     fontFamily: config.fontFamily || 'Montserrat',
-                    fill: config.titleColor || '#ffffff',
-                    textAlign: 'center',
-                    width: canvasWidth * 0.88,
-                    left: canvasWidth / 2,
+                    fill: colors.text || config.titleColor || '#ffffff',
+                    textAlign: textAlign,
+                    width: isAlignLeft ? (canvasWidth * 0.65) : (canvasWidth * 0.88),
+                    left: textCenterX,
                     top: titleTop,
-                    originX: 'center',
+                    originX: originX,
                     originY: 'center',
                     stroke: '#000000',
                     strokeWidth: 1.2,
-                    shadow: new fabric.Shadow({ color: 'rgba(0, 0, 0, 0.85)', blur: 20, offsetX: 0, offsetY: 5 }),
-                    layerName: 'Tiêu Đề Poster',
+                    lineHeight: 1.05,
+                    shadow: new fabric.Shadow({ color: 'rgba(0, 0, 0, 0.88)', blur: 24, offsetX: 0, offsetY: 6 }),
+                    layerName: 'Tiêu Đề Poster (Headline)',
                     layerType: 'text'
                 });
                 canvas.add(titleObj);
 
-                // Subtitle
+                // 5. Subtitle / Mô Tả Giá Trị (Tier 2 Hierarchy)
                 const subtitleStr = config.subtitle || config.caption || '';
                 if (subtitleStr) {
-                    const subtitleTop = titleTop + 65;
+                    const subtitleTop = titleTop + 62;
                     const subtitleObj = new fabric.Textbox(subtitleStr, {
-                        fontSize: 24,
+                        fontSize: 22,
                         fontWeight: '600',
-                        fontFamily: config.fontFamily || 'Inter',
-                        fill: config.subtitleColor || '#f8fafc',
-                        textAlign: 'center',
-                        width: canvasWidth * 0.82,
-                        left: canvasWidth / 2,
+                        fontFamily: 'Inter',
+                        fill: colors.accent || config.subtitleColor || '#facc15',
+                        textAlign: textAlign,
+                        width: isAlignLeft ? (canvasWidth * 0.65) : (canvasWidth * 0.84),
+                        left: textCenterX,
                         top: subtitleTop,
-                        originX: 'center',
+                        originX: originX,
                         originY: 'center',
                         stroke: '#000000',
                         strokeWidth: 0.8,
-                        shadow: new fabric.Shadow({ color: 'rgba(0, 0, 0, 0.8)', blur: 14, offsetX: 0, offsetY: 3 }),
+                        lineHeight: 1.25,
+                        shadow: new fabric.Shadow({ color: 'rgba(0, 0, 0, 0.85)', blur: 16, offsetX: 0, offsetY: 3 }),
                         layerName: 'Chú Thích & Slogan',
                         layerType: 'text'
                     });
                     canvas.add(subtitleObj);
                 }
 
-                // CTA Button (Call To Action)
+                // 6. Feature Highlights Bar (Tier 3 Feature Bar)
+                const ctaTop = canvasHeight * ((safeZone.ctaY || 90) / 100);
+                const featuresText = config.features || (config.template && config.template.category === 'xe'
+                    ? '⚡ Bôi Trơn Siêu Cấp  •  🔥 Tản Nhiệt Tức Thì  •  🛡️ Bảo Vệ 24/7'
+                    : '✨ Chính Hãng 100%  •  🚀 Giao Hàng Siêu Tốc  •  ⭐ Đổi Trả Linh Hoạt');
+                const featTop = ctaTop - 52;
+                const featBoxW = Math.min(canvasWidth * 0.86, 640);
+                const featBox = new fabric.Rect({
+                    width: featBoxW,
+                    height: 38,
+                    rx: 19,
+                    ry: 19,
+                    fill: 'rgba(15, 23, 42, 0.82)',
+                    stroke: 'rgba(255, 255, 255, 0.2)',
+                    strokeWidth: 1.2,
+                    left: canvasWidth / 2,
+                    top: featTop,
+                    originX: 'center',
+                    originY: 'center',
+                    shadow: new fabric.Shadow({ color: 'rgba(0, 0, 0, 0.5)', blur: 12, offsetY: 3 }),
+                    layerName: 'Khung Điểm Nhấn',
+                    layerType: 'shape'
+                });
+                const featText = new fabric.IText(featuresText, {
+                    fontSize: 16,
+                    fontWeight: '600',
+                    fontFamily: 'Inter',
+                    fill: '#f1f5f9',
+                    left: canvasWidth / 2,
+                    top: featTop,
+                    originX: 'center',
+                    originY: 'center',
+                    layerName: 'Thanh Điểm Nhấn Tính Năng',
+                    layerType: 'text'
+                });
+                canvas.add(featBox);
+                canvas.add(featText);
+
+                // 7. Call To Action Button (CTA with Glowing Rim & High Contrast)
                 const ctaVal = config.cta || 'MUA NGAY';
                 if (ctaVal) {
-                    const ctaTop = canvasHeight * 0.88;
+                    const ctaBoxW = Math.min(380, String(ctaVal).length * 16 + 56);
                     const ctaBox = new fabric.Rect({
-                        width: Math.min(340, String(ctaVal).length * 16 + 50),
-                        height: 52,
-                        rx: 26,
-                        ry: 26,
-                        fill: config.ctaBg || '#f59e0b',
+                        width: ctaBoxW,
+                        height: 54,
+                        rx: 27,
+                        ry: 27,
+                        fill: colors.accent || config.ctaBg || '#f59e0b',
+                        stroke: 'rgba(255, 255, 255, 0.4)',
+                        strokeWidth: 1.8,
                         left: canvasWidth / 2,
                         top: ctaTop,
                         originX: 'center',
                         originY: 'center',
-                        shadow: new fabric.Shadow({ color: 'rgba(0, 0, 0, 0.55)', blur: 16, offsetY: 6 }),
+                        shadow: new fabric.Shadow({ color: 'rgba(0, 0, 0, 0.65)', blur: 20, offsetY: 8 }),
                         layerName: 'Nút Kêu Gọi CTA',
                         layerType: 'shape'
                     });
                     const ctaText = new fabric.IText(`⚡ ${String(ctaVal).toUpperCase()}`, {
-                        fontSize: 18,
-                        fontWeight: 'bold',
+                        fontSize: 19,
+                        fontWeight: '900',
                         fontFamily: config.fontFamily || 'Montserrat',
-                        fill: '#111827',
+                        fill: colors.background || '#020617',
                         left: canvasWidth / 2,
                         top: ctaTop,
                         originX: 'center',
@@ -3016,21 +3160,42 @@
         const targetImg = imgSrc || activePosterImageSrc || window.lastUploadedImageUrl || window.lastStudioEditedImage;
         const tmpl = resolveTemplate();
 
+        const colors = (tmpl && tmpl.recommendedColors) ? tmpl.recommendedColors : {
+            text: '#ffffff',
+            accent: '#f59e0b',
+            secondary: '#38bdf8',
+            background: '#0f172a'
+        };
+        const safeZone = (tmpl && tmpl.safeZone) ? tmpl.safeZone : {
+            xMin: 10,
+            xMax: 90,
+            yMin: 12,
+            yMax: 88,
+            align: 'center'
+        };
+
         const config = {
             template: tmpl,
             templateUrl: tmpl ? tmpl.localPath : null,
             templateTitle: tmpl ? tmpl.title : null,
             width: 1080,
-            height: 1350,
-            preset: '4:5',
+            height: tmpl?.aspectRatio === '9:16' ? 1920 : 1350,
+            preset: tmpl?.aspectRatio || '4:5',
             removeBackground: true,
-            badge: copy.badge || copy.eyebrow || (tmpl ? tmpl.category.toUpperCase() : 'HOT DEAL'),
+            badge: copy.badge || copy.eyebrow || (tmpl ? (tmpl.category === 'xe' ? 'CHÍNH HÃNG' : tmpl.category.toUpperCase()) : 'HOT DEAL'),
             title: copy.title || (tmpl ? tmpl.title.toUpperCase() : 'SIÊU PHẨM MỚI'),
-            subtitle: copy.subtitle || 'Thiết kế chuẩn đồ họa • Ưu đãi đặc biệt hôm nay',
+            subtitle: copy.subtitle || (tmpl?.category === 'xe' ? 'Dòng sản phẩm cao cấp • Bảo vệ động cơ vượt trội' : 'Thiết kế chuẩn đồ họa • Ưu đãi đặc biệt hôm nay'),
             cta: copy.cta || 'MUA NGAY',
+            features: options.features || (tmpl?.category === 'xe' ? '⚡ Bôi Trơn Siêu Cấp  •  🔥 Tản Nhiệt Tức Thì  •  🛡️ Bảo Vệ 24/7' : '✨ Chính Hãng 100%  •  🚀 Giao Hàng Siêu Tốc  •  ⭐ Đổi Trả Linh Hoạt'),
+            badgeBg: colors.accent || '#ef4444',
+            titleColor: colors.text || '#ffffff',
+            subtitleColor: colors.accent || '#facc15',
+            ctaBg: colors.accent || '#f59e0b',
+            fontFamily: (tmpl && tmpl.recommendedFonts) ? tmpl.recommendedFonts[0] : 'Montserrat',
+            safeZone,
             canvas: {
                 width: 1080,
-                height: 1350,
+                height: tmpl?.aspectRatio === '9:16' ? 1920 : 1350,
                 backdrop: tmpl ? tmpl.localPath : null,
                 background: {
                     type: 'template',

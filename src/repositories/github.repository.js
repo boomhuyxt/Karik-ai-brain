@@ -189,14 +189,18 @@ class GithubRepository {
       return this.memoryFiles.get(filePath);
     }
 
+    const isBinary = /\.(png|jpe?g|gif|webp|ico|svg|bmp|pdf|woff2?)$/i.test(filePath);
+
     // 2. Local Vault (Fastest & Zero API calls)
     const localVault = this.getLocalVaultPath();
     if (localVault) {
       try {
         const localFull = path.join(localVault, ...filePath.split('/'));
         if (fs.existsSync(localFull) && fs.statSync(localFull).isFile()) {
-          const content = fs.readFileSync(localFull, 'utf8');
-          const fileObj = { path: filePath, content, sha: `local_${Date.now()}` };
+          const content = isBinary
+            ? fs.readFileSync(localFull).toString('base64')
+            : fs.readFileSync(localFull, 'utf8');
+          const fileObj = { path: filePath, content, encoding: isBinary ? 'base64' : 'utf8', isBinary, sha: `local_${Date.now()}` };
           this.memoryFiles.set(filePath, fileObj);
           return fileObj;
         }
@@ -207,7 +211,7 @@ class GithubRepository {
 
     // 3. Check persistent disk cache
     const diskCached = this.getDiskCacheFile(filePath);
-    if (diskCached && diskCached.content) {
+    if (diskCached && diskCached.content && (!isBinary || diskCached.encoding === 'base64')) {
       this.memoryFiles.set(filePath, diskCached);
       return diskCached;
     }
@@ -224,8 +228,15 @@ class GithubRepository {
 
         if (res.ok) {
           const data = await res.json();
-          const content = Buffer.from(data.content, 'base64').toString('utf-8');
-          const fileObj = { path: filePath, content, sha: data.sha };
+          let content;
+          let encoding = 'utf8';
+          if (isBinary) {
+            content = String(data.content || '').replace(/\s+/g, '');
+            encoding = 'base64';
+          } else {
+            content = Buffer.from(data.content, 'base64').toString('utf-8');
+          }
+          const fileObj = { path: filePath, content, encoding, isBinary, sha: data.sha };
           this.memoryFiles.set(filePath, fileObj);
           this.saveDiskCacheFile(filePath, fileObj);
           return fileObj;
@@ -238,6 +249,12 @@ class GithubRepository {
     }
 
     return { path: filePath, content: `# ${filePath}\n\nFile mới hoặc chưa tồn tại trên repository (${owner}/${repo}).`, sha: null };
+  }
+
+  async getRawBuffer(filePath) {
+    const file = await this.getFile(filePath);
+    if (!file || !file.content) return null;
+    return Buffer.from(file.content, file.encoding || 'utf8');
   }
 
   async updateFile(filePath, content, message = 'Update note via AI Brain OS', sha) {
