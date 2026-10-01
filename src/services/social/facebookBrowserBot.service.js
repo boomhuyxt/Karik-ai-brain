@@ -279,8 +279,8 @@ class FacebookBrowserBotService {
         addLog('Đang nạp ảnh sản phẩm từ Studio vào khung bài đăng Facebook...');
 
         try {
-          // Bắt sự kiện file chooser của Chrome để nạp ảnh trực tiếp qua CDP
-          const fileChooserPromise = page.waitForFileChooser({ timeout: 4000 });
+          // Bắt sự kiện file chooser của Chrome để nạp ảnh trực tiếp qua CDP (bắt buộc có .catch để tránh Unhandled Promise Rejection crash process)
+          const fileChooserPromise = page.waitForFileChooser({ timeout: 4000 }).catch(() => null);
           
           const clicked = await page.evaluate(() => {
             const dialog = document.querySelector('div[role="dialog"]') || document;
@@ -292,22 +292,30 @@ class FacebookBrowserBotService {
             return false;
           });
 
+          let uploaded = false;
           if (clicked) {
-            try {
-              const fileChooser = await fileChooserPromise;
-              await fileChooser.accept([localMediaFile]);
-              addLog('✅ Đã nạp thành công ảnh sản phẩm qua FileChooser!');
-            } catch (fcErr) {
-              // Fallback upload trực tiếp vào input file
-              const allFileInputs = await page.$$('div[role="dialog"] input[type="file"], input[type="file"]');
-              for (const input of allFileInputs) {
-                try { await input.uploadFile(localMediaFile); } catch (e) {}
+            const fileChooser = await fileChooserPromise;
+            if (fileChooser) {
+              try {
+                await fileChooser.accept([localMediaFile]);
+                addLog('✅ Đã nạp thành công ảnh sản phẩm qua FileChooser!');
+                uploaded = true;
+              } catch (fcErr) {
+                console.warn('[PuppeteerBot] fileChooser.accept failed:', fcErr.message);
               }
             }
-          } else {
+          }
+
+          // Fallback nếu không bắt được fileChooser hoặc click không mở hộp thoại
+          if (!uploaded) {
             const allFileInputs = await page.$$('div[role="dialog"] input[type="file"], input[type="file"]');
             for (const input of allFileInputs) {
-              try { await input.uploadFile(localMediaFile); } catch (e) {}
+              try {
+                await input.uploadFile(localMediaFile);
+                uploaded = true;
+                addLog('✅ Đã nạp thành công ảnh sản phẩm qua input[type="file"]!');
+                break;
+              } catch (e) {}
             }
           }
         } catch (err) {
@@ -405,6 +413,24 @@ class FacebookBrowserBotService {
           }
         }
 
+        // BƯỚC QUAN TRỌNG: Kích hoạt phím thực tế để Facebook Lexical nhận diện input và unlock nút Đăng
+        try {
+          const activeTextbox = await page.$('div[role="textbox"][contenteditable="true"]');
+          if (activeTextbox) {
+            await activeTextbox.focus();
+            await page.keyboard.press('End').catch(() => {});
+            await page.keyboard.type(' ').catch(() => {});
+            await page.keyboard.press('Backspace').catch(() => {});
+            await page.evaluate(() => {
+              if (document.activeElement && typeof document.activeElement.blur === 'function') {
+                document.activeElement.blur();
+              }
+            }).catch(() => {});
+          }
+        } catch (commitErr) {
+          console.warn('[PuppeteerBot] Lexical commit trigger warning:', commitErr.message);
+        }
+
         addLog('✅ Đã điền nội dung Caption Sản Phẩm & Hashtags chuẩn canh lề và ngắt dòng Facebook thành công!');
         await new Promise(r => setTimeout(r, 2000));
       }
@@ -413,38 +439,199 @@ class FacebookBrowserBotService {
       if (autoClickPost) {
         addLog('Đang chờ Facebook kích hoạt nút "Đăng" (Post)...');
         let posted = false;
+        let clickedNextStep = false;
 
-        // Vòng lặp chờ nút Đăng sẵn sàng (tối đa 15 giây khi ảnh upload hoàn tất)
-        for (let attempt = 1; attempt <= 15; attempt++) {
-          posted = await page.evaluate(() => {
-            const dialog = document.querySelector('div[role="dialog"]') || document;
-            const buttons = Array.from(dialog.querySelectorAll('div[role="button"], button'));
+        // Vòng lặp chờ nút Đăng sẵn sàng (tối đa 35 giây khi ảnh upload & xử lý hoàn tất)
+        for (let attempt = 1; attempt <= 35; attempt++) {
+          // 1. Tìm nút bấm phù hợp trong DOM của Facebook (ưu tiên trong dialog, sau đó toàn bộ document)
+          const buttonInfo = await page.evaluate(() => {
+            const dialogs = Array.from(document.querySelectorAll('div[role="dialog"]'));
+            const searchRoots = dialogs.length > 0 ? [...dialogs.reverse(), document] : [document];
 
-            const postBtn = buttons.find(b => {
-              const label = (b.getAttribute('aria-label') || '').toLowerCase().trim();
-              const txt = (b.textContent || '').toLowerCase().trim();
-              const isDisabled = b.getAttribute('aria-disabled') === 'true' || b.disabled;
-              return !isDisabled && (label === 'đăng' || label === 'post' || label === 'tiếp' || txt === 'đăng' || txt === 'post');
-            });
+            const badKeywords = [
+              'đăng xuất', 'logout', 'log out', 'gắn thẻ', 'tag', 'chỉnh sửa', 'edit',
+              'quay lại', 'back', 'hủy', 'cancel', 'bình luận', 'comment', 'cảm xúc',
+              'thêm vào bài viết', 'photo/video', 'ảnh/video'
+            ];
 
-            if (postBtn) {
-              postBtn.click();
-              return true;
+            let candidateDisabled = null;
+
+            for (const root of searchRoots) {
+              const allButtons = Array.from(root.querySelectorAll('div[role="button"], button'));
+
+              for (const b of allButtons) {
+                if (b.offsetParent === null && b.offsetWidth === 0 && b.offsetHeight === 0) continue;
+
+                const label = (b.getAttribute('aria-label') || '').toLowerCase().trim();
+                const txt = (b.innerText || b.textContent || '').toLowerCase().trim();
+
+                // Bỏ qua dropdown chọn đối tượng ("Công khai", "Bạn bè", v.v.)
+                if (b.getAttribute('aria-haspopup') === 'listbox' || b.getAttribute('aria-haspopup') === 'menu') continue;
+                if (txt === 'công khai' || txt === 'bạn bè' || txt === 'chỉ mình tôi') continue;
+                if (label === 'chọn đối tượng' || label === 'chọn quyền riêng tư') continue;
+
+                const isBad = badKeywords.some(w => label.includes(w) || txt.includes(w));
+                if (isBad) continue;
+
+                const isPost = (
+                  label === 'đăng' || label === 'post' || label === 'chia sẻ' || label === 'share' || label === 'publish' ||
+                  txt === 'đăng' || txt === 'post' || txt === 'chia sẻ' || txt === 'share' || txt === 'publish' ||
+                  label === 'đăng bài' || label === 'đăng ngay' || txt === 'đăng bài' || txt === 'đăng ngay' ||
+                  label.startsWith('đăng ') || label.startsWith('post ') || label.startsWith('chia sẻ ') || label.startsWith('share ') ||
+                  txt.startsWith('đăng ') || txt.startsWith('post ') || txt.startsWith('chia sẻ ') || txt.startsWith('share ') ||
+                  label.startsWith('đăng') || label.startsWith('post') ||
+                  txt.startsWith('đăng') || txt.startsWith('post') ||
+                  label.includes('đăng bài') || label.includes('chia sẻ ngay') || txt.includes('đăng bài') || txt.includes('chia sẻ ngay')
+                );
+
+                const isNext = (
+                  label === 'tiếp' || label === 'tiếp tục' || label === 'tiếp theo' || label === 'next' || label === 'continue' ||
+                  txt === 'tiếp' || txt === 'tiếp tục' || txt === 'tiếp theo' || txt === 'next' || txt === 'continue' ||
+                  label.startsWith('tiếp') || label.startsWith('next') || txt.startsWith('tiếp') || txt.startsWith('next')
+                );
+
+                if (!isPost && !isNext) continue;
+
+                const isDisabled = b.getAttribute('aria-disabled') === 'true' || b.disabled === true || b.classList.contains('disabled');
+                const matchedType = isPost ? 'post' : 'next';
+                const matchedLabel = label || txt;
+
+                if (isDisabled) {
+                  if (!candidateDisabled) {
+                    candidateDisabled = { foundDisabled: true, type: matchedType, label: matchedLabel };
+                  }
+                  continue;
+                }
+
+                b.setAttribute('data-karik-post-target', 'true');
+                if (typeof b.scrollIntoView === 'function') {
+                  b.scrollIntoView({ behavior: 'instant', block: 'center', inline: 'center' });
+                }
+                return {
+                  found: true,
+                  foundDisabled: false,
+                  type: matchedType,
+                  label: matchedLabel
+                };
+              }
             }
-            return false;
+
+            return candidateDisabled || { found: false, foundDisabled: false };
           });
 
-          if (posted) {
-            addLog('🎉 ĐÃ TỰ ĐỘNG BẤM NÚT ĐĂNG BÀI THÀNH CÔNG! (Ảnh Studio + Caption Sản Phẩm đã được xuất bản)');
-            await new Promise(r => setTimeout(r, 4500));
-            break;
+          // Nếu nút tồn tại nhưng đang bị khóa (Facebook đang tải/xử lý ảnh lên CDN)
+          if (!buttonInfo.found && buttonInfo.foundDisabled) {
+            if (attempt % 3 === 0 || attempt === 1) {
+              addLog(`⏳ Facebook đang tải ảnh/xử lý dữ liệu, nút "${buttonInfo.label}" đang tạm khóa (lần thử ${attempt}/35)...`);
+            }
+
+            // Kích hoạt nudge đánh thức Lexical editor nếu bị khóa lâu
+            if (attempt >= 4 && attempt % 3 === 0) {
+              try {
+                const textbox = await page.$('div[role="dialog"] div[role="textbox"][contenteditable="true"], div[role="textbox"][contenteditable="true"]');
+                if (textbox) {
+                  await textbox.focus().catch(() => {});
+                  await page.keyboard.press('End').catch(() => {});
+                  await page.keyboard.type(' ').catch(() => {});
+                  await page.keyboard.press('Backspace').catch(() => {});
+                  await page.evaluate(() => document.activeElement && document.activeElement.blur && document.activeElement.blur()).catch(() => {});
+                }
+              } catch (e) {}
+            }
+
+            await new Promise(r => setTimeout(r, 1000));
+            continue;
+          }
+
+          if (buttonInfo.found) {
+            // 2. Kích hoạt chuỗi Click Đa Tầng (Multi-Strategy Bulletproof Click)
+            const targetHandle = await page.$('[data-karik-post-target="true"]');
+            if (targetHandle) {
+              try {
+                // Tầng 1: Cuộn vào trung tâm và Focus phần tử
+                await targetHandle.evaluate(el => {
+                  if (typeof el.scrollIntoView === 'function') el.scrollIntoView({ behavior: 'instant', block: 'center' });
+                  if (typeof el.focus === 'function') el.focus();
+                }).catch(() => {});
+
+                // Tầng 2: Gửi phím Enter / Space trực tiếp vào nút (WAI-ARIA Button Handler của Facebook)
+                await page.keyboard.press('Enter').catch(() => {});
+                await new Promise(r => setTimeout(r, 120));
+
+                // Tầng 3: Hardware-level Mouse Click từ Puppeteer qua Chrome DevTools Protocol (CDP)
+                const box = await targetHandle.boundingBox();
+                if (box) {
+                  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2, { delay: 100 });
+                } else {
+                  await targetHandle.click({ delay: 100 }).catch(() => {});
+                }
+
+                // Tầng 4: Dispatch native element.click() và MouseEvent vào React Fiber
+                await targetHandle.evaluate(el => {
+                  if (typeof el.click === 'function') el.click();
+                  ['pointerdown', 'mousedown', 'pointerup', 'mouseup', 'click'].forEach(evtType => {
+                    el.dispatchEvent(new MouseEvent(evtType, { bubbles: true, cancelable: true, view: window }));
+                  });
+                }).catch(() => {});
+              } catch (clickErr) {
+                console.warn('[PuppeteerBot] Target click error:', clickErr.message);
+                await targetHandle.click({ delay: 80 }).catch(() => {});
+              } finally {
+                await targetHandle.evaluate(el => el.removeAttribute('data-karik-post-target')).catch(() => {});
+              }
+
+              if (buttonInfo.type === 'next') {
+                addLog(`Đã bấm nút "${buttonInfo.label}" (Tiếp). Đang chờ màn hình xác nhận bài đăng xuất hiện...`);
+                clickedNextStep = true;
+                await new Promise(r => setTimeout(r, 2500));
+                continue; // Tiếp tục vòng lặp để bấm nút "Đăng" / "Chia sẻ" ở màn hình kế tiếp
+              }
+
+              addLog(`🎉 ĐÃ BẤM NÚT ĐĂNG BÀI: "${buttonInfo.label}"! Đang đợi Facebook hoàn tất xuất bản...`);
+
+              // Tầng Xác Minh (Verification Loop): Kiểm tra khung soạn thảo có đóng lại không
+              let modalClosed = false;
+              for (let verifyWait = 1; verifyWait <= 10; verifyWait++) {
+                await new Promise(r => setTimeout(r, 1000));
+                const stillOpen = await page.evaluate(() => {
+                  const dialogs = Array.from(document.querySelectorAll('div[role="dialog"]'));
+                  return dialogs.some(d => 
+                    d.querySelector('div[role="textbox"]') || 
+                    d.querySelector('[aria-label*="Đăng"], [aria-label*="Post"], [aria-label*="Chia sẻ"]')
+                  );
+                });
+
+                if (!stillOpen) {
+                  modalClosed = true;
+                  break;
+                }
+              }
+
+              if (modalClosed) {
+                addLog('🎉 XÁC NHẬN: Khung soạn thảo bài viết đã đóng hoàn tất. Bài đăng đã được xuất bản lên Facebook!');
+                posted = true;
+                break;
+              } else {
+                addLog('⚠️ Khung soạn thảo vẫn còn mở. Đang thử gửi lệnh đăng bổ sung...');
+                const retryHandle = await page.$('div[role="button"][aria-label="Đăng"], div[role="button"][aria-label="Post"], div[role="button"][aria-label="Chia sẻ"]');
+                if (retryHandle) {
+                  await retryHandle.click({ delay: 100 }).catch(() => {});
+                }
+                posted = true;
+                break;
+              }
+            }
+          }
+
+          if (attempt % 5 === 0) {
+            addLog(`⏳ Đang đợi Facebook kích hoạt nút Đăng (lần thử ${attempt}/35)...`);
           }
 
           await new Promise(r => setTimeout(r, 1000));
         }
 
+        // TẦNG DỰ PHÒNG: Thử phím tắt Ctrl/Cmd + Enter nếu nút bấm chưa kích hoạt
         if (!posted) {
-          // Thử phím tắt Ctrl/Cmd + Enter để đăng bài
           const modLabel = browserPlatformHelper.getModifierLabel();
           addLog(`Đang thử kích hoạt lệnh đăng bài bằng phím tắt ${modLabel}+Enter...`);
           const textbox = await page.$('div[role="dialog"] div[role="textbox"][contenteditable="true"], div[role="textbox"][contenteditable="true"]');
@@ -456,12 +643,22 @@ class FacebookBrowserBotService {
             await page.keyboard.up(modifierKey);
             addLog(`🎉 Đã kích hoạt lệnh Đăng bài (${modLabel}+Enter)!`);
             await new Promise(r => setTimeout(r, 4500));
+            posted = true;
           } else {
-            addLog('⚠️ Đã đính kèm ảnh và điền caption đầy đủ. Bạn có thể nhấn nút "Đăng" trên trình duyệt.');
+            addLog('⚠️ Đã đính kèm ảnh và điền caption đầy đủ. Vui lòng bấm nút "Đăng" trên cửa sổ trình duyệt.');
           }
         }
       } else {
         addLog('ℹ️ Đã nạp sẵn ảnh và bài viết vào Facebook. Người dùng có thể xem lại trước khi bấm Đăng.');
+      }
+
+      if (autoClickPost && !posted) {
+        return {
+          success: false,
+          requiresManualClick: true,
+          message: 'Đã nạp đầy đủ ảnh và caption vào Facebook, nhưng Facebook chưa phản hồi nút Đăng. Bạn có thể bấm nút "Đăng" trực tiếp trên cửa sổ trình duyệt đang mở!',
+          logs
+        };
       }
 
       return {

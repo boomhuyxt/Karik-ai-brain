@@ -598,6 +598,14 @@
 
             <!-- Right Actions: Close + Primary AI Browser Bot Post Button -->
             <div class="flex items-center gap-2.5 w-full sm:w-auto justify-end">
+                <label class="flex items-center gap-1.5 cursor-pointer text-xs font-semibold text-slate-700 dark:text-slate-300 select-none px-2.5 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-white/10 shadow-xs hover:border-cyan-500/50 transition-all" title="Tự động mở cửa sổ trình duyệt để xem AI thao tác và đăng bài trực tiếp">
+                    <input type="checkbox" id="chkShowBrowserWindow" checked class="w-4 h-4 text-cyan-600 rounded focus:ring-cyan-500 cursor-pointer accent-cyan-500" />
+                    <span class="flex items-center gap-1 text-[11px] text-cyan-700 dark:text-cyan-300 font-bold">
+                        <span class="material-symbols-outlined text-sm text-cyan-500">visibility</span>
+                        <span class="hidden xs:inline">Mở cửa sổ xem AI đăng</span>
+                        <span class="xs:hidden">Xem AI đăng</span>
+                    </span>
+                </label>
                 <button type="button" id="btnCancelSocialModal" onclick="window.socialPublish.closeModal()"
                     class="bg-slate-100 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 text-slate-700 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white px-4 py-2 rounded-xl text-xs font-bold transition-all border border-slate-300 dark:border-transparent cursor-pointer active:scale-95">
                     Đóng

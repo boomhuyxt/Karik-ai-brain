@@ -108,3 +108,17 @@ test('Image Editor JS - passes product caption when posting to Facebook from Stu
   assert.ok(js.includes('window.lastStudioEditedImage'), 'Image editor should set lastStudioEditedImage');
   assert.ok(js.includes('btnSaveAndContinueStudio'), 'Image editor should support save, close, and continue to publishing');
 });
+
+test('Poster Prompt Markdown & Chat JS - enforce product & price only caption, ban poster design description', () => {
+  const posterPromptPath = path.join(__dirname, '../../src/prompts/poster.prompt.md');
+  const posterContent = fs.readFileSync(posterPromptPath, 'utf8');
+  assert.ok(posterContent.includes('CHỈ NÊU SẢN PHẨM & GIÁ BÁN, TUYỆT ĐỐI KHÔNG GHI THIẾT KẾ POSTER'));
+  assert.ok(posterContent.includes('TUYỆT ĐỐI CẤM') && posterContent.includes('viết về thiết kế poster'));
+  assert.ok(posterContent.includes('GIÁ BÁN') || posterContent.includes('Giá bán'));
+
+  const chatJsPath = path.join(__dirname, '../../public/js/chat.js');
+  const chatJs = fs.readFileSync(chatJsPath, 'utf8');
+  assert.ok(chatJs.includes('parsedPosterConfig.publishing?.productCaption'));
+  assert.ok(chatJs.includes('isDesignAnalysis'));
+});
+

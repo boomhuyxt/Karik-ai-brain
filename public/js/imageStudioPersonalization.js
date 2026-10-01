@@ -85,7 +85,7 @@
 
     function getAspectRatio() {
         const preset = root.document?.getElementById('canvasPresetSelect')?.value || '1080x1350';
-        return ({ '1080x1080': '1:1', '1080x1350': '4:5', '1080x1920': '9:16', '1920x1080': '16:9' })[preset] || '4:5';
+        return ({ '1080x1080': '1:1', '1080x1350': '4:5', '1080x1920': '9:16', '1920x1080': '16:9', '1200x1800': '2:3' })[preset] || '4:5';
     }
 
     function readForm() {

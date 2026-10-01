@@ -126,12 +126,25 @@ class RouterService {
 - Yêu cầu ban đầu của người dùng: "${prompt}"
 - Hồ sơ sở thích và lịch sử thiết kế gần đây: ${context || 'Chưa có dữ liệu; tự chọn hướng phù hợp và tạo signature mới.'}
 - Hướng dẫn thực thi:
-  1. Chọn art direction theo ngành hàng, đối tượng, sở thích và lịch sử; không lặp bộ ba style + layout + palette gần nhất.
-  2. Thiết kế theo pipeline hybrid: key visual không chữ do image model tạo; typography, badge và CTA là layer chỉnh sửa được.
-  3. Lập Bảng phân lớp thiết kế (Layer Specifications: Nền, Hình ảnh, Typography, Shapes/Huy hiệu, Hiệu ứng Filters, Tách nền Magic Cut) và xuất cấu hình json:poster-config schema 3.0 chuẩn xác.
-  4. Hướng dẫn người dùng thao tác trực tiếp trên AI Karik Studio (bấm nút Studio Ảnh trên khung chat).
-  5. Chủ động áp dụng Kho 24 Mẫu Nền Poster (Nhóm XE: XE-01 đến XE-08; Nhóm MEME: MEME-01 đến MEME-08; Nhóm ART: ART-01 đến ART-08) và các nguyên lý phân cấp Typography, Gradient Masking, Contact Shadow đã học từ Obsidian Vault của Admin.
-  6. Tuân thủ nghiêm ngặt quy chuẩn tại image.prompt.md.`;
+  1. TỶ LỆ KÍCH THƯỚC MẶC ĐỊNH: BẮT BUỘC mặc định tỷ lệ (9:16) 1080 x 1920 px (chuẩn Story / Reels / TikTok / Mobile Poster) cho toàn bộ poster và canvas trừ khi người dùng yêu cầu tỷ lệ khác rõ ràng.
+  2. LẤY RANDOM ẢNH NỀN Ở MỤC XE & CƠ KHÍ: Tự động lấy RANDOM (ngẫu nhiên) một trong 8 ảnh nền ở mục "Xe & cơ khí" (Nhóm XE: XE-01 đến XE-08 trong Kho Mẫu Nền Poster Obsidian raw/nền poster/xe/) để làm nền poster, đảm bảo hình ảnh luôn tươi mới và không bị trùng lặp. Khai báo "backdropId" (ngẫu nhiên XE-01..XE-08) và "backdrop" đường dẫn file nền tương ứng trong json:poster-config.
+  3. HEADLINE LUÔN NẰM GIỮA GIÁ TIỀN VÀ ẢNH SẢN PHẨM: Cấu trúc phân tầng dọc BẮT BUỘC sắp xếp theo thứ tự:
+     - Tầng trên (y: ~10-12%): Khối Giá Tiền / Badge Giá Bán (ví dụ: "💰 GIÁ CHỈ: 450.000Đ" hoặc "GIÁ ƯU ĐÃI HÔM NAY").
+     - Tầng giữa (y: ~20-22%): Tiêu Đề Chính (Headline) cỡ chữ 86px ("fontSize": 86) in hoa, có shadow/glow nổi bật.
+     - Tầng dưới (y: ~56-58%): Ảnh Sản Phẩm (layer "main_subject" phóng to hero product scaling).
+     => Headline BẮT BUỘC LUÔN NẰM GIỮA Giá tiền và Ảnh sản phẩm.
+  4. GIÁ TIỀN CỠ CHỮ TRÊN 30PX & CHỮ GIỚI THIỆU SƠ LƯỢC DƯỚI ẢNH:
+     - Chữ hiển thị giá ("price_badge_text") BẮT BUỘC có cỡ chữ trên 30px ("fontSize": 34 hoặc 36).
+     - Phía dưới hình ảnh sản phẩm ("main_subject"), BẮT BUỘC có thêm layer chữ giới thiệu sơ lược về sản phẩm ("product_summary" tại y: ~81-84%) tóm tắt súc tích 1-2 dòng công năng, ưu điểm nổi bật.
+  5. LÀM NÉT (SHARPEN) LÊN 50%: Ảnh sản phẩm (layer "main_subject") BẮT BUỘC phải được làm nét lên 50% thông qua cấu hình "adjustments": { "sharpen": 50 } để các chi tiết máy, nhãn mác, góc cạnh sản phẩm sắc nét tối đa.
+  6. KHỐI ĐỒ HỌA BO GÓC (ROUNDED RECT): TUYỆT ĐỐI KHÔNG dùng hình vuông góc nhọn thông thường cho huy hiệu (badge), card nền hay nút bấm (CTA). BẮT BUỘC dùng hình vuông bo góc với type: "shape", shape: "roundedRect" và khai báo thuộc tính cornerRadius (16 - 30px) để tạo giao diện hiện đại, mềm mại và cao cấp.
+  7. TIÊU ĐỀ HEADLINE ĐỔ BÓNG & PHÁT SÁNG (SHADOW / GLOW): Toàn bộ tiêu đề chính (headline / title) BẮT BUỘC phải được đổ bóng và phát sáng hợp lý (khai báo thuộc tính "shadow": { "color": "rgba(0,0,0,0.85)", "blur": 20, "offsetX": 0, "offsetY": 4 } hoặc glow phát sáng tương phản với màu nền) để chữ nổi bật, có chiều sâu 3D và không bị chìm vào hình nền.
+  7. Chọn art direction theo ngành hàng, đối tượng, sở thích và lịch sử; không lặp bộ ba style + layout + palette gần nhất.
+  8. Thiết kế theo pipeline hybrid: key visual không chữ do image model tạo; typography, badge và CTA là layer chỉnh sửa được.
+  9. Lập Bảng phân lớp thiết kế (Layer Specifications: Nền, Hình ảnh, Typography, Shapes/Huy hiệu, Hiệu ứng Filters, Tách nền Magic Cut) và xuất cấu hình json:poster-config schema 3.0 chuẩn xác.
+  10. Hướng dẫn người dùng thao tác trực tiếp trên AI Karik Studio (bấm nút Studio Ảnh trên khung chat).
+  11. BẮT BUỘC VỀ CAPTION ĐĂNG BÀI (publishing.productCaption): Trong json:poster-config, trường productCaption PHẢI CHỈ NÊU VỀ SẢN PHẨM & GIÁ BÁN / GIÁ ƯU ĐÃI / TÍNH NĂNG / KHUYẾN MÃI / CTA CHỐT ĐƠN. TUYỆT ĐỐI NGHIÊM CẤM đưa các câu mô tả kỹ thuật thiết kế poster, bố cục, màu sắc, font chữ hay layer vào productCaption.
+  12. Tuân thủ nghiêm ngặt quy chuẩn tại image.prompt.md và poster.prompt.md.`;
     }
 
     if (agent.id === 'social') {
@@ -139,7 +152,7 @@ class RouterService {
 - Mục tiêu: Sáng tạo Caption bài viết bán hàng/giới thiệu SẢN PHẨM thu hút, canh lề đẹp mắt chuẩn phong cách Facebook, ngắt dòng thoáng mắt, bộ Hashtags chuẩn SEO/Viral và kích hoạt AI Browser Bot tự động mở trình duyệt đăng bài lên Facebook (kèm hình ảnh sản phẩm đã chỉnh sửa từ Karik Studio).
 - Yêu cầu ban đầu của người dùng: "${prompt}"
 - Hướng dẫn thực thi:
-  1. QUY TẮC BẮT BUỘC VỀ CAPTION: Toàn bộ nội dung Caption PHẢI TẬP TRUNG 100% VÀO SẢN PHẨM / DỊCH VỤ / TÍNH NĂNG / LỢI ÍCH BÁN HÀNG CHO KHÁCH HÀNG / KHUYẾN MÃI / KÊU GỌI HÀNH ĐỘNG (CTA). TUYỆT ĐỐI KHÔNG viết phân tích kỹ thuật về poster, màu sắc, font chữ hay layer đồ họa.
+  1. QUY TẮC BẮT BUỘC VỀ CAPTION: Toàn bộ nội dung Caption PHẢI TẬP TRUNG 100% VÀO SẢN PHẨM / GIÁ BÁN & GIÁ ƯU ĐÃI / TÍNH NĂNG / LỢI ÍCH BÁN HÀNG CHO KHÁCH HÀNG / KHUYẾN MÃI / KÊU GỌI HÀNH ĐỘNG (CTA). TUYỆT ĐỐI KHÔNG viết phân tích kỹ thuật về poster, màu sắc, font chữ hay layer đồ họa.
   2. QUY CHUẨN CANH LỀ & XUỐNG DÒNG CHUẨN FACEBOOK:
      - BẮT BUỘC cách 1 dòng trống (\\n\\n) giữa các khối nội dung (Tiêu đề -> Mở đầu -> Khối tính năng -> Khối ưu đãi -> Lời kêu gọi CTA -> Hashtags) để tạo khoảng thở dễ đọc trên điện thoại, tuyệt đối không dính chùm chữ.
      - Tiêu đề Hook: Viết IN HOA kẹp icon bắt mắt đầu cuối (VD: 🔥 TIÊU ĐỀ SẢN PHẨM 🔥).

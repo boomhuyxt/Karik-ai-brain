@@ -700,13 +700,15 @@
             submitBtn.classList.add('opacity-70');
         }
 
+        const showBrowserToggle = document.getElementById('chkShowBrowserWindow');
         const headlessToggle = document.getElementById('chkHeadlessMode');
-        const isHeadless = headlessToggle ? headlessToggle.checked : true;
+        // Mặc định luôn mở cửa sổ trình duyệt (isHeadless = false) để người dùng xem trực quan AI đăng bài
+        const isHeadless = showBrowserToggle ? !showBrowserToggle.checked : (headlessToggle ? headlessToggle.checked : false);
         const credentials = getCredentialsPayload();
 
         showStatusAlert(isHeadless 
             ? '🤖 **Đang khởi chạy Browser Bot chạy ngầm (Headless Mode)...**\nChrome đang truy cập Facebook trong nền hệ thống (không mở cửa sổ). Nếu cần đăng nhập, Bot sẽ tự động điền tài khoản & mật khẩu...'
-            : '🤖 **Đang khởi chạy Browser Bot...**\nĐang mở trình duyệt Chrome/Edge và truy cập Facebook để tự động tải ảnh sản phẩm từ Studio & đăng bài...', 
+            : '🤖 **Đang mở cửa sổ trình duyệt để xem AI đăng bài...**\nĐang mở cửa sổ Chrome/Edge thực tế trên màn hình để bạn trực tiếp xem AI thao tác tải ảnh sản phẩm & đăng bài...', 
             'info'
         );
 
@@ -791,13 +793,15 @@
             submitBtn.classList.add('opacity-70');
         }
 
+        const showBrowserToggle = document.getElementById('chkShowBrowserWindow');
         const headlessToggle = document.getElementById('chkHeadlessMode');
-        const isHeadless = headlessToggle ? headlessToggle.checked : true;
+        // Mặc định luôn mở cửa sổ trình duyệt (isHeadless = false) để người dùng xem trực quan AI đăng bài
+        const isHeadless = showBrowserToggle ? !showBrowserToggle.checked : (headlessToggle ? headlessToggle.checked : false);
         const credentials = getCredentialsPayload();
 
         showStatusAlert(isHeadless
             ? '🤖 **Đang khởi chạy TikTok Browser Bot chạy ngầm (Headless Mode)...**\nChrome đang truy cập TikTok Creator Studio trong nền. Nếu cần đăng nhập, Bot sẽ tự động điền tài khoản & mật khẩu...'
-            : '🤖 **Đang khởi chạy TikTok Browser Bot...**\nĐang mở trình duyệt Chrome/Edge và truy cập TikTok Creator Studio để tự động nạp ảnh/video từ Studio, chuyển tab Photos và xuất bản bài đăng...',
+            : '🤖 **Đang mở cửa sổ trình duyệt để xem AI đăng bài...**\nĐang mở cửa sổ Chrome/Edge thực tế trên màn hình và truy cập TikTok Creator Studio để bạn xem AI tự động nạp ảnh, chuyển tab và xuất bản bài đăng...',
             'info'
         );
 

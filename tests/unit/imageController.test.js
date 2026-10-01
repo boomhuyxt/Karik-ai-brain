@@ -57,12 +57,13 @@ test('hybrid generation sends a text-free key visual prompt to the image provide
   }
 });
 
-test('image controller matches template based on brief and category', () => {
+test('image controller matches template based on brief and category from Obsidian Vault', () => {
   const response = createResponse();
-  imageController.matchTemplate({ body: { brief: 'Váy dạ hội thời trang cao cấp' } }, response);
+  imageController.matchTemplate({ body: { brief: 'Dầu nhớt xe đua cao cấp' } }, response);
   assert.equal(response.payload.success, true);
-  assert.equal(response.payload.categoryMatch, 'fashion');
+  assert.equal(response.payload.categoryMatch, 'xe');
   assert.ok(response.payload.template);
-  assert.equal(response.payload.template.category, 'fashion');
+  assert.equal(response.payload.template.category, 'xe');
+  assert.equal(response.payload.source, 'obsidian');
 });
 

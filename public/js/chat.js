@@ -510,22 +510,33 @@ function initAIChat() {
 
             // Also check if poster config contains product caption
             if (parsedPosterConfig) {
-                if (parsedPosterConfig.productCaption) {
-                    window.lastProductCaption = parsedPosterConfig.productCaption;
+                const pubCaption = parsedPosterConfig.publishing?.productCaption || parsedPosterConfig.productCaption;
+                const pubHashtags = parsedPosterConfig.publishing?.hashtags || parsedPosterConfig.hashtags;
+                if (pubCaption) {
+                    window.lastProductCaption = pubCaption;
                 }
-                if (parsedPosterConfig.hashtags) {
-                    window.lastProductHashtags = parsedPosterConfig.hashtags;
+                if (pubHashtags) {
+                    window.lastProductHashtags = pubHashtags;
                 }
             }
 
             // Fallback product caption if none parsed from JSON
+            // TUYỆT ĐỐI LỌC BỎ các nội dung giải trình/phân tích thiết kế poster
+            const isDesignAnalysis = /(?:kỹ thuật thiết kế|bố cục|phối màu|màu chủ đạo|màu sắc chủ đạo|font chữ|typography|canvas|layer|cắt nền|chiaroscuro|gestalt|60-30-10|phân tích poster)/i;
             const fallbackCaption = (result.reply || result.message || '')
                 .replace(/```[\s\S]*?```/g, '')
                 .replace(/!\[.*?\]\(.*?\)/g, '')
                 .replace(/\[CHỈ THỊ.*?\]/g, '')
                 .trim();
-            if (!window.lastProductCaption && fallbackCaption) {
-                window.lastProductCaption = fallbackCaption;
+
+            if (!window.lastProductCaption) {
+                if (parsedPosterConfig && (parsedPosterConfig.title || parsedPosterConfig.headline)) {
+                    const prodTitle = parsedPosterConfig.title || parsedPosterConfig.headline;
+                    const prodSub = parsedPosterConfig.subtitle || '';
+                    window.lastProductCaption = `🔥 ${prodTitle} 🔥\n\n✨ ${prodSub}\n\n💰 Giá ưu đãi: Liên hệ Shop ngay để nhận báo giá tốt nhất hôm nay!\n🛡️ Cam kết: Hàng chính hãng 100% - Bảo hành đầy đủ\n\n👉 Nhắn tin ngay cho Shop hoặc để lại bình luận để đặt hàng!`;
+                } else if (fallbackCaption && !isDesignAnalysis.test(fallbackCaption)) {
+                    window.lastProductCaption = fallbackCaption;
+                }
             }
 
             // Social Media Direct Browser Publishing Action Card
@@ -617,11 +628,20 @@ function initAIChat() {
                         
                         let cleanCaption = (parsedSocialConfig && parsedSocialConfig.caption) 
                             ? parsedSocialConfig.caption 
-                            : (window.lastProductCaption || (result.reply || result.message || '')
+                            : (window.lastProductCaption || '');
+
+                        if (!cleanCaption) {
+                            const rawFallback = (result.reply || result.message || '')
                                 .replace(/```[\s\S]*?```/g, '')
                                 .replace(/!\[.*?\]\(.*?\)/g, '')
                                 .replace(/\[CHỈ THỊ.*?\]/g, '')
-                                .trim());
+                                .trim();
+                            if (!/(?:kỹ thuật thiết kế|bố cục|phối màu|màu chủ đạo|màu sắc chủ đạo|font chữ|typography|canvas|layer|cắt nền|60-30-10)/i.test(rawFallback)) {
+                                cleanCaption = rawFallback;
+                            } else if (parsedPosterConfig?.title) {
+                                cleanCaption = `🔥 ${parsedPosterConfig.title} 🔥\n\n✨ ${parsedPosterConfig.subtitle || ''}\n\n💰 Giá ưu đãi: Liên hệ Shop ngay để nhận báo giá tốt nhất hôm nay!\n🛡️ Cam kết: Hàng chính hãng 100% - Bảo hành đầy đủ\n\n👉 Nhắn tin ngay cho Shop để được tư vấn và đặt hàng!`;
+                            }
+                        }
 
                         window.lastProductCaption = cleanCaption;
 

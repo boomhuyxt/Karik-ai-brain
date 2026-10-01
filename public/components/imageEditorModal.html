@@ -119,10 +119,11 @@
             <span class="material-symbols-outlined text-purple-400 text-sm">aspect_ratio</span>
             <span class="text-xs text-slate-300 font-medium">Khổ ảnh:</span>
             <select id="canvasPresetSelect" class="bg-slate-950 text-xs text-cyan-300 border border-purple-500/40 rounded-lg px-2 py-1 outline-none focus:border-cyan-400 cursor-pointer">
+                <option value="1080x1920" selected>Story / Reels / TikTok (9:16) - 1080 x 1920 px</option>
                 <option value="1080x1350">Poster Dọc (4:5) - 1080 x 1350 px</option>
                 <option value="1080x1080">Vuông Instagram (1:1) - 1080 x 1080 px</option>
-                <option value="1080x1920">Story / TikTok (9:16) - 1080 x 1920 px</option>
                 <option value="1920x1080">Ngang HD (16:9) - 1920 x 1080 px</option>
+                <option value="1200x1800">Poster In Ấn / Standee (2:3) - 1200 x 1800 px</option>
                 <option value="1200x630">Facebook Cover (1200 x 630 px)</option>
                 <option value="custom">Tùy chỉnh kích thước...</option>
             </select>
@@ -130,7 +131,7 @@
             <div id="customDimensionsInputs" class="hidden items-center gap-1">
                 <input id="customCanvasWidth" type="number" value="1080" min="100" max="4000" class="w-14 bg-slate-950 text-[11px] text-white border border-purple-500/30 rounded px-1.5 py-0.5 text-center">
                 <span class="text-slate-400 text-xs">x</span>
-                <input id="customCanvasHeight" type="number" value="1350" min="100" max="4000" class="w-14 bg-slate-950 text-[11px] text-white border border-purple-500/30 rounded px-1.5 py-0.5 text-center">
+                <input id="customCanvasHeight" type="number" value="1920" min="100" max="4000" class="w-14 bg-slate-950 text-[11px] text-white border border-purple-500/30 rounded px-1.5 py-0.5 text-center">
                 <button id="btnApplyCustomDimensions" class="bg-purple-600/60 hover:bg-purple-500 text-white text-[10px] px-2 py-0.5 rounded">Áp dụng</button>
             </div>
         </div>
@@ -449,41 +450,36 @@
                         </div>
                     </div>
 
-                    <!-- Picsart Poster Templates Catalog -->
+                    <!-- Obsidian Poster Backdrops Catalog -->
                     <div class="space-y-2 pt-2 border-t border-purple-500/20" id="picsartTemplatesSection">
                         <div class="flex items-center justify-between">
                             <div>
                                 <label class="text-xs font-bold text-white flex items-center gap-1.5">
                                     <span class="material-symbols-outlined text-sm text-cyan-400">auto_awesome_motion</span>
-                                    <span>Mẫu Poster Chuẩn Picsart</span>
-                                    <span id="picsartTotalBadge" class="text-[9px] bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 px-1.5 py-0.2 rounded-full font-mono font-bold">39</span>
+                                    <span>Kho Mẫu Nền Poster Obsidian</span>
+                                    <span id="picsartTotalBadge" class="text-[9px] bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 px-1.5 py-0.2 rounded-full font-mono font-bold">24</span>
                                 </label>
-                                <p class="text-[9px] text-slate-400">39 mẫu poster đồ họa từ Picsart — Bấm để chèn hoặc làm mẫu.</p>
+                                <p class="text-[9px] text-slate-400">24 mẫu nền poster chuẩn Obsidian (Xe & Cơ khí, Meme Viral, Art Biker) — Tách nền ghép sản phẩm nổi bật tức thì.</p>
                             </div>
 
                         <!-- 1-Click AI Auto Match & Composite Banner -->
                         <button type="button" id="btnAutoMatchPicsart" onclick="window.autoMatchAndCompositePoster()" class="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white font-bold text-xs shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer border border-cyan-400/40">
                             <span class="material-symbols-outlined text-sm text-amber-300">auto_awesome</span>
-                            <span>AI Tự Động Chọn Mẫu & Tách Nền Ghép Poster</span>
+                            <span>AI Tự Động Chọn Nền Obsidian & Ghép Poster Nổi Bật</span>
                         </button>
                         </div>
 
-                        <!-- Category Filter Chips -->
+                        <!-- Category Filter Chips (Obsidian Only: Xe, Meme, Art) -->
                         <div class="flex items-center gap-1 overflow-x-auto pb-1 studio-scrollbar" id="picsartCategoryFilters">
-                            <button type="button" data-cat="all" class="picsart-cat-btn active text-[10px] px-2.5 py-1 rounded-full bg-cyan-600/40 text-cyan-200 border border-cyan-400/50 whitespace-nowrap font-medium transition-all cursor-pointer">Tất cả (63)</button>
+                            <button type="button" data-cat="all" class="picsart-cat-btn active text-[10px] px-2.5 py-1 rounded-full bg-cyan-600/40 text-cyan-200 border border-cyan-400/50 whitespace-nowrap font-medium transition-all cursor-pointer">Tất cả (24)</button>
                             <button type="button" data-cat="xe" class="picsart-cat-btn text-[10px] px-2.5 py-1 rounded-full bg-amber-950/60 text-amber-300 border border-amber-500/40 hover:border-amber-400 whitespace-nowrap font-medium transition-all cursor-pointer">🏁 Xe & Cơ khí (8)</button>
                             <button type="button" data-cat="meme" class="picsart-cat-btn text-[10px] px-2.5 py-1 rounded-full bg-pink-950/60 text-pink-300 border border-pink-500/40 hover:border-pink-400 whitespace-nowrap font-medium transition-all cursor-pointer">🎭 Meme Viral (8)</button>
                             <button type="button" data-cat="art" class="picsart-cat-btn text-[10px] px-2.5 py-1 rounded-full bg-indigo-950/60 text-indigo-300 border border-indigo-500/40 hover:border-indigo-400 whitespace-nowrap font-medium transition-all cursor-pointer">🎨 Art Biker (8)</button>
-                            <button type="button" data-cat="fashion" class="picsart-cat-btn text-[10px] px-2.5 py-1 rounded-full bg-slate-900 text-slate-300 border border-slate-700 hover:border-cyan-400/40 whitespace-nowrap font-medium transition-all cursor-pointer">Thời trang (16)</button>
-                            <button type="button" data-cat="sale" class="picsart-cat-btn text-[10px] px-2.5 py-1 rounded-full bg-slate-900 text-slate-300 border border-slate-700 hover:border-cyan-400/40 whitespace-nowrap font-medium transition-all cursor-pointer">Khuyến mãi (4)</button>
-                            <button type="button" data-cat="events" class="picsart-cat-btn text-[10px] px-2.5 py-1 rounded-full bg-slate-900 text-slate-300 border border-slate-700 hover:border-cyan-400/40 whitespace-nowrap font-medium transition-all cursor-pointer">Sự kiện (9)</button>
-                            <button type="button" data-cat="travel" class="picsart-cat-btn text-[10px] px-2.5 py-1 rounded-full bg-slate-900 text-slate-300 border border-slate-700 hover:border-cyan-400/40 whitespace-nowrap font-medium transition-all cursor-pointer">Du lịch (5)</button>
-                            <button type="button" data-cat="lifestyle_edu" class="picsart-cat-btn text-[10px] px-2.5 py-1 rounded-full bg-slate-900 text-slate-300 border border-slate-700 hover:border-cyan-400/40 whitespace-nowrap font-medium transition-all cursor-pointer">Đời sống (4)</button>
                         </div>
 
                         <!-- Search input -->
                         <div class="relative">
-                            <input type="text" id="picsartSearchInput" placeholder="Tìm kiếm mẫu poster (vd: fashion, sale, travel...)" class="w-full bg-slate-900/90 border border-slate-700 focus:border-cyan-400 rounded-lg pl-7 pr-2 py-1 text-[10px] text-white placeholder:text-slate-500 outline-none">
+                            <input type="text" id="picsartSearchInput" placeholder="Tìm kiếm mẫu nền poster (vd: xe, meme, art, racing, đường đua...)" class="w-full bg-slate-900/90 border border-slate-700 focus:border-cyan-400 rounded-lg pl-7 pr-2 py-1 text-[10px] text-white placeholder:text-slate-500 outline-none">
                             <span class="material-symbols-outlined text-xs text-slate-400 absolute left-2 top-1.5 pointer-events-none">search</span>
                         </div>
 
@@ -491,19 +487,9 @@
                         <div class="grid grid-cols-2 gap-2 max-h-[380px] overflow-y-auto studio-scrollbar pr-1" id="picsartTemplatesGrid">
                             <div class="col-span-2 text-center py-6 text-slate-400 text-xs flex items-center justify-center gap-1.5">
                                 <span class="animate-spin material-symbols-outlined text-sm text-cyan-400">progress_activity</span>
-                                <span>Đang nạp 39 mẫu poster Picsart...</span>
+                                <span>Đang nạp 24 mẫu nền poster Obsidian...</span>
                             </div>
                         </div>
-
-                        <!-- Legacy Quick Stocks Footer -->
-                        <details class="text-[10px] text-slate-400">
-                            <summary class="cursor-pointer hover:text-slate-200">Đồ họa mẫu cơ bản khác (3)</summary>
-                            <div class="grid grid-cols-3 gap-2 mt-1.5" id="stockAssetsList">
-                                <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=300&q=80" alt="Abstract gradient" class="w-full h-14 object-cover rounded-lg border border-white/10 hover:border-cyan-400 cursor-pointer hover:scale-105 transition-all stock-sample-img">
-                                <img src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=300&q=80" alt="Retro Tech" class="w-full h-14 object-cover rounded-lg border border-white/10 hover:border-cyan-400 cursor-pointer hover:scale-105 transition-all stock-sample-img">
-                                <img src="https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=300&q=80" alt="Oil Art" class="w-full h-14 object-cover rounded-lg border border-white/10 hover:border-cyan-400 cursor-pointer hover:scale-105 transition-all stock-sample-img">
-                            </div>
-                        </details>
                     </div>
                 </div>
 
@@ -539,16 +525,26 @@
                         <div class="space-y-1">
                             <label class="text-[10px] text-slate-400">Phông chữ (Font Family):</label>
                             <select id="textFontFamily" class="w-full bg-slate-950 text-xs text-white border border-purple-500/40 rounded-lg px-2 py-1.5 outline-none focus:border-cyan-400">
-                                <option value="Inter" style="font-family: 'Inter';">Inter (Hiện đại)</option>
-                                <option value="Sora" style="font-family: 'Sora';">Sora (Headline)</option>
-                                <option value="JetBrains Mono" style="font-family: 'JetBrains Mono';">JetBrains Mono (Tech/Code)</option>
-                                <option value="Playfair Display" style="font-family: 'Playfair Display';">Playfair Display (Sang trọng)</option>
-                                <option value="Montserrat" style="font-family: 'Montserrat';">Montserrat (Mạnh mẽ)</option>
-                                <option value="Oswald" style="font-family: 'Oswald';">Oswald (Poster Bold)</option>
-                                <option value="Lobster" style="font-family: 'Lobster';">Lobster (Nghệ thuật Retro)</option>
-                                <option value="Pacifico" style="font-family: 'Pacifico';">Pacifico (Viết tay Hand)</option>
-                                <option value="Caveat" style="font-family: 'Caveat';">Caveat (Chữ ký Cursive)</option>
-                                <option value="Orbitron" style="font-family: 'Orbitron';">Orbitron (Sci-Fi Cyber)</option>
+                                <optgroup label="🇻🇳 Phông Chuẩn Tiếng Việt 100% (Không Lỗi Dấu)">
+                                    <option value="Be Vietnam Pro" selected style="font-family: 'Be Vietnam Pro';">Be Vietnam Pro (Chuẩn Việt Tuyệt Đối / Tinh Tế)</option>
+                                    <option value="Montserrat" style="font-family: 'Montserrat';">Montserrat (Mạnh Mẽ / Poster Đậm Nét)</option>
+                                    <option value="Oswald" style="font-family: 'Oswald';">Oswald (Poster Bold / Thể Thao / Bứt Tốc)</option>
+                                    <option value="Playfair Display" style="font-family: 'Playfair Display';">Playfair Display (Sang Trọng / Luxury Hoàng Gia)</option>
+                                    <option value="Plus Jakarta Sans" style="font-family: 'Plus Jakarta Sans';">Plus Jakarta Sans (Thanh Lịch / Công Nghệ Hiện Đại)</option>
+                                    <option value="Inter" style="font-family: 'Inter';">Inter (Hiện Đại / Dễ Đọc / Body Chuẩn)</option>
+                                    <option value="Sora" style="font-family: 'Sora';">Sora (Hình Học / Cyber Tương Lai)</option>
+                                    <option value="Lora" style="font-family: 'Lora';">Lora (Hoài Niệm / Vintage Cổ Điển)</option>
+                                    <option value="Baloo 2" style="font-family: 'Baloo 2';">Baloo 2 (Minh Họa / Bo Tròn Vui Tươi)</option>
+                                    <option value="Quicksand" style="font-family: 'Quicksand';">Quicksand (Thân Thiện / Trẻ Trung)</option>
+                                </optgroup>
+                                <optgroup label="✨ Phông Nghệ Thuật (Tự Động Bổ Trợ Dấu Tiếng Việt)">
+                                    <option value="Bebas Neue" style="font-family: 'Oswald', sans-serif;">Bebas Neue / Oswald (Headline Dày)</option>
+                                    <option value="Cinzel" style="font-family: 'Playfair Display', serif;">Cinzel / Playfair (Quý Phái)</option>
+                                    <option value="Orbitron" style="font-family: 'Sora', sans-serif;">Orbitron / Sora (Sci-Fi)</option>
+                                    <option value="JetBrains Mono" style="font-family: 'JetBrains Mono';">JetBrains Mono (Tech/Code)</option>
+                                    <option value="Pacifico" style="font-family: 'Pacifico';">Pacifico (Viết Tay Cọ Nước)</option>
+                                    <option value="Caveat" style="font-family: 'Caveat';">Caveat (Chữ Ký Cursive)</option>
+                                </optgroup>
                             </select>
                         </div>
 
@@ -742,9 +738,9 @@
                         <div class="space-y-1">
                             <div class="flex justify-between text-[10px] text-slate-300">
                                 <span>Làm nét (Sharpen):</span>
-                                <span id="valSharpen" class="font-mono text-cyan-300">0%</span>
+                                <span id="valSharpen" class="font-mono text-cyan-300">50%</span>
                             </div>
-                            <input type="range" id="sliderSharpen" min="0" max="100" value="0" class="studio-slider w-full">
+                            <input type="range" id="sliderSharpen" min="0" max="100" value="50" class="studio-slider w-full">
                         </div>
 
                         <!-- Hue Rotate -->
@@ -895,7 +891,7 @@
             <!-- Canvas Dimension & Guide Floating Badge -->
             <div class="absolute top-4 left-4 z-10 flex items-center gap-2 bg-slate-950/80 backdrop-blur border border-purple-500/30 px-3 py-1 rounded-full text-xs font-mono text-cyan-300 pointer-events-none shadow-md">
                 <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                <span id="canvasDimensionDisplay">1080 x 1350 px</span>
+                <span id="canvasDimensionDisplay">1080 x 1920 px</span>
             </div>
 
             <!-- Quick Preset Style Floating Switcher -->

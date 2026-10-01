@@ -7,7 +7,7 @@
 (function () {
     let canvas = null;
     let canvasWidth = 1080;
-    let canvasHeight = 1350;
+    let canvasHeight = 1920;
     let currentZoom = 1;
     let isCropping = false;
     let cropRect = null;
@@ -25,7 +25,7 @@
         contrast: 0,
         saturation: 0,
         blur: 0,
-        sharpen: 0,
+        sharpen: 0.5,
         hue: 0
     };
 
@@ -57,6 +57,30 @@
         isModuleInitialized = true;
         return true;
     };
+
+    /**
+     * Ánh xạ và bổ sung Font Stack an toàn cho tiếng Việt chuẩn 100%
+     * Tránh lỗi rớt phông / nhảy ký tự có dấu (á, à, ả, ã, ạ, ư, ơ, ê, ô, v.v.)
+     */
+    function resolveVietnameseSafeFont(fontFamily) {
+        if (!fontFamily) return 'Montserrat, "Be Vietnam Pro", Inter, sans-serif';
+        const cleanFont = String(fontFamily).trim().replace(/['"]/g, '');
+        const unsafeMap = {
+            'bebas neue': 'Oswald, Montserrat, "Be Vietnam Pro", sans-serif',
+            'orbitron': 'Sora, Montserrat, "Be Vietnam Pro", sans-serif',
+            'rajdhani': 'Montserrat, "Be Vietnam Pro", Inter, sans-serif',
+            'cinzel': 'Playfair Display, Lora, "Be Vietnam Pro", serif',
+            'abril fatface': 'Playfair Display, Lora, "Be Vietnam Pro", serif',
+            'space grotesk': 'Plus Jakarta Sans, Inter, "Be Vietnam Pro", sans-serif',
+            'lobster': 'Caveat, "Be Vietnam Pro", cursive',
+            'cooper black': 'Playfair Display, "Be Vietnam Pro", serif'
+        };
+        const lower = cleanFont.toLowerCase();
+        if (unsafeMap[lower]) {
+            return unsafeMap[lower];
+        }
+        return `"${cleanFont}", "Be Vietnam Pro", Montserrat, Inter, sans-serif`;
+    }
 
     /**
      * Initialize Fabric.js Canvas
@@ -933,25 +957,15 @@
 
             grid.innerHTML = filtered.map(item => {
                 const catLabel = {
-                    xe: '🏁 Obsidian Xe',
-                    meme: '🎭 Obsidian Meme',
-                    art: '🎨 Obsidian Art',
-                    fashion: 'Thời trang',
-                    sale: 'Khuyến mãi',
-                    events: 'Sự kiện',
-                    travel: 'Du lịch',
-                    lifestyle_edu: 'Đời sống'
-                }[item.category] || 'Mẫu Poster';
+                    xe: '🏁 Xe & Cơ khí',
+                    meme: '🎭 Meme Viral',
+                    art: '🎨 Art Biker'
+                }[item.category] || 'Mẫu Obsidian';
 
                 const catColor = {
                     xe: 'bg-amber-500/30 text-amber-200 border-amber-400/50',
                     meme: 'bg-pink-500/30 text-pink-200 border-pink-400/50',
-                    art: 'bg-indigo-500/30 text-indigo-200 border-indigo-400/50',
-                    fashion: 'bg-rose-500/30 text-rose-300 border-rose-400/40',
-                    sale: 'bg-amber-500/30 text-amber-300 border-amber-400/40',
-                    events: 'bg-purple-500/30 text-purple-300 border-purple-400/40',
-                    travel: 'bg-cyan-500/30 text-cyan-300 border-cyan-400/40',
-                    lifestyle_edu: 'bg-emerald-500/30 text-emerald-300 border-emerald-400/40'
+                    art: 'bg-indigo-500/30 text-indigo-200 border-indigo-400/50'
                 }[item.category] || 'bg-slate-700 text-slate-300 border-slate-600';
 
                 const safeTitle = (item.title || 'Mẫu Poster').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
@@ -998,38 +1012,25 @@
             };
         }
 
-        // Fetch templates from both Picsart and Admin Obsidian Vault
-        Promise.allSettled([
-            fetch('/api/image/templates').then(r => r.json()),
-            fetch('/api/image/obsidian-templates').then(r => r.json())
-        ])
-            .then(([picsartRes, obsidianRes]) => {
-                const combined = [];
-                // Add Obsidian backdrops first
-                if (obsidianRes.status === 'fulfilled' && obsidianRes.value?.success && Array.isArray(obsidianRes.value?.backdrops)) {
-                    combined.push(...obsidianRes.value.backdrops.map(item => ({
+        // Fetch exclusively from Obsidian Poster Knowledge Vault (24 backdrops: Xe, Meme, Art)
+        fetch('/api/image/obsidian-templates')
+            .then(r => r.json())
+            .then(obsidianRes => {
+                if (obsidianRes && obsidianRes.success && Array.isArray(obsidianRes.backdrops)) {
+                    _allPicsartTemplates = obsidianRes.backdrops.map(item => ({
                         id: item.id,
                         title: item.title,
                         localPath: item.url,
                         category: item.category,
                         source: 'obsidian',
                         safeZone: item.safeZone,
-                        recommendedColors: item.recommendedColors
-                    })));
-                }
-                // Add Picsart templates
-                if (picsartRes.status === 'fulfilled' && picsartRes.value?.success && Array.isArray(picsartRes.value?.templates)) {
-                    combined.push(...picsartRes.value.templates);
-                }
-
-                if (combined.length > 0) {
-                    _allPicsartTemplates = combined;
-                } else {
-                    return fetch('/templates/posters/posters.json').then(r => r.json()).then(items => { _allPicsartTemplates = items; });
+                        recommendedColors: item.recommendedColors,
+                        recommendedFonts: item.recommendedFonts
+                    }));
                 }
             })
-            .catch(() => {
-                return fetch('/templates/posters/posters.json').then(r => r.json()).then(items => { _allPicsartTemplates = items; });
+            .catch(err => {
+                console.error('[ImageStudio] Error loading Obsidian poster backdrops:', err);
             })
             .finally(() => {
                 renderTemplates();
@@ -1101,11 +1102,9 @@
         if (titleInput) titleInput.value = (title || 'POSTER CHUYÊN NGHIỆP').slice(0, 50).toUpperCase();
 
         const styleMap = {
-            fashion: 'editorial_luxury',
-            sale: 'neo_brutalism',
-            events: 'retro_future',
-            travel: 'organic_minimal',
-            lifestyle_edu: 'swiss_grid'
+            xe: 'neo_brutalism',
+            meme: 'pop_art',
+            art: 'retro_future'
         };
         if (styleSelect && cat && styleMap[cat]) {
             styleSelect.value = styleMap[cat];
@@ -1260,7 +1259,8 @@
 
         if (fontFamilySelect) {
             fontFamilySelect.addEventListener('change', () => {
-                applyToActiveText(t => t.set('fontFamily', fontFamilySelect.value));
+                const safeFont = resolveVietnameseSafeFont(fontFamilySelect.value);
+                applyToActiveText(t => t.set('fontFamily', safeFont));
             });
         }
 
@@ -1354,15 +1354,17 @@
     function addTextToCanvas(textStr, options = {}) {
         if (!canvas) return;
 
+        const safeFont = resolveVietnameseSafeFont(options.fontFamily || 'Montserrat');
         const textbox = new fabric.Textbox(textStr, {
             left: canvasWidth / 2,
             top: canvasHeight / 2,
             originX: 'center',
             originY: 'center',
-            width: Math.min(canvasWidth * 0.7, 500),
+            width: Math.min(canvasWidth * 0.88, 600),
             textAlign: 'center',
             layerType: 'text',
-            ...options
+            ...options,
+            fontFamily: safeFont
         });
 
         canvas.add(textbox);
@@ -1552,21 +1554,21 @@
         document.getElementById('sliderContrast').value = 0;
         document.getElementById('sliderSaturation').value = 0;
         document.getElementById('sliderBlur').value = 0;
-        document.getElementById('sliderSharpen').value = 0;
+        document.getElementById('sliderSharpen').value = 50;
         document.getElementById('sliderHue').value = 0;
 
         document.getElementById('valBrightness').textContent = '0%';
         document.getElementById('valContrast').textContent = '0%';
         document.getElementById('valSaturation').textContent = '0%';
         document.getElementById('valBlur').textContent = '0 px';
-        document.getElementById('valSharpen').textContent = '0%';
+        document.getElementById('valSharpen').textContent = '50%';
         document.getElementById('valHue').textContent = '0°';
 
         activeFilters.brightness = 0;
         activeFilters.contrast = 0;
         activeFilters.saturation = 0;
         activeFilters.blur = 0;
-        activeFilters.sharpen = 0;
+        activeFilters.sharpen = 0.5;
         activeFilters.hue = 0;
     }
 
@@ -2430,9 +2432,9 @@
         const renderVersion = ++posterRenderVersion;
         const isStaleRender = () => renderVersion !== posterRenderVersion;
 
-        // 1. Dimensions
+        // 1. Dimensions (Default to 9:16 1080 x 1920)
         const targetW = config.width || (config.canvas && config.canvas.width) || (config.preset === 'instagram' ? 1080 : 1080);
-        const targetH = config.height || (config.canvas && config.canvas.height) || (config.preset === 'instagram' ? 1080 : 1350);
+        const targetH = config.height || (config.canvas && config.canvas.height) || (config.preset === 'instagram' ? 1080 : (config.preset === '4:5' ? 1350 : 1920));
         canvasWidth = targetW;
         canvasHeight = targetH;
         canvas.setWidth(canvasWidth);
@@ -2525,12 +2527,13 @@
                                 ry: lh / 2
                             });
                         } else {
+                            const cornerRadius = layer.cornerRadius !== undefined ? layer.cornerRadius : 16;
                             shapeObj = new fabric.Rect({
                                 ...sProps,
                                 width: lw,
                                 height: lh,
-                                rx: layer.cornerRadius || 0,
-                                ry: layer.cornerRadius || 0
+                                rx: cornerRadius,
+                                ry: cornerRadius
                             });
                         }
                         if (shapeObj) canvas.add(shapeObj);
@@ -2569,6 +2572,18 @@
                             if (adj && adj.contrast) filtersList.push(new fabric.Image.filters.Contrast({ contrast: adj.contrast / 100 }));
                             if (adj && adj.saturation) filtersList.push(new fabric.Image.filters.Saturation({ saturation: adj.saturation / 100 }));
 
+                            // 50% Sharpen Filter (Làm nét 50% theo yêu cầu)
+                            const sharpenVal = (adj && adj.sharpen !== undefined) ? (adj.sharpen / 100) : 0.50;
+                            if (sharpenVal > 0) {
+                                filtersList.push(new fabric.Image.filters.Convolute({
+                                    matrix: [
+                                        0, -sharpenVal, 0,
+                                        -sharpenVal, 1 + 4 * sharpenVal, -sharpenVal,
+                                        0, -sharpenVal, 0
+                                    ]
+                                }));
+                            }
+
                             if (filtersList.length > 0) {
                                 userImg.filters = filtersList;
                                 userImg.applyFilters();
@@ -2576,30 +2591,56 @@
                             canvas.add(userImg);
                         }
                     } else if (layer.type === 'text') {
+                        // All key headings, titles, slogans, badges, subtitles, features, CTAs MUST BE center-aligned
+                        const isHeadline = /headline|title/i.test(layer.id || '');
+                        const isKeyText = isHeadline || /badge|slogan|subtitle|feature|cta/i.test(layer.id || '');
+                        const forceCenter = isKeyText || layer.align === 'center' || !layer.align;
+                        const finalAlign = forceCenter ? 'center' : (layer.align || 'center');
+                        const finalOriginX = forceCenter ? 'center' : originX;
+                        const finalLeft = forceCenter ? (canvasWidth / 2) : lx;
+
+                        // Calculate safe width to prevent any clipping or loss of letters
+                        const safeMaxW = canvasWidth * 0.90;
+                        const finalWidth = Math.min(safeMaxW, Math.max(isKeyText ? canvasWidth * 0.86 : 80, lw));
+
+                        // Vietnamese safe font stack
+                        const safeFontFamily = resolveVietnameseSafeFont(layer.fontFamily || config.fontFamily || 'Montserrat');
+                        const defaultFontSize = isHeadline ? 86 : 30;
+                        const finalFontSize = layer.fontSize || defaultFontSize;
+
                         const textObj = new fabric.Textbox(layer.text || '', {
-                            left: lx,
+                            left: finalLeft,
                             top: ly,
-                            width: Math.max(80, lw),
-                            originX: originX,
+                            width: finalWidth,
+                            originX: finalOriginX,
                             originY: 'center',
-                            fontSize: layer.fontSize || 30,
-                            fontWeight: layer.fontWeight ? String(layer.fontWeight) : 'normal',
-                            fontFamily: layer.fontFamily || config.fontFamily || 'Montserrat',
+                            fontSize: finalFontSize,
+                            fontWeight: layer.fontWeight ? String(layer.fontWeight) : (isHeadline ? '900' : 'normal'),
+                            fontFamily: safeFontFamily,
                             fill: layer.color || '#ffffff',
-                            textAlign: align,
+                            textAlign: finalAlign,
                             lineHeight: layer.lineHeight || 1.15,
                             charSpacing: layer.charSpacing || 0,
                             angle: layer.angle || 0,
                             stroke: layer.stroke || null,
                             strokeWidth: layer.strokeWidth || 0,
-                            shadow: layer.shadow ? new fabric.Shadow(layer.shadow) : null,
+                            shadow: layer.shadow 
+                                ? new fabric.Shadow(layer.shadow) 
+                                : (isKeyText || isHeadline 
+                                    ? new fabric.Shadow({ color: 'rgba(0, 0, 0, 0.88)', blur: 22, offsetX: 0, offsetY: 4 }) 
+                                    : null),
                             layerName: layer.id || 'Lớp Chữ',
                             layerType: 'text'
                         });
-                        const minFontSize = Math.max(11, layer.minFontSize || Math.round((layer.fontSize || 30) * 0.55));
-                        while (textObj.height > lh && textObj.fontSize > minFontSize) {
+
+                        // Anti-clipping auto-fit: iteratively reduce font size if text exceeds vertical or horizontal bounds
+                        const minFontSize = Math.max(11, layer.minFontSize || Math.round(finalFontSize * 0.45));
+                        let maxLoops = 20;
+                        const maxAllowedH = Math.max(lh * 1.8, isHeadline ? 260 : 80);
+                        while ((textObj.height > maxAllowedH || textObj.width > safeMaxW) && textObj.fontSize > minFontSize && maxLoops > 0) {
                             textObj.set('fontSize', textObj.fontSize - 2);
                             if (typeof textObj.initDimensions === 'function') textObj.initDimensions();
+                            maxLoops--;
                         }
                         canvas.add(textObj);
                     }
@@ -2640,25 +2681,25 @@
                 });
                 canvas.add(scrimObj);
 
-                // 2. Product Compositing with Contact Shadow & Backlight Aura (Step 3 from Obsidian Guide)
+                // 2. Product Compositing with Contact Shadow & Backlight Aura (Product Large, Crisp & Prominent)
                 if (userImg) {
                     const heroCenterY = isTemplateMode ? (canvasHeight * 0.54) : (canvasHeight * 0.56);
-                    const maxImgW = canvasWidth * 0.72;
-                    const maxImgH = canvasHeight * 0.52;
+                    const maxImgW = canvasWidth * 0.78;
+                    const maxImgH = canvasHeight * 0.60;
                     const scale = Math.min(maxImgW / (userImg.width || 1), maxImgH / (userImg.height || 1));
                     const imgRenderW = (userImg.width || 1) * scale;
                     const imgRenderH = (userImg.height || 1) * scale;
 
-                    // 2a. Backlight Aura (Spotlight Glow behind subject)
+                    // 2a. Backlight Aura (Spotlight Glow directly behind subject)
                     const auraObj = new fabric.Ellipse({
                         left: canvasWidth / 2,
                         top: heroCenterY,
                         originX: 'center',
                         originY: 'center',
-                        rx: imgRenderW * 0.44,
-                        ry: imgRenderH * 0.40,
+                        rx: imgRenderW * 0.46,
+                        ry: imgRenderH * 0.42,
                         fill: colors.accent || '#f59e0b',
-                        opacity: 0.22,
+                        opacity: 0.24,
                         selectable: false,
                         evented: false,
                         layerName: 'Hào Quang Ngược Sáng (Backlight Aura)',
@@ -2667,25 +2708,25 @@
                     canvas.add(auraObj);
 
                     // 2b. Ground Contact Shadow (Under product base)
-                    const shadowY = heroCenterY + (imgRenderH / 2) - 6;
+                    const shadowY = heroCenterY + (imgRenderH / 2) - 4;
                     const contactShadow = new fabric.Ellipse({
                         left: canvasWidth / 2,
                         top: shadowY,
                         originX: 'center',
                         originY: 'center',
-                        rx: imgRenderW * 0.38,
-                        ry: 14,
+                        rx: imgRenderW * 0.42,
+                        ry: 16,
                         fill: '#000000',
-                        opacity: 0.65,
+                        opacity: 0.68,
                         selectable: false,
                         evented: false,
-                        shadow: new fabric.Shadow({ color: '#000000', blur: 24, offsetY: 2 }),
+                        shadow: new fabric.Shadow({ color: '#000000', blur: 28, offsetY: 3 }),
                         layerName: 'Bóng Đổ Tiếp Đất (Contact Shadow)',
                         layerType: 'shape'
                     });
                     canvas.add(contactShadow);
 
-                    // 2c. Main Product Cutout Image
+                    // 2c. Main Product Cutout Image (Prominent & Centered)
                     userImg.set({
                         left: canvasWidth / 2,
                         top: heroCenterY,
@@ -2699,23 +2740,48 @@
                             offsetX: 0,
                             offsetY: 8
                         }),
-                        layerName: 'Ảnh Sản Phẩm (Tách Nền)',
+                        layerName: 'Ảnh Sản Phẩm (Tách Nền Nổi Bật)',
                         layerType: 'image'
                     });
                     canvas.add(userImg);
+
+                    // 2d. Chữ giới thiệu sơ lược về sản phẩm (NẰM DƯỚI HÌNH ẢNH SẢN PHẨM)
+                    const summaryStr = config.productSummary || config.description || config.summary || (config.subtitle ? `${config.subtitle}` : 'Dòng sản phẩm chuyên dụng cao cấp, tối ưu hiệu năng & độ bền vượt trội.');
+                    const summaryTop = Math.min(canvasHeight * 0.81, Math.max(shadowY + 38, canvasHeight * 0.76));
+                    const summaryObj = new fabric.Textbox(summaryStr, {
+                        fontSize: 22,
+                        fontWeight: '600',
+                        fontFamily: resolveVietnameseSafeFont('Be Vietnam Pro'),
+                        fill: '#f8fafc',
+                        textAlign: 'center',
+                        width: canvasWidth * 0.88,
+                        left: canvasWidth / 2,
+                        top: summaryTop,
+                        originX: 'center',
+                        originY: 'center',
+                        stroke: '#000000',
+                        strokeWidth: 0.8,
+                        shadow: new fabric.Shadow({ color: 'rgba(0, 0, 0, 0.90)', blur: 18, offsetY: 3 }),
+                        layerName: 'Giới Thiệu Sơ Lược Sản Phẩm',
+                        layerType: 'text'
+                    });
+                    canvas.add(summaryObj);
                 }
 
-                // 3. Visual Hierarchy - Eyebrow / Badge Pill
-                const badgeVal = config.badge || config.eyebrow;
-                const badgeTop = isTemplateMode ? (canvasHeight * ((safeZone.yMin || 10) / 100) + 10) : 75;
+                // 3. Visual Hierarchy - Giá tiền / Khẩu hiệu (NẰM Ở TRÊN HEADLINE: y: 10-12%)
+                const badgeVal = config.price 
+                    ? (String(config.price).toUpperCase().includes('GIÁ') ? `💰 ${String(config.price).toUpperCase()}` : `💰 GIÁ: ${String(config.price).toUpperCase()}`) 
+                    : (config.badge || config.eyebrow || config.slogan || 'GIÁ ƯU ĐÃI HÔM NAY');
+                const badgeTop = isTemplateMode ? (canvasHeight * ((safeZone.yMin || 10) / 100) + 12) : 75;
                 if (badgeVal) {
                     const badgeTextContent = `★ ${String(badgeVal).toUpperCase()}`;
-                    const badgeBoxW = Math.min(360, badgeTextContent.length * 13 + 40);
+                    const badgeFontSize = config.priceFontSize || 34; // BẮT BUỘC TRÊN 30px
+                    const badgeBoxW = Math.min(540, badgeTextContent.length * 19 + 56);
                     const badgeBox = new fabric.Rect({
                         width: badgeBoxW,
-                        height: 42,
-                        rx: 21,
-                        ry: 21,
+                        height: 52,
+                        rx: 26,
+                        ry: 26,
                         fill: colors.accent || config.badgeBg || '#ef4444',
                         stroke: 'rgba(255, 255, 255, 0.35)',
                         strokeWidth: 1.5,
@@ -2724,11 +2790,11 @@
                         originX: 'center',
                         originY: 'center',
                         shadow: new fabric.Shadow({ color: 'rgba(0, 0, 0, 0.45)', blur: 14, offsetY: 4 }),
-                        layerName: 'Khung Huy Hiệu',
+                        layerName: 'Khung Khẩu Hiệu Dòng SP',
                         layerType: 'shape'
                     });
                     const badgeText = new fabric.IText(badgeTextContent, {
-                        fontSize: 16,
+                        fontSize: badgeFontSize,
                         fontWeight: '800',
                         fontFamily: config.fontFamily || 'Montserrat',
                         fill: colors.background || '#020617',
@@ -2736,56 +2802,58 @@
                         top: badgeTop,
                         originX: 'center',
                         originY: 'center',
-                        layerName: 'Chữ Huy Hiệu',
+                        layerName: 'Khẩu Hiệu Dòng Sản Phẩm',
                         layerType: 'text'
                     });
                     canvas.add(badgeBox);
                     canvas.add(badgeText);
                 }
 
-                // 4. Headline / Tiêu Đề Lớn (Tier 1 Hierarchy)
-                const titleVal = config.title || 'SIÊU PHẨM MỚI';
-                const titleTop = badgeVal ? (badgeTop + 54) : (canvasHeight * 0.14);
+                // 4. Headline / Tên Sản Phẩm To Rõ (Tier 1 Hierarchy - NẰM CHÍNH GIỮA GIÁ TIỀN VÀ ẢNH SẢN PHẨM)
+                const titleVal = config.title || 'TÊN SẢN PHẨM CHÍNH HÃNG';
+                const titleTop = badgeTop + 76;
+                const titleFontSize = config.titleFontSize || 86;
                 const titleObj = new fabric.Textbox(titleVal, {
-                    fontSize: 54,
+                    fontSize: titleFontSize,
                     fontWeight: '900',
-                    fontFamily: config.fontFamily || 'Montserrat',
+                    fontFamily: resolveVietnameseSafeFont(config.fontFamily || 'Oswald'),
                     fill: colors.text || config.titleColor || '#ffffff',
-                    textAlign: textAlign,
-                    width: isAlignLeft ? (canvasWidth * 0.65) : (canvasWidth * 0.88),
-                    left: textCenterX,
+                    textAlign: 'center',
+                    width: canvasWidth * 0.90,
+                    left: canvasWidth / 2,
                     top: titleTop,
-                    originX: originX,
+                    originX: 'center',
                     originY: 'center',
                     stroke: '#000000',
-                    strokeWidth: 1.2,
+                    strokeWidth: 1.5,
                     lineHeight: 1.05,
-                    shadow: new fabric.Shadow({ color: 'rgba(0, 0, 0, 0.88)', blur: 24, offsetX: 0, offsetY: 6 }),
-                    layerName: 'Tiêu Đề Poster (Headline)',
+                    shadow: new fabric.Shadow({ color: 'rgba(0, 0, 0, 0.92)', blur: 24, offsetX: 0, offsetY: 6 }),
+                    layerName: 'Tên Sản Phẩm (Headline To Rõ)',
                     layerType: 'text'
                 });
                 canvas.add(titleObj);
 
-                // 5. Subtitle / Mô Tả Giá Trị (Tier 2 Hierarchy)
-                const subtitleStr = config.subtitle || config.caption || '';
+                // 5. Subtitle / Tác Dụng & Công Năng Của Sản Phẩm (Tier 2 Hierarchy - Centered & Safe)
+                const subtitleStr = config.subtitle || config.benefits || config.effect || config.caption || '';
                 if (subtitleStr) {
-                    const subtitleTop = titleTop + 62;
+                    const subtitleTop = titleTop + titleFontSize + 14;
+                    const subtitleFontSize = Math.min(26, Math.max(16, Math.round(canvasWidth * 0.022)));
                     const subtitleObj = new fabric.Textbox(subtitleStr, {
-                        fontSize: 22,
+                        fontSize: subtitleFontSize,
                         fontWeight: '600',
-                        fontFamily: 'Inter',
+                        fontFamily: resolveVietnameseSafeFont('Be Vietnam Pro'),
                         fill: colors.accent || config.subtitleColor || '#facc15',
-                        textAlign: textAlign,
-                        width: isAlignLeft ? (canvasWidth * 0.65) : (canvasWidth * 0.84),
-                        left: textCenterX,
+                        textAlign: 'center',
+                        width: canvasWidth * 0.88,
+                        left: canvasWidth / 2,
                         top: subtitleTop,
-                        originX: originX,
+                        originX: 'center',
                         originY: 'center',
                         stroke: '#000000',
                         strokeWidth: 0.8,
                         lineHeight: 1.25,
                         shadow: new fabric.Shadow({ color: 'rgba(0, 0, 0, 0.85)', blur: 16, offsetX: 0, offsetY: 3 }),
-                        layerName: 'Chú Thích & Slogan',
+                        layerName: 'Tác Dụng & Công Năng Sản Phẩm',
                         layerType: 'text'
                     });
                     canvas.add(subtitleObj);
@@ -2823,7 +2891,7 @@
                     top: featTop,
                     originX: 'center',
                     originY: 'center',
-                    layerName: 'Thanh Điểm Nhấn Tính Năng',
+                    layerName: 'Thanh Tính Năng Sản Phẩm',
                     layerType: 'text'
                 });
                 canvas.add(featBox);
@@ -3140,7 +3208,12 @@
         }
 
         const resolveTemplate = () => {
-            if (!templateOrId) return _allPicsartTemplates[0] || null;
+            const xeTemplates = _allPicsartTemplates.filter(t => t.category === 'xe' || (t.id && t.id.startsWith('XE-')));
+            const getRandomXe = () => (xeTemplates.length > 0 ? xeTemplates[Math.floor(Math.random() * xeTemplates.length)] : (_allPicsartTemplates[0] || null));
+
+            if (!templateOrId || templateOrId === 'random' || templateOrId === 'random_xe') {
+                return getRandomXe();
+            }
             if (typeof templateOrId === 'object') return templateOrId;
             const str = String(templateOrId).toLowerCase().trim();
             const found = _allPicsartTemplates.find(t => 
@@ -3149,12 +3222,7 @@
                 (t.title && t.title.toLowerCase().includes(str))
             );
             if (found) return found;
-            return {
-                id: 'custom_template',
-                title: 'Mẫu Poster Picsart',
-                localPath: templateOrId,
-                category: 'general'
-            };
+            return getRandomXe();
         };
 
         const targetImg = imgSrc || activePosterImageSrc || window.lastUploadedImageUrl || window.lastStudioEditedImage;
@@ -3174,28 +3242,47 @@
             align: 'center'
         };
 
+        const ratio = options.aspectRatio || tmpl?.aspectRatio || '9:16';
+        let width = 1080;
+        let height = 1920;
+        if (ratio === '4:5') {
+            width = 1080;
+            height = 1350;
+        } else if (ratio === '1:1') {
+            width = 1080;
+            height = 1080;
+        } else if (ratio === '16:9') {
+            width = 1920;
+            height = 1080;
+        } else if (ratio === '2:3') {
+            width = 1200;
+            height = 1800;
+        }
+
         const config = {
             template: tmpl,
             templateUrl: tmpl ? tmpl.localPath : null,
             templateTitle: tmpl ? tmpl.title : null,
-            width: 1080,
-            height: tmpl?.aspectRatio === '9:16' ? 1920 : 1350,
-            preset: tmpl?.aspectRatio || '4:5',
+            width,
+            height,
+            preset: ratio,
             removeBackground: true,
-            badge: copy.badge || copy.eyebrow || (tmpl ? (tmpl.category === 'xe' ? 'CHÍNH HÃNG' : tmpl.category.toUpperCase()) : 'HOT DEAL'),
-            title: copy.title || (tmpl ? tmpl.title.toUpperCase() : 'SIÊU PHẨM MỚI'),
-            subtitle: copy.subtitle || (tmpl?.category === 'xe' ? 'Dòng sản phẩm cao cấp • Bảo vệ động cơ vượt trội' : 'Thiết kế chuẩn đồ họa • Ưu đãi đặc biệt hôm nay'),
+            badge: copy.slogan || copy.eyebrow || copy.badge || (tmpl ? (tmpl.category === 'xe' ? 'CHÍNH HÃNG TIÊU CHUẨN ĐUA' : (tmpl.category === 'art' ? 'PHIÊN BẢN NGHỆ THUẬT BIKER' : 'SIÊU PHẨM XU HƯỚNG')) : 'CHÍNH HÃNG'),
+            priceFontSize: 34,
+            title: copy.productName || copy.title || (tmpl ? tmpl.title.toUpperCase() : 'SẢN PHẨM CAO CẤP'),
+            subtitle: copy.benefits || copy.effect || copy.subtitle || (tmpl?.category === 'xe' ? 'Tối ưu công suất • Bôi trơn bền bỉ • Giảm nhiệt tức thì' : (tmpl?.category === 'art' ? 'Phong cách Biker nghệ thuật • Thiết kế khí động học sắc nét' : 'Nâng tầm phong cách • Đột phá công năng vượt trội')),
+            productSummary: copy.productSummary || copy.description || copy.summary || copy.subtitle || 'Dòng sản phẩm chuyên dụng cao cấp, tối ưu hiệu năng & độ bền vượt trội trên mọi hành trình.',
             cta: copy.cta || 'MUA NGAY',
-            features: options.features || (tmpl?.category === 'xe' ? '⚡ Bôi Trơn Siêu Cấp  •  🔥 Tản Nhiệt Tức Thì  •  🛡️ Bảo Vệ 24/7' : '✨ Chính Hãng 100%  •  🚀 Giao Hàng Siêu Tốc  •  ⭐ Đổi Trả Linh Hoạt'),
+            features: options.features || copy.features || (tmpl?.category === 'xe' ? '⚡ Hiệu Năng Vượt Trội  •  🔥 Tản Nhiệt Siêu Cấp  •  🛡️ Bảo Vệ Toàn Diện' : '✨ Chất Lượng Cao Cấp  •  🚀 Bền Bỉ Thời Gian  •  ⭐ Đạt Chuẩn Quốc Tế'),
             badgeBg: colors.accent || '#ef4444',
             titleColor: colors.text || '#ffffff',
             subtitleColor: colors.accent || '#facc15',
             ctaBg: colors.accent || '#f59e0b',
-            fontFamily: (tmpl && tmpl.recommendedFonts) ? tmpl.recommendedFonts[0] : 'Montserrat',
+            fontFamily: (tmpl && tmpl.recommendedFonts && tmpl.recommendedFonts[0]) || 'Oswald',
             safeZone,
             canvas: {
-                width: 1080,
-                height: tmpl?.aspectRatio === '9:16' ? 1920 : 1350,
+                width,
+                height,
                 backdrop: tmpl ? tmpl.localPath : null,
                 background: {
                     type: 'template',

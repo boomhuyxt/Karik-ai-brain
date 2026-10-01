@@ -28,6 +28,11 @@ class ImageController {
     return res.json({ success: true, count: backdrops.length, backdrops });
   }
 
+  getTechniques(req, res) {
+    const techniques = obsidianPosterService.getTechniques();
+    return res.json({ success: true, count: techniques.length, techniques });
+  }
+
   matchTemplate(req, res) {
     const brief = req.body?.brief || req.query?.brief || '';
     const preferences = req.body?.preferences || {};
@@ -43,11 +48,17 @@ class ImageController {
   }
 
   createObsidianPoster(req, res) {
-    const { backdropId, brief, copy, productImageUrl, options } = req.body || {};
+    const { backdropId, brief, copy, productImageUrl, options, techniqueId } = req.body || {};
     const backdrop = backdropId
       ? obsidianPosterService.getBackdropById(backdropId)
-      : obsidianPosterService.matchBackdrop(brief, req.body?.preferences).backdrop;
-    const posterConfig = obsidianPosterService.buildPosterConfig({ backdrop, brief, copy, productImageUrl, options });
+      : obsidianPosterService.matchBackdrop(brief, { ...req.body?.preferences, techniqueId }).backdrop;
+    const posterConfig = obsidianPosterService.buildPosterConfig({
+      backdrop,
+      brief,
+      copy,
+      productImageUrl,
+      options: { ...(options || {}), techniqueId, preferences: req.body?.preferences }
+    });
     return res.json({ success: true, posterConfig });
   }
 

@@ -82,14 +82,15 @@ test('image design service loads Picsart poster templates and filters by categor
   assert.equal(catalog.templates.length, allTemplates.length);
 });
 
-test('image design service matches best template for product brief and assigns backdrop to variant', () => {
-  const result = imageDesignService.matchTemplateForProduct('Giày sneaker thể thao phong cách đường phố');
-  assert.equal(result.categoryMatch, 'fashion');
+test('image design service matches best template from Obsidian Vault and assigns backdrop to variant', () => {
+  const result = imageDesignService.matchTemplateForProduct('Dầu nhớt Motul 300V cho xe đua phân khối lớn');
+  assert.equal(result.categoryMatch, 'xe');
+  assert.equal(result.source, 'obsidian');
   assert.ok(result.template);
-  assert.ok(result.template.localPath.includes('shoe') || result.template.category === 'fashion');
+  assert.ok(result.template.localPath.includes('nền poster') || result.template.id.startsWith('XE-'));
 
   const [variant] = imageDesignService.createDesignSet({
-    brief: 'Giày sneaker thể thao phong cách đường phố',
+    brief: 'Dầu nhớt Motul 300V cho xe đua phân khối lớn',
     variantCount: 1
   });
   assert.ok(variant.template);

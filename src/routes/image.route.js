@@ -5,6 +5,7 @@ const imageController = require('../controllers/image.controller');
 router.get('/catalog', (req, res) => imageController.getCatalog(req, res));
 router.get('/templates', (req, res) => imageController.getTemplates(req, res));
 router.get('/obsidian-templates', (req, res) => imageController.getObsidianTemplates(req, res));
+router.get('/techniques', (req, res) => imageController.getTechniques(req, res));
 router.post('/match-template', (req, res) => imageController.matchTemplate(req, res));
 router.post('/obsidian-match', (req, res) => imageController.matchObsidianTemplate(req, res));
 router.post('/obsidian-poster', (req, res) => imageController.createObsidianPoster(req, res));

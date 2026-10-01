@@ -33,9 +33,10 @@ BẮT BUỘC tuân thủ các quy tắc canh lề và ngắt dòng Facebook sau:
    - Từng ý BẮT BUỘC xuống dòng riêng (`\n`).
    - Canh lề đều đặn, đồng bộ bằng các bullet icon chuyên nghiệp: `🔹`, `👉`, `✅`, `✨`, `⭐`, `✔`.
    - Viết rõ: `🔹 [Tính năng/Lợi ích cốt lõi]: [Giá trị thực tế cho khách hàng]`.
-5. **Khối Cam Kết & Ưu Đãi Giới Hạn**:
-   - Xuống dòng rõ ràng cho từng chính sách:
-     `🎁 Ưu đãi đặc biệt: Giảm ngay xx% cho 50 khách hàng đầu tiên`
+5. **Khối Giá Bán, Cam Kết & Ưu Đãi Giới Hạn**:
+   - Xuống dòng rõ ràng cho từng thông tin:
+     `💰 Giá bán / Giá ưu đãi: [Mức giá sản phẩm hoặc Ưu đãi giảm giá hôm nay]`
+     `🎁 Quà tặng / Ưu đãi đặc biệt: Giảm ngay xx% hoặc quà tặng cho khách đặt sớm`
      `🚚 Vận chuyển: Miễn phí giao hàng toàn quốc & Kiểm tra trước khi nhận`
      `🛡️ Cam kết: Hàng chính hãng 100% - Bảo hành 1 đổi 1`
 6. **Lời Kêu Gọi Hành Động (CTA) & Thông Tin Liên Hệ**:

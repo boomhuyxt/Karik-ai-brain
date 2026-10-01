@@ -13,7 +13,20 @@ const STYLES = [
   ['data_futurism', 'Data Futurism', ['công nghệ', 'ai', 'finance', 'business'], ['Montserrat', 'Inter'], 'luminous data forms, spatial depth, premium tech realism']
 ].map(([id, label, keywords, fonts, treatment]) => ({ id, label, keywords, fonts, treatment }));
 
-const PALETTES = [
+const obsidianColorService = require('./obsidianColor.service');
+
+const OBSIDIAN_PALETTES = [
+  ['racing_gold', '#0B0F19', '#334155', '#FFD700', '#FFFFFF', '#FDE047'],
+  ['motul_crimson', '#111827', '#94A3B8', '#DC143C', '#FFFFFF', '#F87171'],
+  ['cyber_cyan', '#07111F', '#6366F1', '#00FFFF', '#FFFFFF', '#38BDF8'],
+  ['sunset_amber', '#18120C', '#78350F', '#F59E0B', '#FFFBEB', '#FCD34D'],
+  ['emerald_racing', '#052E16', '#0D9488', '#22C55E', '#F0FDF4', '#86EFAC'],
+  ['royal_luxury', '#0A1128', '#1C3D5A', '#FACC15', '#F8FAFC', '#93C5FD'],
+  ['monochrome_silver', '#0A0A0A', '#475569', '#F1F5F9', '#FFFFFF', '#CBD5E1'],
+  ['fresh_minimalist', '#F8F9F5', '#4A6B53', '#1C3323', '#1C3323', '#4A6B53']
+];
+
+const LEGACY_PALETTES = [
   ['ink_cyan', '#07111F', '#12304A', '#36D9FF', '#F7FBFF', '#A8C1D1'],
   ['sand_ink', '#F3EBDD', '#D8C5A5', '#27231F', '#27231F', '#665E54'],
   ['forest_clay', '#102A23', '#B76545', '#E9DCC9', '#FFF9EF', '#D7C9B6'],
@@ -24,10 +37,17 @@ const PALETTES = [
   ['sage_sky', '#E9F0E5', '#A7C7B5', '#3978A8', '#17342C', '#4D665E'],
   ['plum_gold', '#24101F', '#6A334F', '#DDBB67', '#FFF8EA', '#DEC9D3'],
   ['sunset_teal', '#0B3B3C', '#F27B5B', '#FFD66B', '#FFFFFF', '#CDE7E2']
-].map(([id, background, secondary, accent, text, subtext]) => ({ id, colors: [background, secondary, accent], text, subtext }));
+];
+
+const PALETTES = [...OBSIDIAN_PALETTES, ...LEGACY_PALETTES].map(([id, background, secondary, accent, text, subtext]) => ({
+  id,
+  colors: [background, secondary, accent],
+  text,
+  subtext
+}));
 
 const LAYOUTS = ['editorial_split', 'hero_center', 'diagonal_motion', 'frame_within_frame', 'asymmetric_grid', 'bottom_stage'];
-const SIZES = { '1:1': [1080, 1080], '4:5': [1080, 1350], '9:16': [1080, 1920], '16:9': [1920, 1080] };
+const SIZES = { '1:1': [1080, 1080], '4:5': [1080, 1350], '9:16': [1080, 1920], '16:9': [1920, 1080], '2:3': [1200, 1800] };
 
 function cleanText(value, fallback = '', maxLength = 300) {
   if (typeof value !== 'string') return fallback;
@@ -114,95 +134,95 @@ function buildKeyVisualPrompt({ brief, audience, style, palette, layout, aspectR
 function createLayers(layout, palette, style, copy) {
   const [background, secondary, accent] = palette.colors;
   const compositions = {
-    editorial_split: { subject: [70, 55, 54, 60], text: [7, 14, 45, 'left'], cta: [7, 85, 'left'] },
-    hero_center: { subject: [54, 54, 58, 55], text: [8, 9, 84, 'left'], cta: [8, 87, 'left'] },
-    diagonal_motion: { subject: [68, 59, 58, 63], text: [7, 12, 48, 'left'], cta: [7, 86, 'left'] },
-    frame_within_frame: { subject: [58, 55, 62, 58], text: [9, 10, 55, 'left'], cta: [9, 87, 'left'] },
-    asymmetric_grid: { subject: [31, 59, 51, 61], text: [58, 13, 35, 'left'], cta: [58, 83, 'left'] },
-    bottom_stage: { subject: [66, 39, 54, 50], text: [7, 61, 72, 'left'], cta: [7, 89, 'left'] }
+    editorial_split: { subject: [68, 54, 76, 70], text: [7, 14, 46, 'left'], cta: [7, 86, 'left'] },
+    hero_center: { subject: [50, 54, 86, 68], text: [8, 9, 84, 'center'], cta: [50, 88, 'center'] },
+    diagonal_motion: { subject: [62, 54, 82, 70], text: [7, 12, 50, 'left'], cta: [7, 86, 'left'] },
+    frame_within_frame: { subject: [50, 54, 85, 68], text: [8, 10, 84, 'center'], cta: [50, 88, 'center'] },
+    asymmetric_grid: { subject: [38, 54, 76, 70], text: [56, 14, 38, 'left'], cta: [56, 84, 'left'] },
+    bottom_stage: { subject: [50, 40, 86, 66], text: [8, 66, 84, 'center'], cta: [50, 90, 'center'] }
   };
-  const c = compositions[layout] || compositions.editorial_split;
-  const motif = [];
-  const addShape = (id, shape, x, y, width, height, fill, extra = {}) => motif.push({
-    id, type: 'shape', shape, x, y, width, height, fill, ...extra
-  });
-
-  switch (style.id) {
-    case 'swiss_grid':
-      addShape('grid_vertical', 'rect', 55, 50, 0.25, 88, accent, { opacity: 0.75 });
-      addShape('grid_horizontal', 'rect', 50, 76, 88, 0.22, accent, { opacity: 0.5 });
-      addShape('index_block', 'rect', 90, 9, 7, 7, accent);
-      break;
-    case 'kinetic_sport':
-      addShape('speed_bar_back', 'rect', 63, 50, 92, 16, secondary, { angle: -13, opacity: 0.42 });
-      addShape('speed_bar_accent', 'rect', 68, 57, 94, 2.2, accent, { angle: -13 });
-      addShape('speed_tick', 'rect', 13, 72, 18, 1.2, palette.text, { angle: -13, opacity: 0.7 });
-      break;
-    case 'retro_future':
-    case 'y2k_chrome':
-      addShape('orbit_outer', 'ellipse', 65, 53, 62, 38, 'transparent', { stroke: accent, strokeWidth: 4, angle: -18, opacity: 0.7 });
-      addShape('orbit_inner', 'ellipse', 65, 53, 43, 24, 'transparent', { stroke: palette.text, strokeWidth: 2, angle: 18, opacity: 0.45 });
-      addShape('horizon', 'rect', 50, 76, 88, 0.4, accent, { opacity: 0.55 });
-      break;
-    case 'neo_brutalism':
-      addShape('brutal_panel', 'rect', 66, 54, 56, 58, secondary, { angle: 3, stroke: palette.text, strokeWidth: 5 });
-      addShape('brutal_tag', 'rect', 20, 14, 26, 7, accent, { angle: -3 });
-      addShape('brutal_rule', 'rect', 44, 79, 74, 2, palette.text, { angle: -3 });
-      break;
-    case 'editorial_luxury':
-    case 'heritage_craft':
-      addShape('editorial_frame', 'rect', 50, 50, 88, 88, 'transparent', { stroke: accent, strokeWidth: 2, opacity: 0.8 });
-      addShape('editorial_rule', 'rect', 52, 50, 0.22, 76, accent, { opacity: 0.65 });
-      addShape('folio', 'ellipse', 91, 91, 4.5, 4.5, accent);
-      break;
-    case 'paper_collage':
-      addShape('paper_shadow', 'rect', 66, 54, 55, 62, '#000000', { angle: 5, opacity: 0.24 });
-      addShape('paper_card', 'rect', 64, 52, 55, 62, secondary, { angle: -3 });
-      addShape('paper_tape', 'rect', 67, 21, 18, 4, accent, { angle: 7, opacity: 0.82 });
-      break;
-    case 'cinematic_noir':
-      addShape('cinema_letterbox_top', 'rect', 50, 3, 100, 6, '#000000', { opacity: 0.75 });
-      addShape('cinema_letterbox_bottom', 'rect', 50, 97, 100, 6, '#000000', { opacity: 0.75 });
-      addShape('cinema_light', 'ellipse', 69, 48, 52, 66, accent, { opacity: 0.12, angle: -12 });
-      break;
-    case 'data_futurism':
-      addShape('data_panel', 'rect', 74, 49, 40, 68, secondary, { opacity: 0.38, stroke: accent, strokeWidth: 2 });
-      [0, 1, 2, 3].forEach(i => addShape(`data_bar_${i}`, 'rect', 82 + i * 3, 80 - i * 5, 1.2, 8 + i * 5, accent, { opacity: 0.45 + i * 0.12 }));
-      break;
-    case 'soft_3d':
-      addShape('soft_panel', 'roundedRect', 67, 53, 55, 62, secondary, { cornerRadius: 44, opacity: 0.62 });
-      addShape('soft_dot_a', 'ellipse', 88, 23, 11, 11, accent, { opacity: 0.72 });
-      addShape('soft_dot_b', 'ellipse', 50, 81, 7, 7, palette.text, { opacity: 0.38 });
-      break;
-    default:
-      addShape('organic_blob_a', 'ellipse', 68, 52, 54, 61, secondary, { angle: -12, opacity: 0.48 });
-      addShape('organic_blob_b', 'ellipse', 82, 65, 21, 25, accent, { opacity: 0.22 });
-  }
-
+  const c = compositions[layout] || compositions.hero_center;
   const [subjectX, subjectY, subjectW, subjectH] = c.subject;
   const [textX, textY, textW, textAlign] = c.text;
   const [ctaX, ctaY, ctaAlign] = c.cta;
   const ctaCenter = ctaAlign === 'left' ? ctaX + 13 : ctaX;
+
+  // Cấu trúc Layer chuẩn:
+  // 1. Bỏ triệt để các hình tròn / aura ở đằng sau sản phẩm (no backlight glow circle)
+  // 2. Phóng to sản phẩm lên tối đa (86% x 68%) để sản phẩm nổi bật nhất poster
+  // 3. Khẩu hiệu dòng sản phẩm, Tên sản phẩm to rõ liên quan trực tiếp, Tác dụng công năng rõ ràng
   return [
-    ...motif,
-    { id: 'backlight_glow', type: 'shape', shape: 'ellipse', x: subjectX, y: subjectY, width: subjectW * 0.92, height: subjectH * 0.85, fill: accent, opacity: 0.18 },
-    { id: 'contact_shadow', type: 'shape', shape: 'ellipse', x: subjectX, y: subjectY + (subjectH / 2) - 2.5, width: subjectW * 0.76, height: 4.8, fill: '#000000', opacity: 0.45 },
+    // 1. Mặt nạ chuyển sắc làm dịu nền phía trên đảm bảo chữ đọc rõ ràng tuyệt đối
+    { id: 'gradient_scrim', type: 'shape', shape: 'rect', x: 50, y: 18, width: 100, height: 36, fill: '#000000', opacity: 0.32 },
+    // 2. Bóng tiếp đất chân thực dưới đáy sản phẩm (Contact Shadow - điểm tiếp xúc mặt sàn, không phải hình tròn sau lưng)
+    { id: 'contact_shadow', type: 'shape', shape: 'ellipse', x: subjectX, y: subjectY + (subjectH / 2) - 1.5, width: subjectW * 0.70, height: 3.5, fill: '#000000', opacity: 0.58 },
+    // 3. Sản phẩm chính phóng to tối đa, chiếm vị trí trung tâm, chỉ cần tách nền
     { id: 'main_subject', type: 'image', x: subjectX, y: subjectY, width: subjectW, height: subjectH, fit: 'contain', removeBackground: true },
-    { id: 'eyebrow', type: 'text', text: copy.eyebrow, x: textX, y: textY, width: textW, height: 4, align: textAlign, fontFamily: style.fonts[1], fontWeight: 700, fontSize: 17, charSpacing: 90, color: accent },
-    { id: 'headline', type: 'text', text: copy.title, x: textX, y: textY + 9, width: textW, height: 17, align: textAlign, fontFamily: style.fonts[0], fontWeight: 800, fontSize: 64, minFontSize: 34, lineHeight: 0.96, color: palette.text },
-    { id: 'subtext', type: 'text', text: copy.subtitle, x: textX, y: textY + 24, width: Math.min(textW, 48), height: 10, align: textAlign, fontFamily: style.fonts[1], fontWeight: 400, fontSize: 21, minFontSize: 15, lineHeight: 1.3, color: palette.subtext },
-    { id: 'feature_bar', type: 'text', text: '⚡ Chính Hãng 100%  •  🔥 Hiệu Năng Cao  •  🛡️ Bảo Hành Uy Tín', x: ctaCenter, y: ctaY - 6.5, width: Math.min(textW + 30, 88), height: 3.5, align: 'center', fontFamily: style.fonts[1], fontWeight: 500, fontSize: 15, color: palette.subtext },
-    { id: 'cta_bg', type: 'shape', shape: style.id === 'neo_brutalism' ? 'rect' : 'roundedRect', x: ctaCenter, y: ctaY, width: 26, height: 5.6, fill: accent, cornerRadius: style.id === 'neo_brutalism' ? 0 : 16 },
-    { id: 'cta_text', type: 'text', text: copy.cta, x: ctaCenter, y: ctaY, width: 22, height: 3.8, align: 'center', fontFamily: style.fonts[1], fontWeight: 700, fontSize: 17, minFontSize: 13, color: background }
+    // 4. Khung Khẩu hiệu dòng sản phẩm (Badge Pill)
+    { id: 'badge_bg', type: 'shape', shape: 'roundedRect', x: textX, y: textY, width: Math.min(textW, 36), height: 4.6, fill: accent, cornerRadius: 8 },
+    // 5. Khẩu hiệu dòng sản phẩm (Line Slogan / Eyebrow)
+    { id: 'eyebrow', type: 'text', text: copy.eyebrow, x: textX, y: textY, width: Math.min(textW, 36), height: 4.6, align: textAlign, fontFamily: style.fonts[0], fontWeight: 800, fontSize: 16, charSpacing: 40, color: background },
+    // 6. Tên sản phẩm to, rõ ràng, đậm nét, liên quan trực tiếp đến sản phẩm (Product Headline)
+    { id: 'headline', type: 'text', text: copy.title, x: textX, y: textY + 9, width: textW, height: 16, align: textAlign, fontFamily: style.fonts[0], fontWeight: 900, fontSize: 62, minFontSize: 34, lineHeight: 0.96, color: palette.text },
+    // 7. Tác dụng & công năng của sản phẩm (Product Benefits / Subtext)
+    { id: 'subtext', type: 'text', text: copy.subtitle, x: textX, y: textY + 23, width: Math.min(textW + 15, 84), height: 8, align: textAlign, fontFamily: style.fonts[1], fontWeight: 600, fontSize: 20, minFontSize: 14, lineHeight: 1.3, color: accent },
+    // 8. Điểm nhấn công năng và tính năng chi tiết
+    { id: 'feature_bar', type: 'text', text: '⚡ Chính Hãng 100%  •  🔥 Hiệu Năng Vượt Trội  •  🛡️ Bảo Vệ Tối Ưu', x: ctaCenter, y: ctaY - 6.5, width: Math.min(textW + 30, 88), height: 3.5, align: 'center', fontFamily: style.fonts[1], fontWeight: 500, fontSize: 15, color: '#E2E8F0' },
+    // 9. Nút Kêu Gọi Hành Động (CTA Button)
+    { id: 'cta_bg', type: 'shape', shape: 'roundedRect', x: ctaCenter, y: ctaY, width: 28, height: 5.6, fill: accent, cornerRadius: 16 },
+    // 10. Chữ nút CTA
+    { id: 'cta_text', type: 'text', text: copy.cta, x: ctaCenter, y: ctaY, width: 24, height: 3.8, align: 'center', fontFamily: style.fonts[0], fontWeight: 800, fontSize: 17, minFontSize: 13, color: background }
   ];
 }
 
-function deriveHeadline(brief) {
-  const firstIdea = cleanText(brief, 'Ý TƯỞNG MỚI', 140).split(/[.!?;:\n]/)[0];
-  const withoutCommand = firstIdea
-    .replace(/^(hãy\s+)?(thiết kế|tạo|làm)\s+(một\s+)?/i, '')
-    .replace(/^(một\s+)?(poster|ảnh|hình ảnh)\s*/i, '');
-  return cleanText(withoutCommand.split(/\s+/).filter(Boolean).slice(0, 7).join(' '), 'Ý TƯỞNG MỚI', 46);
+function deriveHeadline(brief, copy = {}, preferences = {}) {
+  if (copy.title && copy.title.trim()) return cleanText(copy.title, '', 54);
+  if (copy.productName && copy.productName.trim()) return cleanText(copy.productName, '', 54);
+  if (preferences.productName && preferences.productName.trim()) return cleanText(preferences.productName, '', 54);
+
+  const raw = cleanText(brief, 'SẢN PHẨM MỚI', 180).split(/[.!?;:\n]/)[0];
+
+  // Remove command prefixes
+  let cleaned = raw
+    .replace(/^(hãy\s+)?(thiết kế|tạo|làm|vẽ|lên ý tưởng)\s+(một\s+)?/i, '')
+    .replace(/^(một\s+)?(poster|banner|ảnh|hình ảnh|ấn phẩm)\s+(quảng cáo\s+)?/i, '')
+    .replace(/^(giới thiệu|ra mắt|quảng bá|chào đón|bán|ưu đãi|sale)\s+/i, '')
+    .trim();
+
+  // Extract core product subject before prepositions like "cho", "dành cho"
+  const parts = cleaned.split(/\s+(?:dành\s+)?cho\s+/i);
+  if (parts.length > 1 && parts[0].trim().length >= 4) {
+    const candidate = parts[0].trim().split(/\s+/).slice(0, 6).join(' ');
+    if (candidate.length >= 3) {
+      return cleanText(candidate, 'SẢN PHẨM CAO CẤP', 54);
+    }
+  }
+
+  // Omit generic command / category noise words
+  const words = cleaned.split(/\s+/).filter(Boolean);
+  const filteredWords = words.filter(w => !/^(hãy|thiết|kế|tạo|làm|một|poster|ảnh|banner|quảng|cáo)$/i.test(w));
+  const candidate = (filteredWords.length > 0 ? filteredWords : words).slice(0, 6).join(' ');
+  return cleanText(candidate, 'SẢN PHẨM CHÍNH HÃNG', 54);
+}
+
+function deriveProductSubtitle(brief, preferences = {}) {
+  const text = `${brief || ''} ${preferences.industry || ''}`.toLowerCase();
+  if (/(?:nhớt|dầu nhớt|motul|castrol|bôi trơn)/i.test(text)) {
+    return 'Tối ưu hóa công suất động cơ • Bôi trơn bền bỉ • Giảm nhiệt tức thì';
+  }
+  if (/(?:mũ|nón|bảo hộ|giáp|găng|alpinestars)/i.test(text)) {
+    return 'Bảo vệ chuẩn an toàn quốc tế • Thiết kế khí động học • Êm ái đường dài';
+  }
+  if (/(?:xe|độ xe|biker|harley|racing|phụ tùng|pô|bugi)/i.test(text)) {
+    return 'Đạt chuẩn kỹ thuật đua • Bứt phá tốc độ • Độ bền bỉ tối đa';
+  }
+  if (/(?:cà phê|coffee|trà|ẩm thực|nước)/i.test(text)) {
+    return 'Hương vị nguyên bản • Tinh tuyển thủ công • Nguồn năng lượng tươi mới';
+  }
+  if (/(?:công nghệ|tech|app|ai|phần mềm|điện tử)/i.test(text)) {
+    return 'Đột phá hiệu năng • Trải nghiệm thông minh • Dẫn đầu xu thế';
+  }
+  return `Thiết kế tối ưu cho ${preferences.audience || 'khách hàng mục tiêu'}`;
 }
 
 const CATEGORY_RULES = [
@@ -262,7 +282,7 @@ function matchTemplateForProduct(brief, preferences = {}) {
     const bd = obsidianPosterService.getBackdropById(targetId);
     if (bd) {
       return {
-        template: { id: bd.id, title: bd.title, localPath: bd.url, category: bd.category, source: 'obsidian', safeZone: bd.safeZone, recommendedColors: bd.recommendedColors },
+        template: { id: bd.id, title: bd.title, localPath: bd.url, category: bd.category, source: 'obsidian', safeZone: bd.safeZone, recommendedColors: bd.recommendedColors, recommendedFonts: bd.recommendedFonts },
         categoryMatch: bd.category,
         matchedKeyword: bd.id,
         source: 'obsidian'
@@ -270,27 +290,33 @@ function matchTemplateForProduct(brief, preferences = {}) {
     }
   }
 
-  const allTemplates = getPicsartTemplates();
-  const text = `${brief || ''} ${preferences.industry || ''} ${preferences.mood || ''}`.toLowerCase();
-
-  // 2. Prioritize Obsidian Vault backdrops for automotive, bike, mechanical, garage, and meme intents
-  const isObsidianDomain = /(?:nhớt|dầu nhớt|phụ tùng|biker|xe máy|gara|sửa xe|đua xe|harley|bugi|pô|castrol|motul|cơ khí|thép|drift|meme|drake|bateman|akira|truman)/i.test(text);
-  if (isObsidianDomain) {
+  // 2. Default to Obsidian Vault (Kho Mẫu Nền Poster: 24 backdrops across XE, MEME, ART)
+  const isLegacyRequested = preferences.backdropSource === 'legacy' || preferences.source === 'legacy';
+  if (!isLegacyRequested) {
     const obsidianMatch = obsidianPosterService.matchBackdrop(brief, preferences);
-    if (obsidianMatch && obsidianMatch.score > 0) {
+    if (obsidianMatch && obsidianMatch.backdrop) {
       const bd = obsidianMatch.backdrop;
       return {
-        template: { id: bd.id, title: bd.title, localPath: bd.url, category: bd.category, source: 'obsidian', safeZone: bd.safeZone, recommendedColors: bd.recommendedColors },
+        template: {
+          id: bd.id,
+          title: bd.title,
+          localPath: bd.url,
+          category: bd.category,
+          source: 'obsidian',
+          safeZone: bd.safeZone,
+          recommendedColors: bd.recommendedColors,
+          recommendedFonts: bd.recommendedFonts
+        },
         categoryMatch: bd.category,
-        matchedKeyword: obsidianMatch.matchedKeywords[0] || 'automotive',
-        source: 'obsidian'
+        matchedKeyword: obsidianMatch.matchedKeywords[0] || bd.id,
+        source: 'obsidian',
+        technique: obsidianMatch.technique
       };
     }
   }
 
-  if (!allTemplates || allTemplates.length === 0) {
-    return { template: null, categoryMatch: 'general', matchedKeyword: 'default' };
-  }
+  const allTemplates = getPicsartTemplates();
+  const text = `${brief || ''} ${preferences.industry || ''} ${preferences.mood || ''}`.toLowerCase();
 
   for (const rule of CATEGORY_RULES) {
     const matchedKw = rule.keywords.find(k => text.includes(k));
@@ -307,26 +333,39 @@ function matchTemplateForProduct(brief, preferences = {}) {
     }
   }
 
-  return { template: allTemplates[0], categoryMatch: 'general', matchedKeyword: 'default' };
+  const defaultBd = obsidianPosterService.getBackdropById('XE-02') || obsidianPosterService.getBackdrops()[0];
+  return {
+    template: { id: defaultBd.id, title: defaultBd.title, localPath: defaultBd.url, category: defaultBd.category, source: 'obsidian', safeZone: defaultBd.safeZone, recommendedColors: defaultBd.recommendedColors, recommendedFonts: defaultBd.recommendedFonts },
+    categoryMatch: defaultBd.category,
+    matchedKeyword: 'obsidian_default',
+    source: 'obsidian'
+  };
 }
 
 function createVariant({ brief, preferences, copy, style, palette, layout, aspectRatio, index, template }) {
   const [width, height] = SIZES[aspectRatio];
+  const matchedHarmony = obsidianColorService.getHarmonyById(palette.id) || obsidianColorService.matchHarmony(brief, preferences);
+  const headline = cleanText(copy.title, deriveHeadline(brief, copy, preferences), 54).toUpperCase();
   const content = {
-    eyebrow: cleanText(copy.eyebrow, preferences.industry || style.label, 34).toUpperCase(),
-    title: cleanText(copy.title, deriveHeadline(brief), 54).toUpperCase(),
-    subtitle: cleanText(copy.subtitle, `Thiết kế dành cho ${preferences.audience || 'đúng đối tượng của bạn'}`, 110),
-    cta: cleanText(copy.cta, 'KHÁM PHÁ NGAY', 28).toUpperCase()
+    eyebrow: cleanText(copy.eyebrow, preferences.industry || (matchedHarmony && matchedHarmony.keywords[0] ? `CHÍNH HÃNG ${matchedHarmony.keywords[0].toUpperCase()}` : style.label), 34).toUpperCase(),
+    title: headline,
+    subtitle: cleanText(copy.subtitle, deriveProductSubtitle(brief, preferences), 110),
+    cta: cleanText(copy.cta, 'MUA NGAY', 28).toUpperCase()
   };
   const signature = `${style.id}:${layout}:${palette.id}`;
-  const baseBackground = template ? {
+  const fallbackBd = obsidianPosterService.getBackdropById('XE-02') || obsidianPosterService.getBackdrops()[0];
+  const effectiveTemplate = template || {
+    id: fallbackBd.id,
+    title: fallbackBd.title,
+    localPath: fallbackBd.url,
+    category: fallbackBd.category,
+    source: 'obsidian'
+  };
+
+  const baseBackground = {
     type: 'template',
-    url: template.localPath,
-    title: template.title
-  } : {
-    type: 'linearGradient',
-    angle: (hashString(signature) % 120) + 30,
-    stops: [{ offset: 0, color: palette.colors[0] }, { offset: 1, color: palette.colors[1] }]
+    url: effectiveTemplate.localPath,
+    title: effectiveTemplate.title
   };
 
   return {
@@ -341,14 +380,18 @@ function createVariant({ brief, preferences, copy, style, palette, layout, aspec
     title: content.title,
     subtitle: content.subtitle,
     badge: content.eyebrow,
-    template: template || null,
-    templateUrl: template ? template.localPath : null,
-    templateTitle: template ? template.title : null,
-    artDirection: template
-      ? (template.source === 'obsidian' || /^(ART|MEME|XE)-/i.test(template.id)
-          ? `Áp dụng mẫu nền Obsidian "${template.title}" thuộc kho mẫu Admin kết hợp phong cách ${style.label} và bố cục ${layout.replace(/_/g, ' ')}.`
-          : `Lấy cảm hứng từ mẫu Picsart "${template.title}" kết hợp phong cách ${style.label} và bố cục ${layout.replace(/_/g, ' ')}.`)
-      : `${style.label} với bố cục ${layout.replace(/_/g, ' ')} để khác biệt rõ với các thiết kế gần đây.`,
+    colorHarmony: {
+      id: matchedHarmony.id,
+      name: matchedHarmony.name,
+      harmonyType: matchedHarmony.harmonyType,
+      rule60: matchedHarmony.rule60,
+      rule30: matchedHarmony.rule30,
+      rule10: matchedHarmony.rule10
+    },
+    template: effectiveTemplate,
+    templateUrl: effectiveTemplate.localPath,
+    templateTitle: effectiveTemplate.title,
+    artDirection: `Áp dụng mẫu nền Obsidian "${effectiveTemplate.title}" kết hợp bảng phối màu 60-30-10 "${matchedHarmony.name}" và phong cách ${style.label}.`,
     keyVisual: {
       mode: 'generate_without_text',
       prompt: buildKeyVisualPrompt({ brief, audience: preferences.audience, style, palette, layout, aspectRatio }),
@@ -360,7 +403,7 @@ function createVariant({ brief, preferences, copy, style, palette, layout, aspec
       height,
       safeMarginPercent: 6,
       background: baseBackground,
-      backdrop: template ? template.localPath : null
+      backdrop: effectiveTemplate.localPath
     },
     layers: createLayers(layout, palette, style, content),
     personalization: { ...preferences, appliedBrandColors: preferences.brandColors }
@@ -377,7 +420,7 @@ function createDesignSet(input = {}) {
   const preferences = normalizePreferences(input.preferences);
   const copy = input.copy && typeof input.copy === 'object' ? input.copy : {};
   const history = normalizeHistory(input.history);
-  const aspectRatio = SIZES[input.aspectRatio] ? input.aspectRatio : '4:5';
+  const aspectRatio = SIZES[input.aspectRatio] ? input.aspectRatio : '9:16';
   const count = Math.max(1, Math.min(Number(input.variantCount) || 3, 3));
   const styles = chooseStyles(brief, preferences, history, count);
   const usedLayouts = new Set(history.slice(-4).map(item => item.layout));
@@ -441,7 +484,8 @@ function getCatalog() {
     layouts: LAYOUTS,
     aspectRatios: Object.keys(SIZES),
     templates: getPicsartTemplates(),
-    obsidianBackdrops: obsidianPosterService.getBackdrops()
+    obsidianBackdrops: obsidianPosterService.getBackdrops(),
+    posterTechniques: obsidianPosterService.getTechniques()
   };
 }
 

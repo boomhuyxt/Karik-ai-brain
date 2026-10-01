@@ -411,34 +411,71 @@ class TiktokBrowserBotService {
         addLog('Đang chờ nút "Đăng" (Post) của TikTok sẵn sàng kích hoạt...');
         let posted = false;
 
-        // Vòng lặp chờ nút Đăng sẵn sàng (tối đa 25 giây khi media upload xong)
-        for (let attempt = 1; attempt <= 25; attempt++) {
-          posted = await page.evaluate(() => {
+        // Vòng lặp chờ nút Đăng sẵn sàng (tối đa 35 giây khi media upload & kiểm tra hoàn tất)
+        for (let attempt = 1; attempt <= 35; attempt++) {
+          const buttonInfo = await page.evaluate(() => {
             const buttons = Array.from(document.querySelectorAll('button, div[role="button"]'));
+            const badWords = ['đăng xuất', 'logout', 'log out', 'hủy', 'cancel', 'quay lại', 'back'];
 
-            const postBtn = buttons.find(b => {
-              const txt = (b.textContent || b.innerText || '').toLowerCase().trim();
+            for (const b of buttons) {
+              const txt = (b.innerText || b.textContent || '').toLowerCase().trim();
               const aria = (b.getAttribute('aria-label') || '').toLowerCase().trim();
               const isDisabled = b.disabled || b.getAttribute('aria-disabled') === 'true' || b.classList.contains('disabled');
               
-              const isMatch = (
-                txt === 'đăng' || txt === 'post' || txt.includes('đăng bài') || txt.includes('post now') ||
-                aria === 'đăng' || aria === 'post'
-              );
-              return !isDisabled && isMatch && b.offsetParent !== null;
-            });
+              if (isDisabled) continue;
+              if (badWords.some(w => txt.includes(w) || aria.includes(w))) continue;
 
-            if (postBtn) {
-              postBtn.click();
-              return true;
+              const isMatch = (
+                txt === 'đăng' || txt === 'post' || txt.includes('đăng bài') || txt.includes('post now') || txt.includes('xuất bản') ||
+                aria === 'đăng' || aria === 'post' ||
+                txt.startsWith('đăng') || txt.startsWith('post')
+              );
+
+              if (isMatch && b.offsetParent !== null) {
+                b.setAttribute('data-karik-tiktok-target', 'true');
+                if (typeof b.scrollIntoView === 'function') {
+                  b.scrollIntoView({ behavior: 'instant', block: 'center', inline: 'center' });
+                }
+                return { found: true, label: txt || aria };
+              }
             }
-            return false;
+            return { found: false };
           });
 
-          if (posted) {
-            addLog('🎉 ĐÃ TỰ ĐỘNG BẤM NÚT ĐĂNG BÀI TIKTOK THÀNH CÔNG! (Media + Caption đã được xuất bản)');
-            await new Promise(r => setTimeout(r, 5000));
-            break;
+          if (buttonInfo.found) {
+            const targetHandle = await page.$('[data-karik-tiktok-target="true"]');
+            if (targetHandle) {
+              try {
+                // Tầng 1: Dispatch MouseEvent đầy đủ
+                await targetHandle.evaluate(el => {
+                  ['pointerdown', 'mousedown', 'pointerup', 'mouseup', 'click'].forEach(evt => {
+                    el.dispatchEvent(new MouseEvent(evt, { bubbles: true, cancelable: true, view: window }));
+                  });
+                  if (typeof el.click === 'function') el.click();
+                });
+
+                // Tầng 2: Hardware-level CDP click
+                const box = await targetHandle.boundingBox();
+                if (box) {
+                  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2, { delay: 80 });
+                } else {
+                  await targetHandle.click({ delay: 80 });
+                }
+              } catch (e) {
+                await targetHandle.click({ delay: 80 }).catch(() => {});
+              } finally {
+                await targetHandle.evaluate(el => el.removeAttribute('data-karik-tiktok-target')).catch(() => {});
+              }
+
+              addLog(`🎉 ĐÃ TỰ ĐỘNG BẤM NÚT ĐĂNG BÀI TIKTOK THÀNH CÔNG! (Media + Caption đã được xuất bản)`);
+              posted = true;
+              await new Promise(r => setTimeout(r, 5000));
+              break;
+            }
+          }
+
+          if (attempt % 5 === 0) {
+            addLog(`⏳ Đang đợi TikTok Creator Studio xử lý ảnh/video và kích hoạt nút Đăng (lần thử ${attempt}/35)...`);
           }
 
           await new Promise(r => setTimeout(r, 1000));

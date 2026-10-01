@@ -145,4 +145,213 @@ test('imageController handles Obsidian template endpoints', () => {
   assert.equal(jsonResult.success, true);
   assert.equal(jsonResult.posterConfig.backdropId, 'XE-01');
   assert.equal(jsonResult.posterConfig.title, 'BẢNG GIÁ DỊCH VỤ');
+
+  // 4. getTechniques
+  imageController.getTechniques({}, mockRes);
+  assert.equal(jsonResult.success, true);
+  assert.equal(jsonResult.count, 10);
+  assert.ok(jsonResult.techniques.length === 10);
 });
+
+test('Obsidian Poster Service exposes all 10 Poster Design Techniques with valid configurations', () => {
+  const techniques = obsidianPosterService.getTechniques();
+  assert.equal(techniques.length, 10);
+
+  // All 10 techniques have mandatory properties
+  assert.ok(techniques.every(t =>
+    t.id &&
+    t.name &&
+    t.slug &&
+    t.category &&
+    t.coreEssence &&
+    Array.isArray(t.recommendedLayouts) &&
+    t.recommendedFonts?.headline &&
+    t.recommendedFonts?.body &&
+    Array.isArray(t.recommendedAspectRatios) &&
+    Array.isArray(t.recommendedBackdropIds) &&
+    t.colorStrategy
+  ));
+
+  // Verify specific techniques
+  const tech01 = obsidianPosterService.getTechniqueById('TECH-01');
+  assert.ok(tech01);
+  assert.equal(tech01.slug, 'image_collage_layering');
+  assert.equal(tech01.recommendedFonts.headline, 'Oswald');
+  assert.ok(tech01.recommendedBackdropIds.includes('XE-01'));
+
+  const tech04 = obsidianPosterService.getTechniqueById('TECH-04');
+  assert.ok(tech04);
+  assert.equal(tech04.category, 'minimalism');
+  assert.equal(tech04.recommendedFonts.headline, 'Playfair Display');
+  assert.ok(tech04.recommendedBackdropIds.includes('XE-02'));
+
+  const tech06 = obsidianPosterService.getTechniqueById('TECH-06');
+  assert.ok(tech06);
+  assert.equal(tech06.recommendedFonts.headline, 'Orbitron');
+  assert.ok(tech06.recommendedBackdropIds.includes('MEME-08'));
+});
+
+test('Obsidian Poster Service intelligently matches techniques and builds configs with custom aspect ratios', () => {
+  // Test technique matching
+  const matchedTech = obsidianPosterService.matchTechnique('Poster tối giản sang trọng cho thương hiệu đồng hồ cao cấp');
+  assert.ok(matchedTech);
+  assert.equal(matchedTech.id, 'TECH-04');
+
+  // Test config generation with 2:3 print aspect ratio and technique font pairing
+  const config = obsidianPosterService.buildPosterConfig({
+    backdrop: obsidianPosterService.getBackdropById('XE-02'),
+    brief: 'Poster triển lãm xe cổ điển',
+    copy: { title: 'TRIỂN LÃM VINTAGE' },
+    options: {
+      aspectRatio: '2:3',
+      techniqueId: 'TECH-05'
+    }
+  });
+
+  assert.equal(config.preset, '2:3');
+  assert.equal(config.canvas.width, 1200);
+  assert.equal(config.canvas.height, 1800);
+  assert.ok(config.technique);
+  assert.equal(config.technique.id, 'TECH-05');
+  assert.equal(config.technique.recommendedFonts.headline, 'Abril Fatface');
+
+  const headlineLayer = config.layers.find(l => l.id === 'headline');
+  assert.ok(headlineLayer);
+  assert.equal(headlineLayer.fontFamily, 'Abril Fatface');
+});
+
+test('buildPosterConfig applies Obsidian Color Vault (60-30-10), derives product-centric headline, enlarges product and bans circles behind product', () => {
+  const config = obsidianPosterService.buildPosterConfig({
+    backdrop: obsidianPosterService.getBackdropById('XE-02'),
+    brief: 'Poster bán sản phẩm nhớt Motul 300V cho xe phân khối lớn',
+    options: {
+      aspectRatio: '4:5'
+    }
+  });
+
+  // 1. Color vault harmony 60-30-10 check
+  assert.ok(config.paletteId);
+  assert.ok(config.paletteRules);
+  assert.ok(config.paletteRules.rule60 && config.paletteRules.rule30 && config.paletteRules.rule10);
+  assert.ok(['racing_gold', 'motul_crimson'].includes(config.paletteId));
+
+  // 2. Product-centric headline check
+  assert.ok(config.title.toUpperCase().includes('MOTUL') || config.title.toUpperCase().includes('NHỚT'));
+  const headlineLayer = config.layers.find(l => l.id === 'headline');
+  assert.ok(headlineLayer.text.toUpperCase().includes('MOTUL') || headlineLayer.text.toUpperCase().includes('NHỚT'));
+
+  // 3. Hero product scale check (enlarged width >= 80, height >= 65)
+  const productLayer = config.layers.find(l => l.id === 'main_subject');
+  assert.ok(productLayer);
+  assert.ok(productLayer.width >= 80, `Expected product width >= 80, got ${productLayer.width}`);
+  assert.ok(productLayer.height >= 65, `Expected product height >= 65, got ${productLayer.height}`);
+
+  // 4. Ban circles behind product check (No circle shape, only thin contact_shadow ellipse at floor)
+  const circularLayers = config.layers.filter(l => l.shape === 'circle');
+  assert.equal(circularLayers.length, 0, 'No circular shapes allowed');
+  
+  const shadowLayer = config.layers.find(l => l.id === 'contact_shadow');
+  assert.ok(shadowLayer);
+  assert.equal(shadowLayer.shape, 'ellipse');
+  assert.ok(shadowLayer.height <= 5, 'Contact shadow must be flat ground ellipse, not backlight disk');
+});
+
+test('buildPosterConfig defaults to 9:16 (1080x1920), uses roundedRect with cornerRadius, and enforces headline shadow/glow', () => {
+  const config = obsidianPosterService.buildPosterConfig({
+    brief: 'Poster giới thiệu phụ gia nhớt bốc máy xe số',
+    copy: {
+      title: 'PHỤ GIA NHỚT SIÊU CẤP',
+      badge: 'CÔNG NGHỆ NANO'
+    }
+  });
+
+  // 1. Default aspect ratio is 9:16 (1080x1920)
+  assert.equal(config.preset, '9:16');
+  assert.equal(config.canvas.width, 1080);
+  assert.equal(config.canvas.height, 1920);
+
+  // 2. Headline has 86px font size and shadow/glow properties
+  const headline = config.layers.find(l => l.id === 'headline');
+  assert.ok(headline);
+  assert.equal(headline.fontSize, 86);
+  assert.ok(headline.shadow);
+  assert.ok(headline.shadow.blur >= 15);
+  assert.ok(headline.shadow.color.includes('rgba'));
+
+  // 2.1 Main subject product has 50% sharpen adjustment
+  const mainSubject = config.layers.find(l => l.id === 'main_subject');
+  assert.ok(mainSubject);
+  assert.equal(mainSubject.adjustments.sharpen, 50);
+
+  // 2.2 Backdrop is selected from Xe & cơ khí category
+  assert.ok(config.backdropId.startsWith('XE-'));
+
+  // 3. Badge and CTA shapes use roundedRect with cornerRadius
+  const badgeBg = config.layers.find(l => l.id === 'price_badge_bg' || l.id === 'badge_bg');
+  assert.ok(badgeBg);
+  assert.equal(badgeBg.shape, 'roundedRect');
+  assert.ok(badgeBg.cornerRadius >= 12);
+
+  const ctaBg = config.layers.find(l => l.id === 'cta_bg');
+  assert.ok(ctaBg);
+  assert.equal(ctaBg.shape, 'roundedRect');
+  assert.ok(ctaBg.cornerRadius >= 20);
+
+  // 4. Publishing productCaption is purely product-centric
+  assert.ok(config.publishing);
+  assert.ok(config.publishing.productCaption);
+  assert.ok(!config.publishing.productCaption.toLowerCase().includes('layer'));
+  assert.ok(!config.publishing.productCaption.toLowerCase().includes('typography'));
+  assert.ok(!config.publishing.productCaption.toLowerCase().includes('bố cục'));
+});
+
+test('buildPosterConfig strictly positions headline between price badge and main product subject, and selects random Xe backdrop', () => {
+  // Test getRandomXeBackdrop helper
+  const randomXe = obsidianPosterService.getRandomXeBackdrop();
+  assert.ok(randomXe);
+  assert.equal(randomXe.category, 'xe');
+  assert.ok(randomXe.id.startsWith('XE-'));
+
+  // Test config layer stacking
+  const config = obsidianPosterService.buildPosterConfig({
+    brief: 'Poster bán lốp xe Michelin Pilot Street giá 650.000đ',
+    copy: {
+      title: 'LỐP XE MICHELIN CAO CẤP',
+      badge: 'GIÁ 650.000Đ'
+    }
+  });
+
+  const priceBadgeBg = config.layers.find(l => l.id === 'price_badge_bg');
+  const priceBadgeText = config.layers.find(l => l.id === 'price_badge_text');
+  const headline = config.layers.find(l => l.id === 'headline');
+  const mainSubject = config.layers.find(l => l.id === 'main_subject');
+  const productSummary = config.layers.find(l => l.id === 'product_summary');
+
+  assert.ok(priceBadgeBg, 'Price badge background layer must exist');
+  assert.ok(priceBadgeText, 'Price badge text layer must exist');
+  assert.ok(headline, 'Headline layer must exist');
+  assert.ok(mainSubject, 'Main subject product layer must exist');
+  assert.ok(productSummary, 'Product summary layer below product image must exist');
+
+  // Strict vertical hierarchy: Price Badge -> Headline -> Product Image -> Product Summary
+  assert.ok(priceBadgeBg.y < headline.y, `Price badge Y (${priceBadgeBg.y}) must be above Headline Y (${headline.y})`);
+  assert.ok(headline.y < mainSubject.y, `Headline Y (${headline.y}) must be above Main Subject Y (${mainSubject.y})`);
+  assert.ok(mainSubject.y < productSummary.y, `Main Subject Y (${mainSubject.y}) must be above Product Summary Y (${productSummary.y})`);
+
+  // Price text must be strictly greater than 30px
+  assert.ok(priceBadgeText.fontSize > 30, `Price badge font size (${priceBadgeText.fontSize}) must be > 30px`);
+
+  // Headline specifications
+  assert.equal(headline.fontSize, 86);
+  assert.ok(headline.shadow);
+  assert.ok(headline.shadow.blur >= 15);
+
+  // Main subject 50% sharpen
+  assert.equal(mainSubject.adjustments.sharpen, 50);
+
+  // Backdrop must be from category 'xe'
+  assert.ok(config.backdropId.startsWith('XE-'));
+  const backdrop = obsidianPosterService.getBackdropById(config.backdropId);
+  assert.equal(backdrop.category, 'xe');
+});
+

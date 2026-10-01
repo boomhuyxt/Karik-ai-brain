@@ -34,17 +34,38 @@ Không chọn lại cùng bộ ba `style + layout + palette` trong lịch sử g
 
 Style taxonomy có thể dùng hoặc phối hợp: Editorial Luxury, Neo Brutalism, Organic Minimal, Kinetic Sport, Retro Future, Swiss Grid, Cinematic Noir, Y2K Chrome, Paper Collage, Soft 3D, Heritage Craft, Data Futurism. Đây là vocabulary định hướng, không phải 12 template cố định.
 
-## 3.1. Kho Mẫu Nền Poster & Tri Thức Huấn Luyện Từ Obsidian Vault (Admin)
+## 3.1. 10 Kỹ Thuật Thiết Kế Poster & Kho Mẫu Nền Từ Obsidian Vault
 
-Hệ thống đã học và đồng bộ toàn bộ kho tri thức thiết kế chuyên sâu từ Obsidian Vault của Admin:
-1. **Kho 24 Mẫu Nền Thực Chiến (`raw/nền poster/`)**:
-   - **Nhóm XE (Cơ khí & Đường đua)**: `XE-01` (Thép nhám kim cương), `XE-02` (Vải rủ studio đen cao cấp), `XE-03` (NASCAR tốc độ), `XE-04` (Khúc cua F1 Kerb), `XE-05` (Khói Burnout & Lửa đêm), `XE-06` (Đường đua đô thị sương mù), `XE-07` (Studio xám loang), `XE-08` (Ma trận lưới Cyber Grid).
-   - **Nhóm MEME (Viral & So sánh)**: `MEME-01` (Akira Kaneda xe đỏ), `MEME-02` (Bateman sofa quý ông), `MEME-03` (Saul Goodman hotline 24/7), `MEME-04` (Truman nấc thang bứt phá), `MEME-05` (Drake Hotline Bling 2 khung), `MEME-06` (Tony Stark donut), `MEME-07` (Scorsese Cinema 5 sao), `MEME-08` (Tony Jericho bão sale bom nổ).
+Hệ thống tích hợp toàn bộ kho tri thức chuyên sâu từ Obsidian Vault của Admin:
+1. **10 Kỹ Thuật Thiết Kế Poster (wiki/10 Kỹ Thuật Thiết Kế Poster Phổ Biến)**:
+   - `TECH-01 (Cắt ảnh xếp lớp)`: Cấu trúc 3 tầng Foreground (badge/CTA) - Midground (sản phẩm cắt nền + contact shadow) - Background. Hợp với `XE-01`, `XE-04`, `XE-05`. Font: `Oswald` + `Inter`.
+   - `TECH-02 (Góc nhìn độc đáo)`: Worm's-eye mắt giun, Bird's-eye từ trên cao, Dutch angle nghiêng kịch tính. Hợp với `ART-03`, `ART-05`, `MEME-01`. Font: `Montserrat` + `Inter`.
+   - `TECH-03 (Nghệ thuật chữ)`: Headline là visual chính, in hoa cỡ lớn (54-64px), tương phản cực mạnh với nền. Hợp với `XE-07`, `XE-08`. Font: `Bebas Neue` + `Space Grotesk`.
+   - `TECH-04 (Tối giản & Khoảng thở)`: Less is more, không gian âm (Negative Space) bao quanh 1 tiêu điểm duy nhất. Hợp với `XE-02`, `XE-07`, `ART-01`. Font: `Playfair Display` + `Plus Jakarta Sans`.
+   - `TECH-05 (Cổ điển hoài niệm)`: Muted colors, vàng giấy cũ, film grain thập niên 70-80. Hợp với `ART-04`, `ART-08`, `ART-02`. Font: `Abril Fatface` + `Lora`.
+   - `TECH-06 (Phóng đại cường điệu)`: Biến dạng tỷ lệ, tương phản Neon huỳnh quang và bóng tối. Hợp với `MEME-08`, `XE-05`, `XE-08`. Font: `Orbitron` + `Space Grotesk`.
+   - `TECH-07 (Cân bằng chữ - hình Gestalt)`: Cân bằng trọng lượng thị giác giữa khối hình và chữ. Hợp với `ART-06`, `XE-06`, `MEME-02`. Font: `Montserrat` + `Inter`.
+   - `TECH-08 (Ảnh thực tế chân thực)`: Tôn vinh chi tiết máy móc, bóng bẩy cơ khí, bảo chứng tin cậy. Hợp với `XE-02`, `XE-07`, `MEME-07`. Font: `Inter` + `Be Vietnam Pro`.
+   - `TECH-09 (Minh họa nghệ thuật)`: Thân thiện, kể chuyện, nét vẽ độc bản. Hợp với `MEME-04`, `MEME-01`. Font: `Baloo 2` + `Nunito`.
+   - `TECH-10 (Chuỗi poster đồng nhất)`: Bất biến lưới & vị trí CTA/logo, biến thiên màu nền/sản phẩm theo mùa.
+
+2. **Kho 24 Mẫu Nền Thực Chiến (`raw/nền poster/`) — Tuyệt Đối Không Dùng Màu Nền Đơn Điệu**:
+   Thay vì dùng màu nền phẳng lì đơn điệu hay gradient 2 màu tẻ nhạt, luôn lấy nền từ kho 24 tài sản Obsidian Vault:
+   - **Nhóm XE (Cơ khí & Đường đua)**: `XE-01` (Thép nhám), `XE-02` (Vải rủ studio đen cao cấp), `XE-03` (NASCAR tốc độ), `XE-04` (Khúc cua F1), `XE-05` (Khói Burnout lửa đêm), `XE-06` (Đô thị sương mù), `XE-07` (Studio xám loang), `XE-08` (Cyber Grid blueprint).
+   - **Nhóm MEME (Viral & So sánh)**: `MEME-01` (Akira xe đỏ), `MEME-02` (Bateman sofa), `MEME-03` (Saul Goodman hotline 24/7), `MEME-04` (Truman nấc thang), `MEME-05` (Drake 2 khung), `MEME-06` (Tony Stark donut), `MEME-07` (Scorsese Cinema 5 sao), `MEME-08` (Tony Stark bão sale bom nổ).
    - **Nhóm ART (Nghệ thuật & Biker)**: `ART-01` (Biker rừng đêm), `ART-02` (Harley hầm xe), `ART-03` (Chọc trời mù sương), `ART-04` (Cruiser sa mạc), `ART-05` (Sportbike bão tố), `ART-06` (Chopper sàn đen), `ART-07` (Dodge Challenger khói mờ), `ART-08` (Scrambler hangar).
-2. **Quy Trình 5 Bước Thực Chiến (wiki/Kho Mẫu Nền Poster/02)**:
-   - **B1**: Chọn nền tương ứng ngành hàng (Dầu nhớt/phụ tùng &rarr; `XE-02`, `XE-01`, `XE-05`, `ART-02`; Bão sale &rarr; `MEME-08`; Hotline cứu hộ &rarr; `MEME-03`).
+
+3. **Kích Thước Chuẩn Theo Kênh Xuất Bản**:
+   - `4:5` (1080x1350): Facebook Feed, Instagram Portrait (ưu tiên số 1 cho Newfeed).
+   - `9:16` (1080x1920): TikTok, Story, Reels, Standee LED dọc.
+   - `1:1` (1080x1080): Instagram Square Feed, Carousel Catalogue.
+   - `16:9` (1920x1080): Banner ngang website, màn hình ngang.
+   - `2:3` (1200x1800): Poster in ấn chuẩn A3/A4, Standee triển lãm.
+
+4. **Quy Trình 5 Bước Thực Chiến (wiki/Kho Mẫu Nền Poster/02)**:
+   - **B1**: Chọn nền Obsidian tương ứng ngành hàng/kỹ thuật.
    - **B2**: Áp dụng Gradient Masking làm dịu vùng đặt chữ.
-   - **B3**: Ghép sản phẩm `main_subject` tách nền `removeBackground: true` và đặt đúng vùng trọng tâm (1/3 dưới hoặc trung tâm).
+   - **B3**: Ghép sản phẩm `main_subject` tách nền `removeBackground: true` đúng vùng trọng tâm với bóng đổ `contact_shadow`.
    - **B4**: Phân cấp chữ 3 tầng (Headline in hoa tương phản cao + Subtitle làm rõ giá trị + Tính năng nổi bật + CTA button bắt mắt).
    - **B5**: Hoàn thiện ánh sáng, shadow và xuất `json:poster-config`.
 
@@ -67,14 +88,19 @@ Bắt buộc ghi rõ: `Text: none` và tránh words, letters, numbers, fake logo
 
 ## 5. Quy tắc layer và thị giác
 
-- Hệ phân cấp: eyebrow → headline → subtitle/value proposition → CTA.
+- **Cấu trúc phân cấp dọc bất biến**:
+  - `Tầng 1 (Trên cùng - y: ~10-12%)`: Badge Giá tiền / Ưu đãi (`price_badge_bg` & `price_badge_text`). **CỠ CHỮ GIÁ TIỀN BẮT BUỘC TRÊN 30PX** (`fontSize: 34`).
+  - `Tầng 2 (Chính giữa - y: ~20-22%)`: Tiêu đề Headline 86px (`fontSize: 86`) có hiệu ứng đổ bóng & phát sáng (`shadow/glow`). **HEADLINE BẮT BUỘC LUÔN NẰM GIỮA GIÁ TIỀN VÀ ẢNH SẢN PHẨM**.
+  - `Tầng 3 (y: ~56%)`: Ảnh sản phẩm (`main_subject`) được làm nét 50% (`sharpen: 50`) kết hợp đổ bóng sàn `contact_shadow`.
+  - `Tầng 4 (Dưới ảnh sản phẩm - y: ~82-84%)`: **BẮT BUỘC CÓ THÊM PHẦN CHỮ GIỚI THIỆU SƠ LƯỢC VỀ SẢN PHẨM** (`product_summary`), tóm tắt ngắn gọn 1-2 dòng về công năng, chất liệu hoặc điểm nổi bật nhất của sản phẩm.
+- **Lựa chọn nền Poster**: Khi edit ảnh hoặc tạo poster, AI tự động lấy **RANDOM** một ảnh nền từ mục Xe & cơ khí (`XE-01` đến `XE-08`) trong kho tài sản Obsidian Vault.
 - Tối đa 2 font có hỗ trợ đầy đủ tiếng Việt.
 - Màu theo vai trò 60/30/10, nhưng tỷ lệ có thể thay đổi khi art direction yêu cầu.
 - Dùng safe margin tối thiểu 6%; không để chữ sát mép.
 - Toạ độ `x`, `y`, `width`, `height` dùng phần trăm canvas từ 0–100.
 - Mỗi layer có `id` mang nghĩa ổn định. Các loại được hỗ trợ: `image`, `text`, `shape`.
-- Shape được hỗ trợ: `ellipse`, `circle`, `roundedRect`, `rect`.
-- Chỉ dùng filter/adjustment khi phục vụ art direction; tránh tăng saturation/contrast mặc định cho mọi ảnh.
+- Shape được hỗ trợ: `ellipse`, `circle`, `roundedRect`, `rect`. Ưu tiên dùng `roundedRect` bo góc mềm mại thay cho hình chữ nhật vuông sắc cạnh.
+- Chỉ dùng filter/adjustment khi phục vụ art direction; ảnh sản phẩm `main_subject` mặc định tăng độ nét sharpen lên 50%.
 
 ## 6. Định dạng đầu ra bắt buộc
 
@@ -91,11 +117,13 @@ Trả đúng hai phần:
   "layout": "layout_taxonomy_slug",
   "palette": "unique_palette_slug",
   "signature": "style:layout:palette",
-  "preset": "4:5",
+  "preset": "9:16",
   "title": "NỘI DUNG TIÊU ĐỀ THỰC TẾ",
   "subtitle": "Mô tả thực tế",
   "badge": "Nhãn thực tế",
+  "productSummary": "Giới thiệu sơ lược 1-2 dòng về sản phẩm",
   "artDirection": "Lý do lựa chọn ngắn gọn",
+  "backdropId": "XE-01",
   "keyVisual": {
     "mode": "generate_without_text",
     "role": "background_and_key_visual",
@@ -104,48 +132,112 @@ Trả đúng hai phần:
   },
   "canvas": {
     "width": 1080,
-    "height": 1350,
+    "height": 1920,
     "safeMarginPercent": 6,
     "background": {
-      "type": "linearGradient",
-      "angle": 135,
-      "stops": [
-        { "offset": 0, "color": "#0F172A" },
-        { "offset": 1, "color": "#1E293B" }
-      ]
+      "type": "image",
+      "url": "/api/github/raw?path=raw/n%E1%BB%81n%20poster/xe/13dcb8bbea70bd889867f8e3f2a01747.jpg"
     }
   },
   "layers": [
     {
-      "id": "main_subject",
-      "type": "image",
+      "id": "price_badge_bg",
+      "type": "shape",
+      "shape": "roundedRect",
       "x": 50,
-      "y": 52,
-      "width": 64,
-      "height": 52,
-      "fit": "contain",
-      "removeBackground": true
+      "y": 11,
+      "width": 44,
+      "height": 5.8,
+      "fill": "#EAB308",
+      "cornerRadius": 20
+    },
+    {
+      "id": "price_badge_text",
+      "type": "text",
+      "text": "💰 GIÁ CHỈ: 450.000Đ",
+      "x": 50,
+      "y": 11,
+      "width": 44,
+      "height": 5.8,
+      "fontFamily": "Montserrat",
+      "fontWeight": 800,
+      "fontSize": 34,
+      "color": "#020617",
+      "align": "center"
     },
     {
       "id": "headline",
       "type": "text",
       "text": "NỘI DUNG TIÊU ĐỀ THỰC TẾ",
-      "x": 8,
-      "y": 20,
-      "width": 48,
-      "height": 16,
-      "fontFamily": "Font hỗ trợ tiếng Việt",
-      "fontWeight": 800,
-      "fontSize": 62,
+      "x": 50,
+      "y": 21,
+      "width": 88,
+      "height": 12,
+      "fontFamily": "Montserrat",
+      "fontWeight": 900,
+      "fontSize": 86,
       "color": "#F8FAFC",
-      "align": "left"
+      "align": "center",
+      "shadow": {
+        "color": "rgba(0, 0, 0, 0.85)",
+        "blur": 20,
+        "offsetX": 0,
+        "offsetY": 4
+      }
+    },
+    {
+      "id": "contact_shadow",
+      "type": "shape",
+      "shape": "ellipse",
+      "x": 50,
+      "y": 83,
+      "width": 58,
+      "height": 3.5,
+      "fill": "#000000",
+      "opacity": 0.60
+    },
+    {
+      "id": "main_subject",
+      "type": "image",
+      "x": 50,
+      "y": 56,
+      "width": 84,
+      "height": 66,
+      "fit": "contain",
+      "removeBackground": true,
+      "adjustments": {
+        "sharpen": 50,
+        "contrast": 15,
+        "brightness": 6
+      }
+    },
+    {
+      "id": "product_summary",
+      "type": "text",
+      "text": "Dòng sản phẩm cao cấp, tối ưu hiệu năng bứt phá & độ bền vượt trội.",
+      "x": 50,
+      "y": 84,
+      "width": 88,
+      "height": 5.5,
+      "fontFamily": "Montserrat",
+      "fontWeight": 600,
+      "fontSize": 20,
+      "color": "#F8FAFC",
+      "align": "center",
+      "shadow": {
+        "color": "rgba(0, 0, 0, 0.85)",
+        "blur": 16,
+        "offsetX": 0,
+        "offsetY": 3
+      }
     }
   ],
   "publishing": {
-    "productCaption": "Caption tập trung vào sản phẩm",
+    "productCaption": "Caption tập trung vào sản phẩm và giá bán",
     "hashtags": ["#thuonghieu", "#sanpham"]
   }
 }
 ```
 
-Schema trên minh hoạ cấu trúc, không phải mẫu nội dung hoặc toạ độ để sao chép. Phải bổ sung đủ eyebrow, subtitle, CTA và các shape cần thiết cho thiết kế thực tế. Mọi mã màu phải là hex hợp lệ; mọi text phải là nội dung thật, không để placeholder.
+Schema trên minh hoạ cấu trúc, không phải mẫu nội dung hoặc toạ độ để sao chép. Tỷ lệ mặc định bắt buộc là 9:16 (1080x1920). Nền poster BẮT BUỘC lấy RANDOM từ danh mục Xe & cơ khí (`XE-01` đến `XE-08`). Cỡ chữ hiển thị giá (`price_badge_text`) BẮT BUỘC TRÊN 30PX (`fontSize: 34`). Cỡ chữ headline BẮT BUỘC là 86px (`fontSize: 86`) và PHẢI LUÔN NẰM GIỮA giá tiền (ở trên) và ảnh sản phẩm (ở dưới). Ảnh sản phẩm main_subject BẮT BUỘC làm nét (Sharpen) lên 50% (`sharpen: 50`). Phía dưới ảnh sản phẩm BẮT BUỘC có thêm layer chữ giới thiệu sơ lược về sản phẩm (`product_summary`). Các khối shape bắt buộc dùng roundedRect có bo góc (`cornerRadius`). Tiêu đề headline bắt buộc có shadow/glow. Phải bổ sung đủ subtitle, CTA và các shape cần thiết cho thiết kế thực tế. Mọi mã màu phải là hex hợp lệ; mọi text phải là nội dung thật, không để placeholder.
+
