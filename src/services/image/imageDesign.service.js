@@ -202,7 +202,81 @@ function deriveHeadline(brief) {
   return cleanText(withoutCommand.split(/\s+/).filter(Boolean).slice(0, 7).join(' '), 'Ý TƯỞNG MỚI', 46);
 }
 
-function createVariant({ brief, preferences, copy, style, palette, layout, aspectRatio, index }) {
+const CATEGORY_RULES = [
+  {
+    category: 'fashion_shoes',
+    keywords: ['giày', 'shoe', 'shoes', 'boot', 'boots', 'sneaker', 'sneakers', 'sandal', 'guốc', 'dép', 'footwear', 'dép lào'],
+    preferredSubstrings: ['shoe', 'boot', 'footwear']
+  },
+  {
+    category: 'fashion_clothes',
+    keywords: ['áo', 'quần', 'váy', 'đầm', 'thời trang', 'fashion', 'hoodie', 'jacket', 'shirt', 'dress', 'suit', 'vest', 'collection', 'polo'],
+    preferredSubstrings: ['fashion', 'collection', 'mens']
+  },
+  {
+    category: 'fashion_hats',
+    keywords: ['mũ', 'nón', 'hat', 'hats', 'cap', 'beanie', 'phụ kiện', 'accessory'],
+    preferredSubstrings: ['hat']
+  },
+  {
+    category: 'sale',
+    keywords: ['sale', 'giảm giá', 'khuyến mãi', 'ưu đãi', 'hot deal', 'black friday', 'deal', 'discount', 'flash sale', 'xả kho', 'giá sốc', 'sale 50%'],
+    preferredSubstrings: ['sale', 'black_friday', 'anniversary']
+  },
+  {
+    category: 'food_beverage',
+    keywords: ['cà phê', 'coffee', 'trà', 'tea', 'bánh', 'đồ ăn', 'food', 'nước uống', 'beverage', 'cafe', 'quán ăn', 'ẩm thực', 'organic', 'sạch', 'nhà hàng'],
+    preferredSubstrings: ['earthy', 'fashion_poster_with_beige', 'summer_sale_poster_in_brown']
+  },
+  {
+    category: 'travel',
+    keywords: ['du lịch', 'travel', 'tour', 'khách sạn', 'hotel', 'resort', 'vé máy bay', 'nghỉ dưỡng', 'phượt', 'khám phá', 'chuyến đi', 'đà nẵng', 'hà nội', 'phú quốc'],
+    preferredSubstrings: ['travel', 'italy', 'dubai', 'arizona', 'istanbul']
+  },
+  {
+    category: 'events',
+    keywords: ['sự kiện', 'event', 'tiệc', 'party', 'sinh nhật', 'birthday', 'khai trương', 'opening', 'halloween', 'hội thảo', 'workshop', 'celebration', 'chúc mừng'],
+    preferredSubstrings: ['story', 'party', 'celebration', 'halloween']
+  },
+  {
+    category: 'tech_automotive',
+    keywords: ['xe', 'xe máy', 'oto', 'phụ tùng', 'nhớt', 'bugi', 'moto', 'bike', 'motor', 'công nghệ', 'tech', 'điện thoại', 'linh kiện', 'wave'],
+    preferredSubstrings: ['hero_instagram', 'anniversary_sale', 'black_friday']
+  },
+  {
+    category: 'education',
+    keywords: ['học', 'khóa học', 'sách', 'book', 'course', 'trường', 'school', 'teacher', 'giáo dục', 'education', 'lớp học', 'sinh viên'],
+    preferredSubstrings: ['school', 'teacher', 'learning']
+  }
+];
+
+function matchTemplateForProduct(brief, preferences = {}) {
+  const allTemplates = getPicsartTemplates();
+  if (!allTemplates || allTemplates.length === 0) {
+    return { template: null, categoryMatch: 'general', matchedKeyword: 'default' };
+  }
+
+  const text = `${brief || ''} ${preferences.industry || ''} ${preferences.mood || ''}`.toLowerCase();
+
+  for (const rule of CATEGORY_RULES) {
+    const matchedKw = rule.keywords.find(k => text.includes(k));
+    if (matchedKw) {
+      let found = allTemplates.find(t =>
+        rule.preferredSubstrings.some(sub => t.localFilename.toLowerCase().includes(sub) || t.title.toLowerCase().includes(sub))
+      );
+      if (!found) {
+        found = allTemplates.find(t => t.category === rule.category || rule.keywords.some(k => t.title.toLowerCase().includes(k)));
+      }
+      if (found) {
+        return { template: found, categoryMatch: found.category || rule.category, matchedKeyword: matchedKw, subCategory: rule.category };
+      }
+    }
+  }
+
+  return { template: allTemplates[0], categoryMatch: 'general', matchedKeyword: 'default' };
+}
+
+function createVariant({ brief, preferences, copy, style, palette, layout, aspectRatio, index, template }) {
   const [width, height] = SIZES[aspectRatio];
   const content = {
     eyebrow: cleanText(copy.eyebrow, preferences.industry || style.label, 34).toUpperCase(),
@@ -211,6 +285,16 @@ function createVariant({ brief, preferences, copy, style, palette, layout, aspec
     cta: cleanText(copy.cta, 'KHÁM PHÁ NGAY', 28).toUpperCase()
   };
   const signature = `${style.id}:${layout}:${palette.id}`;
+  const baseBackground = template ? {
+    type: 'template',
+    url: template.localPath,
+    title: template.title
+  } : {
+    type: 'linearGradient',
+    angle: (hashString(signature) % 120) + 30,
+    stops: [{ offset: 0, color: palette.colors[0] }, { offset: 1, color: palette.colors[1] }]
+  };
+
   return {
     schemaVersion: '3.0',
     variantId: `variant_${index + 1}_${hashString(signature + brief).toString(36)}`,
@@ -223,7 +307,12 @@ function createVariant({ brief, preferences, copy, style, palette, layout, aspec
     title: content.title,
     subtitle: content.subtitle,
     badge: content.eyebrow,
-    artDirection: `${style.label} với bố cục ${layout.replace(/_/g, ' ')} để khác biệt rõ với các thiết kế gần đây.`,
+    template: template || null,
+    templateUrl: template ? template.localPath : null,
+    templateTitle: template ? template.title : null,
+    artDirection: template
+      ? `Lấy cảm hứng từ mẫu Picsart "${template.title}" kết hợp phong cách ${style.label} và bố cục ${layout.replace(/_/g, ' ')}.`
+      : `${style.label} với bố cục ${layout.replace(/_/g, ' ')} để khác biệt rõ với các thiết kế gần đây.`,
     keyVisual: {
       mode: 'generate_without_text',
       prompt: buildKeyVisualPrompt({ brief, audience: preferences.audience, style, palette, layout, aspectRatio }),
@@ -234,11 +323,8 @@ function createVariant({ brief, preferences, copy, style, palette, layout, aspec
       width,
       height,
       safeMarginPercent: 6,
-      background: {
-        type: 'linearGradient',
-        angle: (hashString(signature) % 120) + 30,
-        stops: [{ offset: 0, color: palette.colors[0] }, { offset: 1, color: palette.colors[1] }]
-      }
+      background: baseBackground,
+      backdrop: template ? template.localPath : null
     },
     layers: createLayers(layout, palette, style, content),
     personalization: { ...preferences, appliedBrandColors: preferences.brandColors }
@@ -262,6 +348,11 @@ function createDesignSet(input = {}) {
   const usedPalettes = new Set(history.slice(-4).map(item => item.palette));
   const seed = hashString(`${brief}:${history.length}`);
 
+  const matchedResult = input.templateId
+    ? { template: getPicsartTemplates().find(t => t.id === input.templateId) || null }
+    : matchTemplateForProduct(brief, preferences);
+  const matchedTemplate = matchedResult.template;
+
   return styles.map((style, index) => {
     const layout = chooseUnused(LAYOUTS, usedLayouts, seed + index * 3);
     usedLayouts.add(layout);
@@ -270,8 +361,33 @@ function createDesignSet(input = {}) {
     if (preferences.brandColors.length) {
       palette = { ...palette, id: `brand_${palette.id}`, colors: [...preferences.brandColors, ...palette.colors].slice(0, 3) };
     }
-    return createVariant({ brief, preferences, copy, style, palette, layout, aspectRatio, index });
+    return createVariant({ brief, preferences, copy, style, palette, layout, aspectRatio, index, template: matchedTemplate });
   });
+}
+
+const path = require('path');
+const fs = require('fs');
+
+let _cachedTemplates = null;
+
+function getPicsartTemplates(category) {
+  try {
+    if (!_cachedTemplates) {
+      const metadataPath = path.join(__dirname, '../../../public/templates/posters/posters.json');
+      if (fs.existsSync(metadataPath)) {
+        _cachedTemplates = JSON.parse(fs.readFileSync(metadataPath, 'utf8'));
+      } else {
+        _cachedTemplates = [];
+      }
+    }
+    if (!category || category === 'all') {
+      return _cachedTemplates;
+    }
+    return _cachedTemplates.filter(item => item.category === category);
+  } catch (err) {
+    console.error('Error reading Picsart poster templates:', err.message);
+    return [];
+  }
 }
 
 function getCatalog() {
@@ -279,8 +395,9 @@ function getCatalog() {
     styles: STYLES.map(({ id, label, keywords }) => ({ id, label, keywords })),
     palettes: PALETTES,
     layouts: LAYOUTS,
-    aspectRatios: Object.keys(SIZES)
+    aspectRatios: Object.keys(SIZES),
+    templates: getPicsartTemplates()
   };
 }
 
-module.exports = { createDesignSet, getCatalog, normalizePreferences, normalizeHistory, buildKeyVisualPrompt };
+module.exports = { createDesignSet, getCatalog, normalizePreferences, normalizeHistory, buildKeyVisualPrompt, getPicsartTemplates, matchTemplateForProduct };

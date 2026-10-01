@@ -467,6 +467,9 @@ function initAIChat() {
                             <button type="button" onclick="window.switchAndRebuildPoster('minimal', '${targetImageUrl}', ${safeConfigJson})" class="px-2.5 py-1 rounded-lg bg-slate-950/90 hover:bg-emerald-950/90 border border-emerald-500/40 hover:border-emerald-300 text-[10px] text-emerald-300 font-semibold transition-all active:scale-95 flex items-center gap-1 shadow-sm">🌿 Minimal Sáng</button>
                             <button type="button" onclick="window.switchAndRebuildPoster('bold_sale', '${targetImageUrl}', ${safeConfigJson})" class="px-2.5 py-1 rounded-lg bg-slate-950/90 hover:bg-rose-950/90 border border-rose-500/40 hover:border-rose-300 text-[10px] text-rose-300 font-semibold transition-all active:scale-95 flex items-center gap-1 shadow-sm">🔥 Bold Hot Sale</button>
                             <button type="button" onclick="window.switchAndRebuildPoster('split_left', '${targetImageUrl}', ${safeConfigJson})" class="px-2.5 py-1 rounded-lg bg-slate-950/90 hover:bg-blue-950/90 border border-blue-500/40 hover:border-blue-300 text-[10px] text-blue-300 font-semibold transition-all active:scale-95 flex items-center gap-1 shadow-sm">📐 Split Magazine</button>
+                            <button type="button" onclick="window.autoMatchAndCompositePoster('${targetImageUrl}', '${escapeHtml(userText)}')" class="px-2.5 py-1 rounded-lg bg-gradient-to-r from-purple-800 to-indigo-800 hover:from-purple-700 hover:to-indigo-700 border border-purple-400/50 text-[10px] text-amber-300 font-bold transition-all active:scale-95 flex items-center gap-1 shadow-sm">
+                                <span class="material-symbols-outlined text-[12px] text-amber-400">auto_awesome_motion</span> Ghép 39 Mẫu Picsart
+                            </button>
                         </div>
                     </div>
                 `;

@@ -14,6 +14,19 @@ class ImageController {
     return res.json({ success: true, ...imageDesignService.getCatalog() });
   }
 
+  getTemplates(req, res) {
+    const category = req.query?.category;
+    const templates = imageDesignService.getPicsartTemplates(category);
+    return res.json({ success: true, count: templates.length, templates });
+  }
+
+  matchTemplate(req, res) {
+    const brief = req.body?.brief || req.query?.brief || '';
+    const preferences = req.body?.preferences || {};
+    const result = imageDesignService.matchTemplateForProduct(brief, preferences);
+    return res.json({ success: true, ...result });
+  }
+
   async getProfile(req, res, next) {
     try {
       const userId = requireUser(req);
