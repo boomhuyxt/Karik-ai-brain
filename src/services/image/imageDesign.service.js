@@ -185,10 +185,13 @@ function createLayers(layout, palette, style, copy) {
   const ctaCenter = ctaAlign === 'left' ? ctaX + 13 : ctaX;
   return [
     ...motif,
+    { id: 'backlight_glow', type: 'shape', shape: 'ellipse', x: subjectX, y: subjectY, width: subjectW * 0.92, height: subjectH * 0.85, fill: accent, opacity: 0.18 },
+    { id: 'contact_shadow', type: 'shape', shape: 'ellipse', x: subjectX, y: subjectY + (subjectH / 2) - 2.5, width: subjectW * 0.76, height: 4.8, fill: '#000000', opacity: 0.45 },
     { id: 'main_subject', type: 'image', x: subjectX, y: subjectY, width: subjectW, height: subjectH, fit: 'contain', removeBackground: true },
     { id: 'eyebrow', type: 'text', text: copy.eyebrow, x: textX, y: textY, width: textW, height: 4, align: textAlign, fontFamily: style.fonts[1], fontWeight: 700, fontSize: 17, charSpacing: 90, color: accent },
     { id: 'headline', type: 'text', text: copy.title, x: textX, y: textY + 9, width: textW, height: 17, align: textAlign, fontFamily: style.fonts[0], fontWeight: 800, fontSize: 64, minFontSize: 34, lineHeight: 0.96, color: palette.text },
     { id: 'subtext', type: 'text', text: copy.subtitle, x: textX, y: textY + 24, width: Math.min(textW, 48), height: 10, align: textAlign, fontFamily: style.fonts[1], fontWeight: 400, fontSize: 21, minFontSize: 15, lineHeight: 1.3, color: palette.subtext },
+    { id: 'feature_bar', type: 'text', text: '⚡ Chính Hãng 100%  •  🔥 Hiệu Năng Cao  •  🛡️ Bảo Hành Uy Tín', x: ctaCenter, y: ctaY - 6.5, width: Math.min(textW + 30, 88), height: 3.5, align: 'center', fontFamily: style.fonts[1], fontWeight: 500, fontSize: 15, color: palette.subtext },
     { id: 'cta_bg', type: 'shape', shape: style.id === 'neo_brutalism' ? 'rect' : 'roundedRect', x: ctaCenter, y: ctaY, width: 26, height: 5.6, fill: accent, cornerRadius: style.id === 'neo_brutalism' ? 0 : 16 },
     { id: 'cta_text', type: 'text', text: copy.cta, x: ctaCenter, y: ctaY, width: 22, height: 3.8, align: 'center', fontFamily: style.fonts[1], fontWeight: 700, fontSize: 17, minFontSize: 13, color: background }
   ];
