@@ -67,3 +67,35 @@ test('image design service penalizes recent signatures and sanitizes preferences
 test('image design service rejects an empty creative brief', () => {
   assert.throws(() => imageDesignService.createDesignSet({ brief: '   ' }), /Creative brief is required/);
 });
+
+test('image design service loads Picsart poster templates and filters by category', () => {
+  const allTemplates = imageDesignService.getPicsartTemplates();
+  assert.ok(Array.isArray(allTemplates));
+  assert.ok(allTemplates.length >= 30);
+
+  const fashionTemplates = imageDesignService.getPicsartTemplates('fashion');
+  assert.ok(fashionTemplates.length > 0);
+  assert.ok(fashionTemplates.every(t => t.category === 'fashion'));
+
+  const catalog = imageDesignService.getCatalog();
+  assert.ok(Array.isArray(catalog.templates));
+  assert.equal(catalog.templates.length, allTemplates.length);
+});
+
+test('image design service matches best template for product brief and assigns backdrop to variant', () => {
+  const result = imageDesignService.matchTemplateForProduct('Giày sneaker thể thao phong cách đường phố');
+  assert.equal(result.categoryMatch, 'fashion');
+  assert.ok(result.template);
+  assert.ok(result.template.localPath.includes('shoe') || result.template.category === 'fashion');
+
+  const [variant] = imageDesignService.createDesignSet({
+    brief: 'Giày sneaker thể thao phong cách đường phố',
+    variantCount: 1
+  });
+  assert.ok(variant.template);
+  assert.ok(variant.templateUrl);
+  assert.equal(variant.canvas.background.type, 'template');
+  assert.equal(variant.canvas.backdrop, variant.templateUrl);
+});
+
+

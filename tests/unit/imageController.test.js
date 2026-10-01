@@ -11,6 +11,7 @@ test('image controller exposes catalog and creates personalized variants', async
   const catalogResponse = createResponse();
   imageController.getCatalog({}, catalogResponse);
   assert.ok(catalogResponse.payload.styles.length >= 10);
+  assert.ok(catalogResponse.payload.templates.length >= 30);
 
   const designResponse = createResponse();
   let capturedError = null;
@@ -18,6 +19,14 @@ test('image controller exposes catalog and creates personalized variants', async
   assert.equal(capturedError, null);
   assert.equal(designResponse.payload.success, true);
   assert.equal(designResponse.payload.variants.length, 3);
+});
+
+test('image controller exposes Picsart templates with category filter', () => {
+  const response = createResponse();
+  imageController.getTemplates({ query: { category: 'fashion' } }, response);
+  assert.equal(response.payload.success, true);
+  assert.ok(response.payload.count > 0);
+  assert.ok(response.payload.templates.every(t => t.category === 'fashion'));
 });
 
 test('image profile endpoint requires an authenticated user', async () => {
@@ -47,3 +56,13 @@ test('hybrid generation sends a text-free key visual prompt to the image provide
     geminiImageService.generateImage = originalGenerateImage;
   }
 });
+
+test('image controller matches template based on brief and category', () => {
+  const response = createResponse();
+  imageController.matchTemplate({ body: { brief: 'Váy dạ hội thời trang cao cấp' } }, response);
+  assert.equal(response.payload.success, true);
+  assert.equal(response.payload.categoryMatch, 'fashion');
+  assert.ok(response.payload.template);
+  assert.equal(response.payload.template.category, 'fashion');
+});
+

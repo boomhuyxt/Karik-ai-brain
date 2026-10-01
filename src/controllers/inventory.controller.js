@@ -173,13 +173,14 @@ class InventoryController {
   // 10. Khách chốt mua -> Trừ kho và gửi cảnh báo đến Chủ Shop
   async handleShopOrderAndDeduct(req, res) {
     try {
-      const { shop_id, item_identifier, quantity, customer_name, customer_phone } = req.body;
+      const { shop_id, item_identifier, quantity, customer_name, customer_phone, customer_address } = req.body;
       const result = await shopChatbotService.processOrderAndDeduct({
         shop_id: shop_id || 'default_shop',
         item_identifier,
         quantity: quantity ? Number(quantity) : 1,
         customer_name,
-        customer_phone
+        customer_phone,
+        customer_address
       });
       return res.json(result);
     } catch (err) {
@@ -279,9 +280,14 @@ class InventoryController {
   async getPostOfficeOrders(req, res) {
     try {
       const shopKnowledgeRepo = require('../repositories/shopKnowledge.repository');
-      const orders = await shopKnowledgeRepo.getAllOrders();
+      const shop_id = req.query.shop_id || null;
+      let orders = await shopKnowledgeRepo.getAllOrders();
+      if (shop_id && shop_id !== 'all') {
+        orders = orders.filter(o => o.shop_id === shop_id);
+      }
       return res.json({
         success: true,
+        shop_id: shop_id || 'all',
         total_orders: orders.length,
         data: orders
       });

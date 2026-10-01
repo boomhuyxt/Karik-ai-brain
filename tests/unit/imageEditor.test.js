@@ -89,4 +89,28 @@ describe('Image & Poster Editor Studio Module', () => {
     assert.ok(graphviewHtml.includes('imageEditor.js'), 'graphview.html should load imageEditor.js');
     assert.ok(graphviewHtml.includes('imageBackgroundRemoval.js'), 'graphview.html should load edge-aware background removal');
   });
+  test('Picsart poster templates gallery is integrated in modal and JS engine', () => {
+    const modalPath = path.join(__dirname, '../../public/components/imageEditorModal.html');
+    const html = fs.readFileSync(modalPath, 'utf8');
+    assert.ok(html.includes('id="picsartTemplatesSection"'), 'Should have Picsart templates section');
+    assert.ok(html.includes('id="picsartTemplatesGrid"'), 'Should have Picsart templates grid');
+    assert.ok(html.includes('id="picsartCategoryFilters"'), 'Should have category filters');
+    assert.ok(html.includes('id="btnJumpToPicsartGallery"'), 'Should have jump to gallery button in style tab');
+
+    const jsPath = path.join(__dirname, '../../public/js/imageEditor.js');
+    const js = fs.readFileSync(jsPath, 'utf8');
+    assert.ok(js.includes('setupPicsartTemplatesGallery'), 'Should setup Picsart gallery');
+    assert.ok(js.includes('window.insertPicsartPoster'), 'Should expose insertPicsartPoster');
+    assert.ok(js.includes('window.setCanvasBackgroundFromUrl'), 'Should expose setCanvasBackgroundFromUrl');
+    assert.ok(js.includes('window.applyPicsartCreativeBrief'), 'Should expose applyPicsartCreativeBrief');
+    assert.ok(js.includes('window.buildPosterFromProductAndTemplate'), 'Should expose buildPosterFromProductAndTemplate');
+    assert.ok(js.includes('window.compositeProductWithTemplate'), 'Should expose compositeProductWithTemplate');
+    assert.ok(js.includes('window.autoMatchAndCompositePoster'), 'Should expose autoMatchAndCompositePoster');
+    assert.ok(html.includes('id="btnAutoMatchPicsart"'), 'Should have AI Auto Match banner in modal');
+
+    const metadataPath = path.join(__dirname, '../../public/templates/posters/posters.json');
+    assert.ok(fs.existsSync(metadataPath), 'posters.json metadata must exist');
+    const posters = JSON.parse(fs.readFileSync(metadataPath, 'utf8'));
+    assert.ok(posters.length >= 30, 'Should have at least 30 downloaded poster templates');
+  });
 });

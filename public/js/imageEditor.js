@@ -887,7 +887,224 @@
                 }
             };
         }
+
+        setupPicsartTemplatesGallery();
     }
+
+    let _allPicsartTemplates = [];
+
+    function setupPicsartTemplatesGallery() {
+        const grid = document.getElementById('picsartTemplatesGrid');
+        if (!grid) return;
+
+        const totalBadge = document.getElementById('picsartTotalBadge');
+        const searchInput = document.getElementById('picsartSearchInput');
+        const filterBtns = document.querySelectorAll('.picsart-cat-btn');
+        const btnJump = document.getElementById('btnJumpToPicsartGallery');
+
+        if (btnJump) {
+            btnJump.onclick = () => {
+                const uploadTabBtn = document.querySelector('.studio-tab-btn[data-tab="tab-upload"]');
+                if (uploadTabBtn) uploadTabBtn.click();
+                const section = document.getElementById('picsartTemplatesSection');
+                if (section) section.scrollIntoView({ behavior: 'smooth' });
+            };
+        }
+
+        let currentCategory = 'all';
+        let searchQuery = '';
+
+        function renderTemplates() {
+            let filtered = _allPicsartTemplates;
+            if (currentCategory !== 'all') {
+                filtered = filtered.filter(item => item.category === currentCategory);
+            }
+            if (searchQuery.trim()) {
+                const q = searchQuery.toLowerCase().trim();
+                filtered = filtered.filter(item => (item.title || '').toLowerCase().includes(q) || (item.category || '').toLowerCase().includes(q));
+            }
+
+            if (totalBadge) totalBadge.textContent = filtered.length;
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '<div class="col-span-2 text-center py-6 text-slate-400 text-xs">Không tìm thấy mẫu poster phù hợp.</div>';
+                return;
+            }
+
+            grid.innerHTML = filtered.map(item => {
+                const catLabel = {
+                    fashion: 'Thời trang',
+                    sale: 'Khuyến mãi',
+                    events: 'Sự kiện',
+                    travel: 'Du lịch',
+                    lifestyle_edu: 'Đời sống'
+                }[item.category] || 'Mẫu Poster';
+
+                const catColor = {
+                    fashion: 'bg-rose-500/30 text-rose-300 border-rose-400/40',
+                    sale: 'bg-amber-500/30 text-amber-300 border-amber-400/40',
+                    events: 'bg-purple-500/30 text-purple-300 border-purple-400/40',
+                    travel: 'bg-cyan-500/30 text-cyan-300 border-cyan-400/40',
+                    lifestyle_edu: 'bg-emerald-500/30 text-emerald-300 border-emerald-400/40'
+                }[item.category] || 'bg-slate-700 text-slate-300 border-slate-600';
+
+                const safeTitle = (item.title || 'Mẫu Poster').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
+                return `
+                    <div class="picsart-poster-card group relative bg-slate-900 border border-slate-800 hover:border-cyan-400/60 rounded-xl overflow-hidden transition-all hover:scale-[1.02] hover:shadow-lg flex flex-col justify-between">
+                        <div class="relative aspect-[3/4] bg-slate-950 overflow-hidden cursor-pointer" onclick="window.compositeProductWithTemplate('${item.id || item.localPath}')" title="Bấm để tách nền sản phẩm & ghép vào mẫu này">
+                            <img src="${item.localPath}" alt="${safeTitle}" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                            <span class="absolute top-1 left-1 text-[8px] font-bold uppercase px-1.5 py-0.5 rounded border backdrop-blur-sm ${catColor}">
+                                ${catLabel}
+                            </span>
+                        </div>
+                        <div class="p-1.5 bg-slate-950/90 border-t border-slate-800 space-y-1">
+                            <div class="text-[9px] font-medium text-slate-200 truncate" title="${safeTitle}">${safeTitle}</div>
+                            <div class="grid grid-cols-4 gap-0.5 pt-0.5">
+                                <button type="button" onclick="window.compositeProductWithTemplate('${item.id || item.localPath}')" class="px-1 py-0.5 rounded bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-[8px] font-bold text-white transition-all text-center cursor-pointer shadow-sm" title="Tách nền sản phẩm & ghép vào mẫu này">Ghép SP</button>
+                                <button type="button" onclick="window.insertPicsartPoster('${item.id || item.localPath}')" class="px-1 py-0.5 rounded bg-purple-600/70 hover:bg-purple-500 text-[8px] font-bold text-white transition-all text-center cursor-pointer" title="Chèn vào canvas">Chèn</button>
+                                <button type="button" onclick="window.setCanvasBackgroundFromUrl('${item.localPath}')" class="px-1 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-[8px] font-semibold text-cyan-300 border border-cyan-500/30 transition-all text-center cursor-pointer" title="Đặt làm nền Canvas">Nền</button>
+                                <button type="button" onclick="window.applyPicsartCreativeBrief('${item.id || item.localPath}')" class="px-1 py-0.5 rounded bg-indigo-900/60 hover:bg-indigo-800 text-[8px] font-semibold text-amber-300 border border-amber-400/30 transition-all text-center cursor-pointer shadow-sm" title="Lấy ý tưởng từ mẫu này và tự động tạo 3 phương án poster">Ý tưởng</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        filterBtns.forEach(btn => {
+            btn.onclick = () => {
+                filterBtns.forEach(b => {
+                    b.classList.remove('active', 'bg-cyan-600/40', 'text-cyan-200', 'border-cyan-400/50');
+                    b.classList.add('bg-slate-900', 'text-slate-300', 'border-slate-700');
+                });
+                btn.classList.add('active', 'bg-cyan-600/40', 'text-cyan-200', 'border-cyan-400/50');
+                btn.classList.remove('bg-slate-900', 'text-slate-300', 'border-slate-700');
+                currentCategory = btn.getAttribute('data-cat') || 'all';
+                renderTemplates();
+            };
+        });
+
+        if (searchInput) {
+            searchInput.oninput = () => {
+                searchQuery = searchInput.value || '';
+                renderTemplates();
+            };
+        }
+
+        // Fetch templates
+        fetch('/api/image/templates')
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && Array.isArray(data.templates) && data.templates.length > 0) {
+                    _allPicsartTemplates = data.templates;
+                } else {
+                    return fetch('/templates/posters/posters.json').then(r => r.json()).then(items => { _allPicsartTemplates = items; });
+                }
+            })
+            .catch(() => {
+                return fetch('/templates/posters/posters.json').then(r => r.json()).then(items => { _allPicsartTemplates = items; });
+            })
+            .finally(() => {
+                renderTemplates();
+            });
+    }
+
+    window.insertPicsartPoster = function(urlOrId, title) {
+        let url = urlOrId;
+        let name = title;
+        const found = _allPicsartTemplates.find(t => t.id === urlOrId || t.localPath === urlOrId);
+        if (found) {
+            url = found.localPath;
+            name = found.title;
+        }
+        insertImageFromUrl(url, `Poster ${name || 'Picsart'}`);
+    };
+
+    window.setCanvasBackgroundFromUrl = function(url) {
+        if (!canvas) {
+            showStudioToast('❌ Canvas chưa sẵn sàng!');
+            return;
+        }
+        showStudioToast('⏳ Đang đặt mẫu poster làm hình nền...');
+        loadImgSafe(url, (img) => {
+            if (!img) {
+                showStudioToast('❌ Không thể tải hình ảnh poster!');
+                return;
+            }
+            const imgObj = (img && img.set) ? img : new fabric.Image(img);
+            const origW = (imgObj.getElement && imgObj.getElement().naturalWidth) || imgObj.width || 1;
+            const origH = (imgObj.getElement && imgObj.getElement().naturalHeight) || imgObj.height || 1;
+            const scale = Math.max(canvasWidth / origW, canvasHeight / origH);
+            imgObj.set({
+                originX: 'center',
+                originY: 'center',
+                left: canvasWidth / 2,
+                top: canvasHeight / 2,
+                scaleX: scale,
+                scaleY: scale,
+                selectable: false,
+                evented: false,
+                layerName: 'Hình nền Poster Picsart',
+                layerType: 'background'
+            });
+            canvas.setBackgroundImage(imgObj, () => {
+                canvas.renderAll();
+                updateLayersList();
+                saveHistoryState();
+            });
+            showStudioToast('✅ Đã đặt làm hình nền poster!');
+        });
+    };
+
+    window.applyPicsartCreativeBrief = function(titleOrId, category) {
+        let title = titleOrId;
+        let cat = category;
+        const found = _allPicsartTemplates.find(t => t.id === titleOrId || t.localPath === titleOrId);
+        if (found) {
+            title = found.title;
+            cat = found.category;
+        }
+
+        const briefInput = document.getElementById('studioCreativeBrief');
+        const styleSelect = document.getElementById('studioPreferredStyle');
+        const titleInput = document.getElementById('studioPosterTitle');
+        const statusEl = document.getElementById('studioCreativeStatus');
+
+        if (briefInput) briefInput.value = `Thiết kế poster phong cách chuyên nghiệp: ${title || 'Sản phẩm mới'}`;
+        if (titleInput) titleInput.value = (title || 'POSTER CHUYÊN NGHIỆP').slice(0, 50).toUpperCase();
+
+        const styleMap = {
+            fashion: 'editorial_luxury',
+            sale: 'neo_brutalism',
+            events: 'retro_future',
+            travel: 'organic_minimal',
+            lifestyle_edu: 'swiss_grid'
+        };
+        if (styleSelect && cat && styleMap[cat]) {
+            styleSelect.value = styleMap[cat];
+        }
+
+        // Switch to Styles Tab and scroll to Art Director section
+        const stylesTabBtn = document.querySelector('.studio-tab-btn[data-tab="tab-styles"]');
+        if (stylesTabBtn) stylesTabBtn.click();
+
+        const creativeHeading = document.getElementById('studioCreativeHeading');
+        if (creativeHeading) {
+            creativeHeading.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        showStudioToast(`✨ Đang lấy ý tưởng từ mẫu "${title}" & tự động tạo 3 phương án poster...`);
+        if (statusEl) statusEl.textContent = `Đang phân tích ý tưởng mẫu "${title}"...`;
+
+        // Tự động kích hoạt tạo 3 phương án thiết kế để người dùng thấy ngay kết quả trực quan
+        setTimeout(() => {
+            const btnCreateVariants = document.getElementById('btnStudioCreateVariants');
+            if (btnCreateVariants) {
+                btnCreateVariants.click();
+            }
+        }, 150);
+    };
 
     function handleImageFile(file) {
         if (!file) return;
@@ -1743,6 +1960,11 @@
                 reject(new Error(result.reason || 'Không thể tách nền an toàn.'));
                 return;
             }
+            if (result.alreadyCutout) {
+                showStudioToast('✨ Ảnh này đã có sẵn nền trong suốt!');
+                resolve(imageObj);
+                return;
+            }
             imgData.data.set(result.pixels);
 
             ctx.putImageData(imgData, 0, 0);
@@ -2196,7 +2418,37 @@
         // 2. Clear canvas & Background
         canvas.clear();
 
-        if (config.canvas && config.canvas.background && config.canvas.background.type === 'linearGradient' && Array.isArray(config.canvas.background.stops)) {
+        const templateUrl = config.templateUrl || (config.template && config.template.localPath) || (config.canvas && config.canvas.backdrop) || (config.canvas && config.canvas.background && config.canvas.background.url);
+
+        if (templateUrl) {
+            loadImgSafe(templateUrl, (tmplImg) => {
+                if (isStaleRender()) return;
+                if (tmplImg) {
+                    const bgObj = (tmplImg && tmplImg.set) ? tmplImg : new fabric.Image(tmplImg);
+                    const origW = (bgObj.getElement && bgObj.getElement().naturalWidth) || bgObj.width || 1;
+                    const origH = (bgObj.getElement && bgObj.getElement().naturalHeight) || bgObj.height || 1;
+                    const scale = Math.max(canvasWidth / origW, canvasHeight / origH);
+                    bgObj.set({
+                        originX: 'center',
+                        originY: 'center',
+                        left: canvasWidth / 2,
+                        top: canvasHeight / 2,
+                        scaleX: scale,
+                        scaleY: scale,
+                        selectable: false,
+                        evented: false,
+                        layerName: config.templateTitle ? `Mẫu: ${config.templateTitle}` : 'Hình Nền Poster Picsart',
+                        layerType: 'background'
+                    });
+                    canvas.setBackgroundImage(bgObj, () => {
+                        if (!isStaleRender()) {
+                            canvas.renderAll();
+                            updateLayersList();
+                        }
+                    });
+                }
+            });
+        } else if (config.canvas && config.canvas.background && config.canvas.background.type === 'linearGradient' && Array.isArray(config.canvas.background.stops)) {
             const gradStops = config.canvas.background.stops.map(s => ({
                 offset: s.offset,
                 color: s.color
@@ -2327,19 +2579,14 @@
                     }
                 });
             } else {
-                // Fallback default poster layout
+                // Fallback default poster layout (Enhanced for Picsart Templates & Custom Composites)
+                const isTemplateMode = Boolean(templateUrl);
+
                 if (userImg) {
-                    const badgeTop = 75;
-                    const titleTop = config.badge ? 150 : 100;
-                    const subtitleStr = config.subtitle || config.caption || '';
-                    const subtitleTop = titleTop + 75;
-                    const topContentBottom = subtitleStr ? subtitleTop + 50 : titleTop + 50;
-                    const footerSpace = 100;
-                    const availableHeight = canvasHeight - topContentBottom - footerSpace;
-                    const heroCenterY = topContentBottom + (availableHeight / 2);
-                    const maxImgW = canvasWidth * 0.88;
-                    const maxImgH = Math.min(availableHeight * 0.95, canvasHeight * 0.58);
-                    const scale = Math.min(maxImgW / userImg.width, maxImgH / userImg.height);
+                    const heroCenterY = isTemplateMode ? (canvasHeight * 0.52) : (canvasHeight * 0.56);
+                    const maxImgW = canvasWidth * 0.74;
+                    const maxImgH = canvasHeight * 0.56;
+                    const scale = Math.min(maxImgW / (userImg.width || 1), maxImgH / (userImg.height || 1));
 
                     userImg.set({
                         left: canvasWidth / 2,
@@ -2348,74 +2595,130 @@
                         originY: 'center',
                         scaleX: scale,
                         scaleY: scale,
-                        layerName: 'Ảnh Gốc Poster',
+                        shadow: new fabric.Shadow({
+                            color: 'rgba(0, 0, 0, 0.55)',
+                            blur: 28,
+                            offsetX: 0,
+                            offsetY: 10
+                        }),
+                        layerName: 'Ảnh Sản Phẩm (Tách Nền)',
                         layerType: 'image'
                     });
                     canvas.add(userImg);
+                }
 
-                    if (config.badge) {
-                        const badgeBox = new fabric.Rect({
-                            width: 240,
-                            height: 48,
-                            rx: 24,
-                            ry: 24,
-                            fill: config.badgeBg || '#ef4444',
-                            left: canvasWidth / 2,
-                            top: badgeTop,
-                            originX: 'center',
-                            originY: 'center',
-                            layerName: 'Khung Huy Hiệu',
-                            layerType: 'shape'
-                        });
-                        const badgeText = new fabric.IText(`🔥 ${String(config.badge).toUpperCase()}`, {
-                            fontSize: 20,
-                            fontWeight: 'bold',
-                            fontFamily: config.fontFamily || 'Montserrat',
-                            fill: '#ffffff',
-                            left: canvasWidth / 2,
-                            top: badgeTop,
-                            originX: 'center',
-                            originY: 'center',
-                            layerName: 'Chữ Huy Hiệu',
-                            layerType: 'text'
-                        });
-                        canvas.add(badgeBox);
-                        canvas.add(badgeText);
-                    }
-
-                    const titleObj = new fabric.IText(config.title || 'TIÊU ĐỀ POSTER', {
-                        fontSize: 60,
-                        fontWeight: 'bold',
-                        fontFamily: config.fontFamily || 'Montserrat',
-                        fill: config.titleColor || '#facc15',
-                        textAlign: 'center',
+                // Badge / Eyebrow Pill
+                const badgeVal = config.badge || config.eyebrow;
+                if (badgeVal) {
+                    const badgeTop = isTemplateMode ? (canvasHeight * 0.12) : 75;
+                    const badgeBox = new fabric.Rect({
+                        width: Math.min(340, String(badgeVal).length * 14 + 44),
+                        height: 44,
+                        rx: 22,
+                        ry: 22,
+                        fill: config.badgeBg || '#ef4444',
                         left: canvasWidth / 2,
-                        top: titleTop,
+                        top: badgeTop,
                         originX: 'center',
                         originY: 'center',
-                        shadow: new fabric.Shadow({ color: 'rgba(0, 0, 0, 0.85)', blur: 18, offsetX: 0, offsetY: 5 }),
-                        layerName: 'Tiêu Đề Poster',
+                        shadow: new fabric.Shadow({ color: 'rgba(0, 0, 0, 0.4)', blur: 12, offsetY: 4 }),
+                        layerName: 'Khung Huy Hiệu',
+                        layerType: 'shape'
+                    });
+                    const badgeText = new fabric.IText(`★ ${String(badgeVal).toUpperCase()}`, {
+                        fontSize: 18,
+                        fontWeight: 'bold',
+                        fontFamily: config.fontFamily || 'Montserrat',
+                        fill: '#ffffff',
+                        left: canvasWidth / 2,
+                        top: badgeTop,
+                        originX: 'center',
+                        originY: 'center',
+                        layerName: 'Chữ Huy Hiệu',
                         layerType: 'text'
                     });
-                    canvas.add(titleObj);
+                    canvas.add(badgeBox);
+                    canvas.add(badgeText);
+                }
 
-                    if (subtitleStr) {
-                        const subtitleObj = new fabric.IText(subtitleStr, {
-                            fontSize: 28,
-                            fontWeight: '600',
-                            fontFamily: config.fontFamily || 'Inter',
-                            fill: config.subtitleColor || '#ffffff',
-                            textAlign: 'center',
-                            left: canvasWidth / 2,
-                            top: subtitleTop,
-                            originX: 'center',
-                            originY: 'center',
-                            shadow: new fabric.Shadow({ color: 'rgba(0, 0, 0, 0.75)', blur: 12, offsetX: 0, offsetY: 3 }),
-                            layerName: 'Chú Thích & Slogan',
-                            layerType: 'text'
-                        });
-                        canvas.add(subtitleObj);
-                    }
+                // Title / Headline
+                const titleVal = config.title || 'SIÊU PHẨM MỚI';
+                const titleTop = badgeVal ? (isTemplateMode ? canvasHeight * 0.20 : 155) : (isTemplateMode ? canvasHeight * 0.16 : 100);
+                const titleObj = new fabric.Textbox(titleVal, {
+                    fontSize: 52,
+                    fontWeight: 'bold',
+                    fontFamily: config.fontFamily || 'Montserrat',
+                    fill: config.titleColor || '#ffffff',
+                    textAlign: 'center',
+                    width: canvasWidth * 0.88,
+                    left: canvasWidth / 2,
+                    top: titleTop,
+                    originX: 'center',
+                    originY: 'center',
+                    stroke: '#000000',
+                    strokeWidth: 1.2,
+                    shadow: new fabric.Shadow({ color: 'rgba(0, 0, 0, 0.85)', blur: 20, offsetX: 0, offsetY: 5 }),
+                    layerName: 'Tiêu Đề Poster',
+                    layerType: 'text'
+                });
+                canvas.add(titleObj);
+
+                // Subtitle
+                const subtitleStr = config.subtitle || config.caption || '';
+                if (subtitleStr) {
+                    const subtitleTop = titleTop + 65;
+                    const subtitleObj = new fabric.Textbox(subtitleStr, {
+                        fontSize: 24,
+                        fontWeight: '600',
+                        fontFamily: config.fontFamily || 'Inter',
+                        fill: config.subtitleColor || '#f8fafc',
+                        textAlign: 'center',
+                        width: canvasWidth * 0.82,
+                        left: canvasWidth / 2,
+                        top: subtitleTop,
+                        originX: 'center',
+                        originY: 'center',
+                        stroke: '#000000',
+                        strokeWidth: 0.8,
+                        shadow: new fabric.Shadow({ color: 'rgba(0, 0, 0, 0.8)', blur: 14, offsetX: 0, offsetY: 3 }),
+                        layerName: 'Chú Thích & Slogan',
+                        layerType: 'text'
+                    });
+                    canvas.add(subtitleObj);
+                }
+
+                // CTA Button (Call To Action)
+                const ctaVal = config.cta || 'MUA NGAY';
+                if (ctaVal) {
+                    const ctaTop = canvasHeight * 0.88;
+                    const ctaBox = new fabric.Rect({
+                        width: Math.min(340, String(ctaVal).length * 16 + 50),
+                        height: 52,
+                        rx: 26,
+                        ry: 26,
+                        fill: config.ctaBg || '#f59e0b',
+                        left: canvasWidth / 2,
+                        top: ctaTop,
+                        originX: 'center',
+                        originY: 'center',
+                        shadow: new fabric.Shadow({ color: 'rgba(0, 0, 0, 0.55)', blur: 16, offsetY: 6 }),
+                        layerName: 'Nút Kêu Gọi CTA',
+                        layerType: 'shape'
+                    });
+                    const ctaText = new fabric.IText(`⚡ ${String(ctaVal).toUpperCase()}`, {
+                        fontSize: 18,
+                        fontWeight: 'bold',
+                        fontFamily: config.fontFamily || 'Montserrat',
+                        fill: '#111827',
+                        left: canvasWidth / 2,
+                        top: ctaTop,
+                        originX: 'center',
+                        originY: 'center',
+                        layerName: 'Chữ Nút CTA',
+                        layerType: 'text'
+                    });
+                    canvas.add(ctaBox);
+                    canvas.add(ctaText);
                 }
             }
 
@@ -2445,18 +2748,41 @@
          * Remove background from a Fabric Image instance or HTMLImageElement
          * Returns Promise<fabric.Image> with transparent background
          */
-        const cutoutFabricImage = (fabImg, tolerance = 35) => {
+        const ensureFabricImage = (img) => {
+            if (!img) return null;
+            if (img instanceof fabric.Image || (img.set && typeof img.set === 'function' && (img.getElement || img._element))) {
+                return img;
+            }
+            try {
+                const rawElem = (img && img.tagName) ? img : ((img && img._element) ? img._element : img);
+                const fab = new fabric.Image(rawElem);
+                fab.layerName = (img && img.layerName) ? img.layerName : 'Ảnh Sản Phẩm';
+                fab.layerType = 'image';
+                return fab;
+            } catch (err) {
+                console.warn('[Studio] Cannot wrap image to fabric.Image:', err);
+                return null;
+            }
+        };
+
+        /**
+         * Remove background from a Fabric Image instance or HTMLImageElement
+         * Returns Promise<fabric.Image> with transparent background
+         */
+        const cutoutFabricImage = (fabImg, tolerance = 24) => {
             return new Promise((resolve) => {
                 if (!fabImg) return resolve(null);
+                const safeFab = ensureFabricImage(fabImg);
+                if (!safeFab) return resolve(null);
                 try {
-                    const imgElement = fabImg.getElement ? fabImg.getElement() : fabImg;
-                    if (!imgElement) return resolve(fabImg);
+                    const imgElement = safeFab.getElement ? safeFab.getElement() : (safeFab._element || safeFab);
+                    if (!imgElement) return resolve(safeFab);
 
                     const tempCanvas = document.createElement('canvas');
                     const ctx = tempCanvas.getContext('2d');
 
-                    const w = imgElement.naturalWidth || imgElement.width || 800;
-                    const h = imgElement.naturalHeight || imgElement.height || 800;
+                    const w = imgElement.naturalWidth || imgElement.videoWidth || imgElement.width || 800;
+                    const h = imgElement.naturalHeight || imgElement.videoHeight || imgElement.height || 800;
                     tempCanvas.width = w;
                     tempCanvas.height = h;
 
@@ -2464,71 +2790,100 @@
                     const imgData = ctx.getImageData(0, 0, w, h);
                     const remover = window.imageBackgroundRemoval;
                     if (!remover || typeof remover.removeBackgroundPixels !== 'function') {
-                        return resolve(fabImg);
+                        return resolve(safeFab);
                     }
-                    const result = remover.removeBackgroundPixels(imgData.data, w, h, { tolerance, detailProtection: 'high' });
+                    const detailProt = config.detailProtection || (document.getElementById('bgDetailProtection') ? document.getElementById('bgDetailProtection').value : 'high') || 'high';
+                    const result = remover.removeBackgroundPixels(imgData.data, w, h, { tolerance, detailProtection: detailProt });
                     if (!result.applied) {
-                        showStudioToast(`⚠️ ${result.reason} Studio giữ lại ảnh gốc.`);
-                        return resolve(fabImg);
+                        showStudioToast(`ℹ️ ${result.reason || 'Không thể tách nền.'} Studio giữ lại ảnh gốc.`);
+                        return resolve(safeFab);
+                    }
+                    if (result.alreadyCutout) {
+                        return resolve(safeFab);
                     }
                     imgData.data.set(result.pixels);
-
                     ctx.putImageData(imgData, 0, 0);
-                    const processedUrl = tempCanvas.toDataURL('image/png');
 
+                    // 1. Direct synchronous canvas wrap (Instant, zero serialization overhead)
+                    try {
+                        const newFabImg = new fabric.Image(tempCanvas);
+                        newFabImg.layerName = `${safeFab.layerName || 'Ảnh Sản Phẩm'} (Đã Tách Nền)`;
+                        newFabImg.layerType = 'image';
+                        newFabImg._originalImage = safeFab;
+                        return resolve(newFabImg);
+                    } catch (canvasWrapErr) {
+                        console.warn('[Studio] Direct canvas wrap failed, trying fallback fromURL:', canvasWrapErr);
+                    }
+
+                    // 2. Fallback via data URL if direct wrap fails
+                    const processedUrl = tempCanvas.toDataURL('image/png');
                     fabric.Image.fromURL(processedUrl, (newFabImg) => {
                         if (newFabImg) {
-                            newFabImg.layerName = `${fabImg.layerName || 'Ảnh Chủ Thể'} (Đã Tách Nền)`;
+                            newFabImg.layerName = `${safeFab.layerName || 'Ảnh Sản Phẩm'} (Đã Tách Nền)`;
                             newFabImg.layerType = 'image';
+                            newFabImg._originalImage = safeFab;
                             resolve(newFabImg);
                         } else {
-                            resolve(fabImg);
+                            resolve(safeFab);
                         }
                     });
                 } catch (err) {
                     console.warn('[ImageStudio] Auto cutout failed:', err);
-                    resolve(fabImg);
+                    resolve(safeFab);
                 }
             });
         };
 
         const placeLoadedImg = async (loadedImg) => {
             if (isStaleRender()) return;
-            let finalImg = loadedImg;
+            let finalImg = ensureFabricImage(loadedImg);
             
             // Check if poster configuration requires background removal (default: true for poster creation)
             const shouldRemoveBg = config.removeBackground === true || 
                 (Array.isArray(config.layers) && config.layers.some(l => l.type === 'image' && l.removeBackground === true)) ||
                 (!config.layers && config.removeBackground !== false);
 
-            if (loadedImg && shouldRemoveBg) {
-                showStudioToast('🪄 Đang tự động tách nền chủ thể & thiết kế...');
+            if (finalImg && shouldRemoveBg) {
+                showStudioToast('🪄 Đang tự động tách nền sạch & lọc nhiễu sản phẩm...');
                 try {
-                    finalImg = await cutoutFabricImage(loadedImg, 24);
+                    const tol = config.cutoutTolerance || (document.getElementById('sliderBgTolerance') ? parseInt(document.getElementById('sliderBgTolerance').value, 10) : 24) || 24;
+                    finalImg = await cutoutFabricImage(finalImg, tol);
                 } catch (e) {
                     console.warn('[Studio] Auto-cutout failed, continuing with original image:', e);
                 }
             }
 
             if (isStaleRender()) return;
-            buildLayers(finalImg);
+            buildLayers(ensureFabricImage(finalImg));
+            showStudioToast('✨ Đã ghép sản phẩm vào mẫu poster thành công!');
         };
 
-        if (imgSourceOrObj && typeof imgSourceOrObj === 'object' && (imgSourceOrObj.type === 'image' || imgSourceOrObj.layerType === 'image')) {
+        if (imgSourceOrObj && typeof imgSourceOrObj === 'object' && (imgSourceOrObj.type === 'image' || imgSourceOrObj.layerType === 'image' || imgSourceOrObj.set || imgSourceOrObj.tagName === 'IMG' || imgSourceOrObj.tagName === 'CANVAS')) {
             try {
-                imgSourceOrObj.clone((clonedImg) => {
-                    placeLoadedImg(clonedImg);
-                });
+                let imgToUse = null;
+                if (imgSourceOrObj.tagName === 'IMG' || imgSourceOrObj.tagName === 'CANVAS') {
+                    imgToUse = new fabric.Image(imgSourceOrObj);
+                } else if (imgSourceOrObj.getElement && imgSourceOrObj.getElement()) {
+                    imgToUse = new fabric.Image(imgSourceOrObj.getElement());
+                } else if (imgSourceOrObj._element) {
+                    imgToUse = new fabric.Image(imgSourceOrObj._element);
+                } else {
+                    imgToUse = imgSourceOrObj;
+                }
+                placeLoadedImg(imgToUse);
             } catch (err) {
+                console.warn('[Studio] Error preparing image object, falling back:', err);
                 const src = imgSourceOrObj.getSrc ? imgSourceOrObj.getSrc() : (imgSourceOrObj._element ? imgSourceOrObj._element.src : null);
                 if (src) {
-                    loadImgSafe(src, placeLoadedImg);
+                    loadImgSafe(src, (fabImg) => placeLoadedImg(fabImg));
                 } else {
-                    placeLoadedImg(null);
+                    placeLoadedImg(imgSourceOrObj);
                 }
             }
         } else if (typeof imgSourceOrObj === 'string' && imgSourceOrObj.trim().length > 0) {
-            loadImgSafe(imgSourceOrObj.trim(), placeLoadedImg);
+            loadImgSafe(imgSourceOrObj.trim(), (fabImg) => {
+                placeLoadedImg(fabImg);
+            });
         } else {
             placeLoadedImg(null);
         }
@@ -2623,3 +2978,149 @@
     }
 
 })();
+
+    /**
+     * Build High-Conversion Poster from Product Cutout and Picsart Template
+     */
+    window.buildPosterFromProductAndTemplate = function(imgSrc, templateOrId, copy = {}, options = {}) {
+        if (!isModuleInitialized) {
+            window.initImageEditorModule();
+        }
+        const modal = document.getElementById('imageEditorModal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            modal.style.display = 'flex';
+        }
+        if (!canvas) {
+            initFabricCanvas();
+        }
+
+        const resolveTemplate = () => {
+            if (!templateOrId) return _allPicsartTemplates[0] || null;
+            if (typeof templateOrId === 'object') return templateOrId;
+            const str = String(templateOrId).toLowerCase().trim();
+            const found = _allPicsartTemplates.find(t => 
+                (t.id && t.id.toLowerCase() === str) ||
+                (t.localPath && t.localPath.toLowerCase() === str) ||
+                (t.title && t.title.toLowerCase().includes(str))
+            );
+            if (found) return found;
+            return {
+                id: 'custom_template',
+                title: 'Mẫu Poster Picsart',
+                localPath: templateOrId,
+                category: 'general'
+            };
+        };
+
+        const targetImg = imgSrc || activePosterImageSrc || window.lastUploadedImageUrl || window.lastStudioEditedImage;
+        const tmpl = resolveTemplate();
+
+        const config = {
+            template: tmpl,
+            templateUrl: tmpl ? tmpl.localPath : null,
+            templateTitle: tmpl ? tmpl.title : null,
+            width: 1080,
+            height: 1350,
+            preset: '4:5',
+            removeBackground: true,
+            badge: copy.badge || copy.eyebrow || (tmpl ? tmpl.category.toUpperCase() : 'HOT DEAL'),
+            title: copy.title || (tmpl ? tmpl.title.toUpperCase() : 'SIÊU PHẨM MỚI'),
+            subtitle: copy.subtitle || 'Thiết kế chuẩn đồ họa • Ưu đãi đặc biệt hôm nay',
+            cta: copy.cta || 'MUA NGAY',
+            canvas: {
+                width: 1080,
+                height: 1350,
+                backdrop: tmpl ? tmpl.localPath : null,
+                background: {
+                    type: 'template',
+                    url: tmpl ? tmpl.localPath : null
+                }
+            }
+        };
+
+        activePosterImageSrc = targetImg;
+        activePosterConfig = config;
+        renderStudioPosterConfig(targetImg, config, Boolean(options.autoExport));
+    };
+
+    /**
+     * One-Click Action: Composite Current Active Product with a specific Picsart Template
+     */
+    window.compositeProductWithTemplate = function(templateIdOrPath) {
+        let targetSrc = null;
+        if (canvas) {
+            const objs = canvas.getObjects();
+            const imgObj = objs.find(o => o.type === 'image' && o.layerType !== 'background' && !o.isCropGuide);
+            if (imgObj) {
+                targetSrc = imgObj;
+            }
+        }
+        if (!targetSrc) {
+            targetSrc = activePosterImageSrc || window.lastUploadedImageUrl || window.lastStudioEditedImage;
+        }
+
+        if (!targetSrc) {
+            showStudioToast('ℹ️ Vui lòng chọn hoặc tải ảnh sản phẩm lên trước để ghép.');
+            const uploadTabBtn = document.querySelector('.studio-tab-btn[data-tab="tab-upload"]');
+            if (uploadTabBtn) uploadTabBtn.click();
+            const fileInput = document.getElementById('studioFileInput') || document.getElementById('studioUploadInput');
+            if (fileInput) fileInput.click();
+            return;
+        }
+
+        window.buildPosterFromProductAndTemplate(targetSrc, templateIdOrPath);
+    };
+
+    /**
+     * Full AI Pipeline: Understand Product -> Match Best Picsart Template -> Cutout BG -> Composite Poster
+     */
+    window.autoMatchAndCompositePoster = async function(imgSrc, brief, options = {}) {
+        if (!isModuleInitialized) {
+            window.initImageEditorModule();
+        }
+        const modal = document.getElementById('imageEditorModal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            modal.style.display = 'flex';
+        }
+        if (!canvas) {
+            initFabricCanvas();
+        }
+
+        let targetSrc = imgSrc || activePosterImageSrc || window.lastUploadedImageUrl || window.lastStudioEditedImage;
+        if (!targetSrc && canvas) {
+            const objs = canvas.getObjects();
+            const imgObj = objs.find(o => o.type === 'image' && o.layerType !== 'background');
+            if (imgObj) targetSrc = imgObj;
+        }
+
+        const creativeBrief = brief || (document.getElementById('studioCreativeBrief') ? document.getElementById('studioCreativeBrief').value : '') || 'Poster sản phẩm bán chạy';
+
+        showStudioToast('🤖 AI đang phân tích sản phẩm và chọn mẫu poster phù hợp nhất...');
+
+        try {
+            const res = await fetch('/api/image/match-template', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ brief: creativeBrief, preferences: options.preferences || {} })
+            });
+            const data = await res.json();
+            if (data.success && data.template) {
+                const copy = options.copy || {
+                    badge: `${(data.categoryMatch || 'deal').toUpperCase()} CHUYÊN NGHIỆP`,
+                    title: (data.template.title || 'SIÊU PHẨM MỚI').toUpperCase(),
+                    subtitle: `Thiết kế tự động tối ưu cho danh mục ${data.categoryMatch || 'sản phẩm'}`,
+                    cta: 'MUA NGAY'
+                };
+                window.buildPosterFromProductAndTemplate(targetSrc, data.template, copy, options);
+                return;
+            }
+        } catch (err) {
+            console.warn('[Studio] Auto-match failed, falling back to top template:', err);
+        }
+
+        // Fallback
+        const fallbackTemplate = _allPicsartTemplates[0] || null;
+        window.buildPosterFromProductAndTemplate(targetSrc, fallbackTemplate, options.copy || {}, options);
+    };
