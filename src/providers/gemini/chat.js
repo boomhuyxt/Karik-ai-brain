@@ -64,10 +64,10 @@ async function chat(prompt, options = {}) {
     };
 
     const candidateModels = requestedModel !== geminiConfig.defaultModel && requestedModel !== geminiConfig.fastModel
-      ? [requestedModel, geminiConfig.fastModel || 'gemini-3.5-flash-lite', ...(geminiConfig.fallbackModels || ['gemini-flash-lite-latest', 'gemini-3.6-flash'])]
+      ? [requestedModel, geminiConfig.fastModel || 'gemini-3.5-flash-lite', ...(geminiConfig.fallbackModels || ['gemini-flash-lite-latest', 'gemini-3.7-flash', 'gemini-3.6-flash'])]
       : [
           geminiConfig.fastModel || geminiConfig.defaultModel || 'gemini-3.5-flash-lite',
-          ...(geminiConfig.fallbackModels || ['gemini-flash-lite-latest', 'gemini-3.6-flash'])
+          ...(geminiConfig.fallbackModels || ['gemini-flash-lite-latest', 'gemini-3.7-flash', 'gemini-3.6-flash'])
         ];
 
     let data = null;
@@ -163,7 +163,7 @@ async function chat(prompt, options = {}) {
       audioData: null,
       mimeType: null,
       voice: options.voice || 'Orus',
-      model: options.model || 'gemini-3.6-flash',
+      model: options.model || 'gemini-3.7-flash',
       usage: null
     };
   }

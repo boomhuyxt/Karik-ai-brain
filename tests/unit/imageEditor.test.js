@@ -113,4 +113,26 @@ describe('Image & Poster Editor Studio Module', () => {
     const posters = JSON.parse(fs.readFileSync(metadataPath, 'utf8'));
     assert.ok(posters.length >= 30, 'Should have at least 30 downloaded poster templates');
   });
+
+  test('ImageEditor JS includes XE_BACKDROPS and robust product name extraction', () => {
+    const jsPath = path.join(__dirname, '../../public/js/imageEditor.js');
+    const js = fs.readFileSync(jsPath, 'utf8');
+
+    assert.ok(js.includes('window.XE_BACKDROPS'), 'Should expose window.XE_BACKDROPS');
+    assert.ok(js.includes('window.getRandomXeBackdrop'), 'Should expose window.getRandomXeBackdrop');
+    assert.ok(js.includes('window.randomizeXeBackdrop'), 'Should expose window.randomizeXeBackdrop');
+    assert.ok(js.includes('XE-01'), 'Should define XE-01');
+    assert.ok(js.includes('XE-08'), 'Should define XE-08');
+    assert.ok(js.includes('raw/n%E1%BB%81n%20poster/xe/'), 'Should reference Obsidian Xe backdrops');
+
+    const modalPath = path.join(__dirname, '../../public/components/imageEditorModal.html');
+    const modalHtml = fs.readFileSync(modalPath, 'utf8');
+    assert.ok(modalHtml.includes('id="btnRandomXeBackdrop"'), 'Modal should have btnRandomXeBackdrop in background tab');
+    assert.ok(modalHtml.includes('id="btnRandomXeBackdropQuick"'), 'Modal should have btnRandomXeBackdropQuick in template section');
+
+    const chatPath = path.join(__dirname, '../../public/js/chat.js');
+    const chatJs = fs.readFileSync(chatPath, 'utf8');
+    assert.ok(chatJs.includes('window.randomizeXeBackdrop()'), 'Chat action card should have Random Nền Xe button');
+  });
 });
+

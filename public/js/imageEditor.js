@@ -31,6 +31,55 @@
 
     let isModuleInitialized = false;
 
+    // 8 trained backdrops in 'Xe & cơ khí' (Kho Mẫu Nền Poster Obsidian)
+    const XE_BACKDROPS = [
+        { id: 'XE-01', title: 'Thép Gân Nhám Kim Cương (Diamond Plate)', url: '/api/github/raw?path=raw/n%E1%BB%81n%20poster/xe/13dcb8bbea70bd889867f8e3f2a01747.jpg' },
+        { id: 'XE-02', title: 'Phông Vải Xếp Nếp Studio Đen', url: '/api/github/raw?path=raw/n%E1%BB%81n%20poster/xe/26db3ae4b9087f595ec372baf42b029f.jpg' },
+        { id: 'XE-03', title: 'NASCAR Nghiêng Lốp Tốc Độ', url: '/api/github/raw?path=raw/n%E1%BB%81n%20poster/xe/2b1f5d1ebc662a49c17468bf049d1a6c.jpg' },
+        { id: 'XE-04', title: 'Khúc Cua F1 Kerb Vết Lốp', url: '/api/github/raw?path=raw/n%E1%BB%81n%20poster/xe/3ea5306d8a604736a7e5c6336ae0c956.jpg' },
+        { id: 'XE-05', title: 'Khói Burnout Lửa Đêm', url: '/api/github/raw?path=raw/n%E1%BB%81n%20poster/xe/3fcb619106a33025ee9311ab6ff79a23.jpg' },
+        { id: 'XE-06', title: 'Bo Đua Đô Thị & Tòa Kính Mờ Sương', url: '/api/github/raw?path=raw/n%E1%BB%81n%20poster/xe/763c5054d6657912a1206a25fbab378b.jpg' },
+        { id: 'XE-07', title: 'Phông Xám Studio Loang Cổ Điển', url: '/api/github/raw?path=raw/n%E1%BB%81n%20poster/xe/d195928c07d6d703230894d3f1dedaa2.jpg' },
+        { id: 'XE-08', title: 'Ma Trận Lưới Số Cyber Grid', url: '/api/github/raw?path=raw/n%E1%BB%81n%20poster/xe/download.png' }
+    ];
+
+    function getRandomXeBackdrop() {
+        return XE_BACKDROPS[Math.floor(Math.random() * XE_BACKDROPS.length)];
+    }
+    window.XE_BACKDROPS = XE_BACKDROPS;
+    window.getRandomXeBackdrop = getRandomXeBackdrop;
+
+    /**
+     * Helper to thoroughly clean conversational commands, requests, and media prefixes
+     */
+    function cleanProductTitle(text) {
+        if (!text || typeof text !== 'string') return '';
+        let str = text.trim();
+        str = str.replace(/^[*_~`"'“”‘’«»#]+|[*_~`"'“”‘’«»#]+$/g, '').trim();
+        str = str
+            .replace(/(?:giá|price|chi\s*phí)\s*[:=-]?\s*[\d.,]+\s*(?:k|vnđ|vnd|đ|\$)?.*$/gi, '')
+            .replace(/[\d.,]+\s*(?:k|vnđ|vnd|đ|\$)\b.*$/gi, '')
+            .trim();
+
+        let prev = '';
+        while (prev !== str) {
+            prev = str;
+            str = str
+                .replace(/^(?:tôi|mình|em|anh|chị|shop|admin)\s*(?:muốn|cần|yêu\s*cầu|nhờ|xin)?\s+/i, '')
+                .replace(/^(?:bạn\s*(?:ơi|hãy)?|giúp\s*(?:tôi|mình|em|anh|chị)?|hãy|vui\s*lòng|xin\s*vui\s*lòng)\s+/i, '')
+                .replace(/^(?:thiết\s*kế|tạo|làm|vẽ|lên\s*ý\s*tưởng|edit|chỉnh\s*sửa|render|generate|build|xuất)\s+(?:một\s+)?/i, '')
+                .replace(/^(?:một\s+)?(?:poster|banner|ảnh|hình\s*ảnh|hình|ấn\s*phẩm|standee|flyer|art|key\s*visual)\s+/i, '')
+                .replace(/^(?:quảng\s*cáo|quảng\s*bá|giới\s*thiệu|ra\s*mắt|chào\s*đón|bán|ưu\s*đãi|khuyến\s*mãi|sale|deal|bài\s*viết)\s+/i, '')
+                .replace(/^(?:sản\s*phẩm|mặt\s*hàng|món\s*hàng|món\s*đồ|item|dòng\s*sản\s*phẩm|loại)\s+/i, '')
+                .replace(/^(?:cho|dành\s+cho|về)\s+/i, '')
+                .replace(/^(?:một\s+)/i, '')
+                .trim();
+        }
+        str = str.replace(/^[:;,.-\s]+|[:;,.-\s]+$/g, '').trim();
+        return str;
+    }
+    window.cleanProductTitle = cleanProductTitle;
+
     /**
      * Initialize the Studio Module
      */
@@ -1084,6 +1133,24 @@
         });
     };
 
+    /**
+     * Randomize Canvas Background with a random Xe & cơ khí backdrop (XE-01 to XE-08)
+     */
+    window.randomizeXeBackdrop = function() {
+        if (!canvas) {
+            waitForCanvas(5000).then(function() {
+                window.randomizeXeBackdrop();
+            }).catch(function() {
+                showStudioToast('❌ Canvas chưa sẵn sàng!');
+            });
+            return;
+        }
+        const randomXe = getRandomXeBackdrop();
+        if (!randomXe) return;
+        window.setCanvasBackgroundFromUrl(randomXe.url);
+        showStudioToast(`🎲 Đã đổi ngẫu nhiên sang nền Xe & cơ khí: ${randomXe.title}`);
+    };
+
     window.applyPicsartCreativeBrief = function(titleOrId, category) {
         let title = titleOrId;
         let cat = category;
@@ -1472,7 +1539,42 @@
             });
         } else if (type === 'badge') {
             const badgePoints = calculateStarPoints(12, 90, 75);
-            shape = new fabric.Polygon(badgePoints, { ...commonProps, layerName: 'Huy Hiệu VIP' });
+            const badgeStrokeW = Math.max(strokeW, 3.5);
+            shape = new fabric.Polygon(badgePoints, {
+                ...commonProps,
+                stroke: stroke || '#ffffff',
+                strokeWidth: badgeStrokeW,
+                shadow: new fabric.Shadow({ color: 'rgba(0, 0, 0, 0.45)', blur: 14, offsetY: 4 }),
+                layerName: 'Huy Hiệu (Viền >= 3px)'
+            });
+        } else if (type === 'priceBadge') {
+            const badgePoints = calculateStarPoints(12, 105, 88);
+            const badgeStrokeW = Math.max(strokeW, 3.5);
+            shape = new fabric.Polygon(badgePoints, {
+                ...commonProps,
+                fill: fill || '#FFD700',
+                stroke: stroke || '#ffffff',
+                strokeWidth: badgeStrokeW,
+                shadow: new fabric.Shadow({ color: 'rgba(0, 0, 0, 0.55)', blur: 16, offsetY: 4 }),
+                layerName: 'Huy Hiệu Giá Tiền'
+            });
+            const priceText = new fabric.IText('💰 450.000Đ', {
+                left: cx,
+                top: cy,
+                originX: 'center',
+                originY: 'center',
+                fontSize: 34,
+                fontWeight: '900',
+                fontFamily: 'Montserrat',
+                fill: '#0B0F19',
+                shadow: new fabric.Shadow({ color: 'rgba(0, 0, 0, 0.35)', blur: 6, offsetY: 2 }),
+                layerName: 'Chữ Giá Tiền Nổi Bật'
+            });
+            canvas.add(shape);
+            canvas.add(priceText);
+            canvas.setActiveObject(priceText);
+            canvas.renderAll();
+            return;
         }
 
         if (shape) {
@@ -2446,7 +2548,16 @@
         // 2. Clear canvas & Background
         canvas.clear();
 
-        const templateUrl = config.templateUrl || (config.template && config.template.localPath) || (config.canvas && config.canvas.backdrop) || (config.canvas && config.canvas.background && config.canvas.background.url);
+        let templateUrl = config.templateUrl || (config.template && config.template.localPath) || (config.canvas && config.canvas.backdrop) || (config.canvas && config.canvas.background && config.canvas.background.url);
+
+        // Always randomize from Xe & Cơ khí category if not explicitly chosen by user or requested randomXe
+        const isUserPinnedBackdrop = Boolean(config.explicitBackdrop || (config.template && config.template.isUserSelected));
+        if (!isUserPinnedBackdrop || !templateUrl || config.randomXe || config.backdropId === 'random_xe' || config.backdropId === 'random') {
+            const randomXe = getRandomXeBackdrop();
+            templateUrl = randomXe.url;
+            config.backdropId = randomXe.id;
+            config.templateTitle = randomXe.title;
+        }
 
         if (templateUrl) {
             loadImgSafe(templateUrl, (tmplImg) => {
@@ -2490,13 +2601,103 @@
             });
             canvas.setBackgroundColor(bgGrad, canvas.renderAll.bind(canvas));
         } else {
-            const bgColor = config.bg || '#0f172a';
-            canvas.setBackgroundColor(bgColor, canvas.renderAll.bind(canvas));
+            const randomXe = getRandomXeBackdrop();
+            loadImgSafe(randomXe.url, (tmplImg) => {
+                if (isStaleRender() || !tmplImg) return;
+                const bgObj = (tmplImg && tmplImg.set) ? tmplImg : new fabric.Image(tmplImg);
+                const origW = (bgObj.getElement && bgObj.getElement().naturalWidth) || bgObj.width || 1;
+                const origH = (bgObj.getElement && bgObj.getElement().naturalHeight) || bgObj.height || 1;
+                const scale = Math.max(canvasWidth / origW, canvasHeight / origH);
+                bgObj.set({
+                    originX: 'center',
+                    originY: 'center',
+                    left: canvasWidth / 2,
+                    top: canvasHeight / 2,
+                    scaleX: scale,
+                    scaleY: scale,
+                    selectable: false,
+                    evented: false,
+                    layerName: `Nền Xe: ${randomXe.title}`,
+                    layerType: 'background'
+                });
+                canvas.setBackgroundImage(bgObj, () => {
+                    if (!isStaleRender()) {
+                        canvas.renderAll();
+                        updateLayersList();
+                    }
+                });
+            });
         }
 
         const buildLayers = (userImg) => {
             if (isStaleRender()) return;
+
+            // Ensure user-provided title & price are strictly reflected in layers
+            const rawTitle = (config.productName || config.title || '').trim();
+            const resolvedTitle = cleanProductTitle(rawTitle) || rawTitle;
+            const resolvedPrice = (config.price || '').trim();
+
             if (Array.isArray(config.layers) && config.layers.length > 0) {
+                // If resolvedTitle is provided and not generic, sync it to headline layer
+                if (resolvedTitle && !/^(SẢN PHẨM CHÍNH HÃNG|TÊN SẢN PHẨM)$/i.test(resolvedTitle)) {
+                    let headlineLayer = config.layers.find(l => l.id === 'headline');
+                    if (!headlineLayer) {
+                        headlineLayer = config.layers.find(l => l.type === 'text' && /headline|title/i.test(l.id || ''));
+                    }
+                    if (headlineLayer) {
+                        headlineLayer.text = resolvedTitle.toUpperCase();
+                    }
+                }
+
+                // If resolvedPrice is provided, sync or create price badge layers
+                if (resolvedPrice) {
+                    const formattedPrice = resolvedPrice.toUpperCase().includes('GIÁ') ? resolvedPrice.toUpperCase() : `GIÁ: ${resolvedPrice.toUpperCase()}`;
+                    let priceTextLayer = config.layers.find(l => l.id === 'price_badge_text');
+                    let priceBgLayer = config.layers.find(l => l.id === 'price_badge_bg');
+                    
+                    if (priceTextLayer) {
+                        priceTextLayer.text = formattedPrice;
+                        priceTextLayer.fontSize = Math.max(34, priceTextLayer.fontSize || 34);
+                    }
+                    if (priceBgLayer) {
+                        priceBgLayer.strokeWidth = Math.max(3.5, priceBgLayer.strokeWidth || 3.5);
+                        priceBgLayer.stroke = priceBgLayer.stroke || '#FFFFFF';
+                    }
+
+                    if (!priceTextLayer) {
+                        const headlineLayer = config.layers.find(l => l.id === 'headline');
+                        const priceY = headlineLayer ? Math.max(6, (headlineLayer.y || 21) - 10) : 11;
+                        config.layers.unshift(
+                            {
+                                id: 'price_badge_bg',
+                                type: 'shape',
+                                shape: 'roundedRect',
+                                x: 50,
+                                y: priceY,
+                                width: 46,
+                                height: 6.2,
+                                fill: config.badgeBg || '#FFD700',
+                                stroke: '#FFFFFF',
+                                strokeWidth: 3.5,
+                                cornerRadius: 22
+                            },
+                            {
+                                id: 'price_badge_text',
+                                type: 'text',
+                                text: formattedPrice,
+                                x: 50,
+                                y: priceY,
+                                width: 46,
+                                height: 6.2,
+                                fontWeight: 800,
+                                fontSize: 34,
+                                color: '#020617',
+                                align: 'center'
+                            }
+                        );
+                    }
+                }
+
                 config.layers.forEach((layer) => {
                     const lx = (layer.x !== undefined ? (layer.x / 100) * canvasWidth : canvasWidth / 2);
                     const ly = (layer.y !== undefined ? (layer.y / 100) * canvasHeight : canvasHeight / 2);
@@ -2520,20 +2721,40 @@
                             layerName: layer.id || 'Khối Đồ Họa',
                             layerType: 'shape'
                         };
+                        const isPriceBadge = /price.*badge/i.test(layer.id || '');
                         if (layer.shape === 'ellipse' || layer.shape === 'circle') {
                             shapeObj = new fabric.Ellipse({
                                 ...sProps,
                                 rx: lw / 2,
                                 ry: lh / 2
                             });
+                        } else if (layer.shape === 'badge') {
+                            const badgePoints = calculateStarPoints(12, lw / 2, (lw / 2) * 0.84);
+                            const badgeStrokeW = Math.max(3, layer.strokeWidth !== undefined ? layer.strokeWidth : 3.5);
+                            shapeObj = new fabric.Polygon(badgePoints, {
+                                ...sProps,
+                                stroke: layer.stroke || '#FFFFFF',
+                                strokeWidth: badgeStrokeW,
+                                shadow: layer.shadow ? new fabric.Shadow(layer.shadow) : new fabric.Shadow({ color: 'rgba(0, 0, 0, 0.55)', blur: 16, offsetY: 4 }),
+                                layerName: layer.id || 'Huy Hiệu Giá Tiền'
+                            });
                         } else {
-                            const cornerRadius = layer.cornerRadius !== undefined ? layer.cornerRadius : 16;
+                            const cornerRadius = layer.cornerRadius !== undefined ? layer.cornerRadius : (isPriceBadge ? 22 : 16);
+                            const strokeW = isPriceBadge ? Math.max(3, layer.strokeWidth !== undefined ? layer.strokeWidth : 3.5) : (layer.strokeWidth || 0);
+                            const strokeColor = isPriceBadge ? (layer.stroke || '#FFFFFF') : layer.stroke;
+                            const shadowObj = layer.shadow 
+                                ? new fabric.Shadow(layer.shadow) 
+                                : (isPriceBadge ? new fabric.Shadow({ color: 'rgba(0, 0, 0, 0.55)', blur: 16, offsetY: 4 }) : null);
+
                             shapeObj = new fabric.Rect({
                                 ...sProps,
                                 width: lw,
                                 height: lh,
                                 rx: cornerRadius,
-                                ry: cornerRadius
+                                ry: cornerRadius,
+                                stroke: strokeW > 0 ? strokeColor : null,
+                                strokeWidth: strokeW,
+                                shadow: shadowObj
                             });
                         }
                         if (shapeObj) canvas.add(shapeObj);
@@ -2605,8 +2826,10 @@
 
                         // Vietnamese safe font stack
                         const safeFontFamily = resolveVietnameseSafeFont(layer.fontFamily || config.fontFamily || 'Montserrat');
-                        const defaultFontSize = isHeadline ? 86 : 30;
-                        const finalFontSize = layer.fontSize || defaultFontSize;
+                        const isPriceText = /price.*text|price.*badge/i.test(layer.id || '');
+                        const defaultFontSize = isHeadline ? 86 : (isPriceText ? 34 : 30);
+                        const finalFontSize = isPriceText ? Math.max(34, layer.fontSize || defaultFontSize) : (layer.fontSize || defaultFontSize);
+                        const finalFontWeight = layer.fontWeight ? String(layer.fontWeight) : (isHeadline ? '900' : (isPriceText ? '800' : 'normal'));
 
                         const textObj = new fabric.Textbox(layer.text || '', {
                             left: finalLeft,
@@ -2615,7 +2838,7 @@
                             originX: finalOriginX,
                             originY: 'center',
                             fontSize: finalFontSize,
-                            fontWeight: layer.fontWeight ? String(layer.fontWeight) : (isHeadline ? '900' : 'normal'),
+                            fontWeight: finalFontWeight,
                             fontFamily: safeFontFamily,
                             fill: layer.color || '#ffffff',
                             textAlign: finalAlign,
@@ -2626,9 +2849,11 @@
                             strokeWidth: layer.strokeWidth || 0,
                             shadow: layer.shadow 
                                 ? new fabric.Shadow(layer.shadow) 
-                                : (isKeyText || isHeadline 
+                                : (isHeadline 
                                     ? new fabric.Shadow({ color: 'rgba(0, 0, 0, 0.88)', blur: 22, offsetX: 0, offsetY: 4 }) 
-                                    : null),
+                                    : (isPriceText
+                                        ? new fabric.Shadow({ color: 'rgba(0, 0, 0, 0.65)', blur: 10, offsetX: 0, offsetY: 2 })
+                                        : (isKeyText ? new fabric.Shadow({ color: 'rgba(0, 0, 0, 0.70)', blur: 14, offsetX: 0, offsetY: 2 }) : null))),
                             layerName: layer.id || 'Lớp Chữ',
                             layerType: 'text'
                         });
@@ -2768,49 +2993,52 @@
                     canvas.add(summaryObj);
                 }
 
-                // 3. Visual Hierarchy - Giá tiền / Khẩu hiệu (NẰM Ở TRÊN HEADLINE: y: 10-12%)
-                const badgeVal = config.price 
-                    ? (String(config.price).toUpperCase().includes('GIÁ') ? `💰 ${String(config.price).toUpperCase()}` : `💰 GIÁ: ${String(config.price).toUpperCase()}`) 
-                    : (config.badge || config.eyebrow || config.slogan || 'GIÁ ƯU ĐÃI HÔM NAY');
+                // 3. Visual Hierarchy - Giá tiền tách riêng trong hình huy hiệu có viền từ 3px trở lên
+                const rawPrice = config.price ? String(config.price).trim() : null;
+                const priceVal = rawPrice 
+                    ? (rawPrice.toUpperCase().includes('GIÁ') ? `💰 ${rawPrice.toUpperCase()}` : `💰 GIÁ: ${rawPrice.toUpperCase()}`) 
+                    : (config.priceBadge || config.badge || config.eyebrow || config.slogan || '💰 GIÁ ƯU ĐÃI HÔM NAY');
                 const badgeTop = isTemplateMode ? (canvasHeight * ((safeZone.yMin || 10) / 100) + 12) : 75;
-                if (badgeVal) {
-                    const badgeTextContent = `★ ${String(badgeVal).toUpperCase()}`;
-                    const badgeFontSize = config.priceFontSize || 34; // BẮT BUỘC TRÊN 30px
-                    const badgeBoxW = Math.min(540, badgeTextContent.length * 19 + 56);
-                    const badgeBox = new fabric.Rect({
-                        width: badgeBoxW,
-                        height: 52,
-                        rx: 26,
-                        ry: 26,
-                        fill: colors.accent || config.badgeBg || '#ef4444',
-                        stroke: 'rgba(255, 255, 255, 0.35)',
-                        strokeWidth: 1.5,
-                        left: isAlignLeft ? textCenterX + (badgeBoxW / 2) : canvasWidth / 2,
+                if (priceVal) {
+                    const priceTextContent = priceVal.toUpperCase().startsWith('💰') ? priceVal.toUpperCase() : `💰 ${priceVal.toUpperCase()}`;
+                    const priceFontSize = Math.max(34, config.priceFontSize || 34); // BẮT BUỘC TRÊN 30px
+                    const priceBadgeW = Math.min(560, priceTextContent.length * 19 + 60);
+                    // Hình huy hiệu có viền từ 3px trở lên cực kỳ nổi bật
+                    const priceBadgeBox = new fabric.Rect({
+                        width: priceBadgeW,
+                        height: 56,
+                        rx: 28,
+                        ry: 28,
+                        fill: colors.accent || config.badgeBg || '#FFD700',
+                        stroke: '#FFFFFF',
+                        strokeWidth: 3.5, // Viền từ 3px trở lên
+                        left: isAlignLeft ? textCenterX + (priceBadgeW / 2) : canvasWidth / 2,
                         top: badgeTop,
                         originX: 'center',
                         originY: 'center',
-                        shadow: new fabric.Shadow({ color: 'rgba(0, 0, 0, 0.45)', blur: 14, offsetY: 4 }),
-                        layerName: 'Khung Khẩu Hiệu Dòng SP',
+                        shadow: new fabric.Shadow({ color: 'rgba(0, 0, 0, 0.55)', blur: 16, offsetY: 4 }),
+                        layerName: 'Huy Hiệu Giá Tiền (Viền >= 3px)',
                         layerType: 'shape'
                     });
-                    const badgeText = new fabric.IText(badgeTextContent, {
-                        fontSize: badgeFontSize,
-                        fontWeight: '800',
+                    const priceBadgeText = new fabric.IText(priceTextContent, {
+                        fontSize: priceFontSize,
+                        fontWeight: '900',
                         fontFamily: config.fontFamily || 'Montserrat',
-                        fill: colors.background || '#020617',
-                        left: isAlignLeft ? textCenterX + (badgeBoxW / 2) : canvasWidth / 2,
+                        fill: colors.background || '#0B0F19',
+                        left: isAlignLeft ? textCenterX + (priceBadgeW / 2) : canvasWidth / 2,
                         top: badgeTop,
                         originX: 'center',
                         originY: 'center',
-                        layerName: 'Khẩu Hiệu Dòng Sản Phẩm',
+                        shadow: new fabric.Shadow({ color: 'rgba(0, 0, 0, 0.45)', blur: 8, offsetY: 2 }),
+                        layerName: 'Chữ Giá Tiền Nổi Bật',
                         layerType: 'text'
                     });
-                    canvas.add(badgeBox);
-                    canvas.add(badgeText);
+                    canvas.add(priceBadgeBox);
+                    canvas.add(priceBadgeText);
                 }
 
                 // 4. Headline / Tên Sản Phẩm To Rõ (Tier 1 Hierarchy - NẰM CHÍNH GIỮA GIÁ TIỀN VÀ ẢNH SẢN PHẨM)
-                const titleVal = config.title || 'TÊN SẢN PHẨM CHÍNH HÃNG';
+                const titleVal = (cleanProductTitle(config.productName || config.title || '') || 'TÊN SẢN PHẨM CHÍNH HÃNG').toUpperCase();
                 const titleTop = badgeTop + 76;
                 const titleFontSize = config.titleFontSize || 86;
                 const titleObj = new fabric.Textbox(titleVal, {
@@ -3189,8 +3417,6 @@
         });
     }
 
-})();
-
     /**
      * Build High-Conversion Poster from Product Cutout and Picsart Template
      */
@@ -3209,7 +3435,16 @@
 
         const resolveTemplate = () => {
             const xeTemplates = _allPicsartTemplates.filter(t => t.category === 'xe' || (t.id && t.id.startsWith('XE-')));
-            const getRandomXe = () => (xeTemplates.length > 0 ? xeTemplates[Math.floor(Math.random() * xeTemplates.length)] : (_allPicsartTemplates[0] || null));
+            const getRandomXe = () => {
+                if (xeTemplates.length > 0) return xeTemplates[Math.floor(Math.random() * xeTemplates.length)];
+                const randomXe = getRandomXeBackdrop();
+                return {
+                    id: randomXe.id,
+                    title: randomXe.title,
+                    localPath: randomXe.url,
+                    category: 'xe'
+                };
+            };
 
             if (!templateOrId || templateOrId === 'random' || templateOrId === 'random_xe') {
                 return getRandomXe();
@@ -3267,7 +3502,9 @@
             height,
             preset: ratio,
             removeBackground: true,
-            badge: copy.slogan || copy.eyebrow || copy.badge || (tmpl ? (tmpl.category === 'xe' ? 'CHÍNH HÃNG TIÊU CHUẨN ĐUA' : (tmpl.category === 'art' ? 'PHIÊN BẢN NGHỆ THUẬT BIKER' : 'SIÊU PHẨM XU HƯỚNG')) : 'CHÍNH HÃNG'),
+            badge: copy.price ? (copy.price.toUpperCase().includes('GIÁ') ? copy.price.toUpperCase() : `GIÁ: ${copy.price.toUpperCase()}`) : (copy.slogan || copy.eyebrow || copy.badge || (tmpl ? (tmpl.category === 'xe' ? 'CHÍNH HÃNG TIÊU CHUẨN ĐUA' : (tmpl.category === 'art' ? 'PHIÊN BẢN NGHỆ THUẬT BIKER' : 'SIÊU PHẨM XU HƯỚNG')) : 'CHÍNH HÃNG')),
+            price: copy.price || null,
+            productName: copy.productName || copy.title || null,
             priceFontSize: 34,
             title: copy.productName || copy.title || (tmpl ? tmpl.title.toUpperCase() : 'SẢN PHẨM CAO CẤP'),
             subtitle: copy.benefits || copy.effect || copy.subtitle || (tmpl?.category === 'xe' ? 'Tối ưu công suất • Bôi trơn bền bỉ • Giảm nhiệt tức thì' : (tmpl?.category === 'art' ? 'Phong cách Biker nghệ thuật • Thiết kế khí động học sắc nét' : 'Nâng tầm phong cách • Đột phá công năng vượt trội')),
@@ -3295,6 +3532,48 @@
         activePosterConfig = config;
         renderStudioPosterConfig(targetImg, config, Boolean(options.autoExport));
     };
+
+    /**
+     * Helper to extract product name and price from text prompts
+     */
+    function extractProductInfoFromText(text) {
+        if (!text || typeof text !== 'string') return { title: null, price: null };
+        let raw = text.trim();
+        
+        let price = null;
+        const explicitPriceMatch = raw.match(/(?:giá\s*(?:bán|chỉ|ưu\s*đãi|gốc|niêm\s*yết)?\s*(?:là|:|thì|\s)\s*)([0-9]{1,3}(?:[.,][0-9]{3})+(?:\s*(?:k|đ|vnd|vnđ|d|đồng))?|[0-9]+(?:\s*(?:k|đ|vnd|vnđ|d|đồng|tr|triệu))|[0-9]{4,})/i);
+        if (explicitPriceMatch) {
+            let num = explicitPriceMatch[1].trim().toUpperCase();
+            if (/^[0-9]+$/.test(num) && Number(num) >= 1000) {
+                num = Number(num).toLocaleString('vi-VN') + 'Đ';
+            } else if (!/(?:k|đ|vnd|vnđ|d|đồng|tr|triệu)/i.test(num)) {
+                num += 'Đ';
+            }
+            price = `GIÁ: ${num}`;
+        } else {
+            const currMatch = raw.match(/([0-9]{1,3}(?:[.,][0-9]{3})*\s*(?:k|đ|vnd|vnđ|đồng)|[0-9]+\s*(?:k|đ|vnd|vnđ|đồng|tr|triệu))/i);
+            if (currMatch) {
+                price = `GIÁ: ${currMatch[1].trim().toUpperCase()}`;
+            }
+        }
+
+        let title = null;
+        const explicitNameMatch = raw.match(/(?:tên\s*(?:sản\s*phẩm|sp)?|sản\s*phẩm|mặt\s*hàng|sp)\s*[:=-]\s*([^,\n;]+)/i);
+        if (explicitNameMatch && explicitNameMatch[1]) {
+            let extracted = cleanProductTitle(explicitNameMatch[1]);
+            if (extracted.length >= 2) {
+                title = extracted;
+            }
+        }
+        if (!title) {
+            let cleanedFull = cleanProductTitle(raw);
+            const firstLine = cleanedFull.split(/[\n;]/)[0].trim();
+            if (firstLine && firstLine.length >= 2 && !/^(poster|ảnh|banner)$/i.test(firstLine)) {
+                title = firstLine.split(/\s+/).slice(0, 8).join(' ');
+            }
+        }
+        return { title, price };
+    }
 
     /**
      * One-Click Action: Composite Current Active Product with a specific Picsart Template
@@ -3348,6 +3627,7 @@
         }
 
         const creativeBrief = brief || (document.getElementById('studioCreativeBrief') ? document.getElementById('studioCreativeBrief').value : '') || 'Poster sản phẩm bán chạy';
+        const extracted = extractProductInfoFromText(creativeBrief);
 
         showStudioToast('🤖 AI đang phân tích sản phẩm và chọn mẫu poster phù hợp nhất...');
 
@@ -3359,12 +3639,20 @@
             });
             const data = await res.json();
             if (data.success && data.template) {
+                const userTitle = (options.copy && (options.copy.productName || options.copy.title)) || extracted.title || (data.template.title || 'SIÊU PHẨM MỚI').toUpperCase();
+                const userPrice = (options.copy && options.copy.price) || extracted.price;
                 const copy = options.copy || {
-                    badge: `${(data.categoryMatch || 'deal').toUpperCase()} CHUYÊN NGHIỆP`,
-                    title: (data.template.title || 'SIÊU PHẨM MỚI').toUpperCase(),
+                    badge: userPrice || `${(data.categoryMatch || 'deal').toUpperCase()} CHUYÊN NGHIỆP`,
+                    price: userPrice,
+                    title: userTitle,
+                    productName: userTitle,
                     subtitle: `Thiết kế tự động tối ưu cho danh mục ${data.categoryMatch || 'sản phẩm'}`,
                     cta: 'MUA NGAY'
                 };
+                if (!copy.title) copy.title = userTitle;
+                if (!copy.productName) copy.productName = userTitle;
+                if (!copy.price && userPrice) copy.price = userPrice;
+                if (userPrice && (!copy.badge || !copy.badge.includes('GIÁ'))) copy.badge = userPrice;
                 window.buildPosterFromProductAndTemplate(targetSrc, data.template, copy, options);
                 return;
             }
@@ -3372,7 +3660,29 @@
             console.warn('[Studio] Auto-match failed, falling back to top template:', err);
         }
 
-        // Fallback
-        const fallbackTemplate = _allPicsartTemplates[0] || null;
-        window.buildPosterFromProductAndTemplate(targetSrc, fallbackTemplate, options.copy || {}, options);
+        // Fallback to random Xe backdrop
+        const randomXeFallback = getRandomXeBackdrop();
+        const fallbackTemplate = _allPicsartTemplates.find(t => t.id === randomXeFallback.id) || {
+            id: randomXeFallback.id,
+            title: randomXeFallback.title,
+            localPath: randomXeFallback.url,
+            category: 'xe'
+        };
+        const userTitle = (options.copy && (options.copy.productName || options.copy.title)) || extracted.title || 'SẢN PHẨM CAO CẤP';
+        const userPrice = (options.copy && options.copy.price) || extracted.price;
+        const copy = options.copy || {
+            badge: userPrice || 'CHÍNH HÃNG',
+            price: userPrice,
+            title: userTitle,
+            productName: userTitle,
+            subtitle: 'Chất lượng cao cấp • Bền bỉ theo thời gian',
+            cta: 'MUA NGAY'
+        };
+        if (!copy.title) copy.title = userTitle;
+        if (!copy.productName) copy.productName = userTitle;
+        if (!copy.price && userPrice) copy.price = userPrice;
+        if (userPrice && (!copy.badge || !copy.badge.includes('GIÁ'))) copy.badge = userPrice;
+        window.buildPosterFromProductAndTemplate(targetSrc, fallbackTemplate, copy, options);
     };
+
+})();

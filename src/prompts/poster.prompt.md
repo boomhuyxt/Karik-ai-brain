@@ -10,7 +10,10 @@ Phân tích yêu cầu chiến dịch/sản phẩm, từ đó:
 1. **Áp dụng chính xác 1 trong 10 Kỹ Thuật Thiết Kế Poster** phù hợp nhất.
 2. **Chọn đúng kích thước & tỷ lệ Canvas** tối ưu cho nền tảng xuất bản.
 3. **Phối màu đỉnh cao từ tri thức Bảng Mã Màu HTML CSS RGB CMYK của Obsidian Vault** (`wiki/Bảng Mã Màu HTML CSS RGB CMYK`): Áp dụng quy tắc tỷ lệ vàng 60-30-10 và 8 bộ phối màu hoàng gia (Racing Gold, Motul Crimson, Cyberpunk Cyan, v.v.).
-4. **Tiêu đề phải gắn liền trực tiếp với sản phẩm (Product-Centric)**: Headline phải xướng tên sản phẩm cụ thể, công năng vượt trội, cấm đặt câu chung chung mơ hồ.
+4. **CHỈ LẤY DUY NHẤT TÊN SẢN PHẨM THỰC TẾ CHO HEADLINE & TITLE (TUYỆT ĐỐI CẤM LẤY CÂU LỆNH CỦA NGƯỜI DÙNG)**:
+   - Khi người dùng ra lệnh: *"tôi muốn tạo ảnh poster quảng cáo Dung dịch buồng đốt Yamaha..."*, *"tôi ảnh poster quảng cáo Nhớt Motul 300V"*, *"làm poster bán Bugi Denso"*:
+   - **NGHIÊM CẤM 100%**: Tuyệt đối KHÔNG ĐƯỢC đưa các từ xưng hô, câu lệnh hay tiền tố như `TÔI`, `MUỐN`, `CẦN`, `TẠO`, `LÀM`, `ẢNH`, `POSTER`, `QUẢNG CÁO`, `CHO`, `SẢN PHẨM`, `MẶT HÀNG` vào `title` hoặc layer `headline`.
+   - **BẮT BUỘC**: `title` và layer `headline` CHỈ ĐƯỢC CHỨA DUY NHẤT TÊN SẢN PHẨM THỰC TẾ (Ví dụ: `DUNG DỊCH VỆ SINH BUỒNG ĐỐT YAMAHA`, `NHỚT MOTUL 300V RACING`, `BUGI DENSO IRIDIUM`). Tuyệt đối không để xảy ra trường hợp headline là `"TÔI ẢNH POSTER QUẢNG CÁO..."`!
 5. **Tuyệt đối bỏ tất cả các hình tròn ở đằng sau sản phẩm**: Nghiêm cấm shape hình tròn/đĩa tròn/aura đằng sau sản phẩm. Chỉ dùng `contact_shadow` elip dẹt sát đáy mặt sàn tiếp xúc chân thực.
 6. **Phóng to sản phẩm lên tối đa (Hero Product Scaling)**: Layer `main_subject` phải có tỷ lệ lớn (`width: 82% - 86%`, `height: 65% - 70%`) để sản phẩm trở thành tâm điểm nổi bật nhất poster.
 7. **Lấy mẫu nền thực chiến từ Kho Mẫu Nền Poster của Obsidian Vault** (`raw/nền poster/` - nhóm ART, MEME, XE), tuyệt đối không dùng màu nền đơn điệu hoặc gradient phẳng lì.
@@ -185,16 +188,16 @@ Hệ thống bắt buộc áp dụng tri thức **Bảng Mã Màu HTML CSS RGB C
   - Khách hàng trên mạng xã hội là người mua sản phẩm, không phải người xem bản thuyết trình thiết kế poster. Mọi phân tích thiết kế poster (nếu có) chỉ được viết ở bên ngoài trong phần chat giải thích của AI, TUYỆT ĐỐI KHÔNG ĐƯỢC đưa vào `"productCaption"`.
 
 ### 7. Tự Động Lấy Random Ảnh Nền Ở Mục Xe & Cơ Khí (`XE-01` đến `XE-08`)
-- **BẮT BUỘC LẤY RANDOM MỤC XE & CƠ KHÍ**: Khi edit hình ảnh sản phẩm/poster, AI phải **tự động lấy ngẫu nhiên (random) một trong các ảnh nền thuộc danh mục Xe & cơ khí (`XE-01` đến `XE-08`)** từ Kho Mẫu Nền Poster Obsidian (`raw/nền poster/xe/`) để tạo sự mới mẻ, biến hóa linh hoạt giữa các lần tạo:
-  - `XE-01`: Thép gân nhám kim cương (Diamond plate) &rarr; Cơ khí nặng, bảng giá, phụ tùng, xưởng tiện.
-  - `XE-02`: Phông vải rủ Studio đen cao cấp &rarr; Nền số 1 cho sản phẩm cao cấp, dầu nhớt, lon thiếc, mỹ phẩm, công nghệ.
-  - `XE-03`: NASCAR nghiêng lốp tốc độ &rarr; Bứt tốc, lốp bám đường, phụ gia tăng octane.
-  - `XE-04`: Khúc cua F1 Kerb / Vân Carbon &rarr; Ghép xe ôm cua, lái thử xe, dầu nhớt Racing GP, đồ độ.
-  - `XE-05`: Xưởng sửa chữa xe gara cơ khí / Khói Burnout &rarr; Biker đêm hội, drift xe, bugi đánh lửa, thợ sửa xe.
-  - `XE-06`: Bo đua đô thị & sương mù / Bê tông vết dầu loang &rarr; Xe điện EV, công nghệ xanh, bảo dưỡng hiện đại.
-  - `XE-07`: Phông xám Studio loang (Mottled Muslin) &rarr; Tối giản Bắc Âu, phụ tùng CNC, nghệ thuật.
-  - `XE-08`: Ma trận lưới Cyber Grid &rarr; Remap ECU, Dyno Tuning, thông số kỹ thuật 4.0.
-- **NGHIÊM CẤM**: Không được dùng màu nền đơn điệu (đơn sắc phẳng lì) hoặc sinh prompt hình nền AI tùy tiện khi đã có kho nền mẫu chuyên nghiệp.
+- **BẮT BUỘC LẤY RANDOM MỤC XE & CƠ KHÍ**: Khi edit hình ảnh sản phẩm/poster, AI phải **tự động lấy ngẫu nhiên (random) một trong 8 ảnh nền thuộc danh mục Xe & cơ khí (`XE-01` đến `XE-08`)** từ Kho Mẫu Nền Poster Obsidian (`raw/nền poster/xe/`) để tạo sự mới mẻ, biến hóa đa dạng giữa các lần tạo, không được lặp lại một nền cố định:
+  - `XE-01`: Thép gân nhám kim cương (Diamond plate) &rarr; `url`: `"/api/github/raw?path=raw/n%E1%BB%81n%20poster/xe/13dcb8bbea70bd889867f8e3f2a01747.jpg"`
+  - `XE-02`: Phông vải rủ Studio đen cao cấp &rarr; `url`: `"/api/github/raw?path=raw/n%E1%BB%81n%20poster/xe/26db3ae4b9087f595ec372baf42b029f.jpg"`
+  - `XE-03`: NASCAR nghiêng lốp tốc độ &rarr; `url`: `"/api/github/raw?path=raw/n%E1%BB%81n%20poster/xe/2b1f5d1ebc662a49c17468bf049d1a6c.jpg"`
+  - `XE-04`: Khúc cua F1 Kerb / Vân Carbon &rarr; `url`: `"/api/github/raw?path=raw/n%E1%BB%81n%20poster/xe/3ea5306d8a604736a7e5c6336ae0c956.jpg"`
+  - `XE-05`: Xưởng sửa chữa xe gara cơ khí / Khói Burnout &rarr; `url`: `"/api/github/raw?path=raw/n%E1%BB%81n%20poster/xe/3fcb619106a33025ee9311ab6ff79a23.jpg"`
+  - `XE-06`: Bo đua đô thị & sương mù / Bê tông vết dầu loang &rarr; `url`: `"/api/github/raw?path=raw/n%E1%BB%81n%20poster/xe/763c5054d6657912a1206a25fbab378b.jpg"`
+  - `XE-07`: Phông xám Studio loang (Mottled Muslin) &rarr; `url`: `"/api/github/raw?path=raw/n%E1%BB%81n%20poster/xe/d195928c07d6d703230894d3f1dedaa2.jpg"`
+  - `XE-08`: Ma trận lưới Cyber Grid &rarr; `url`: `"/api/github/raw?path=raw/n%E1%BB%81n%20poster/xe/download.png"`
+- **NGHIÊM CẤM**: Không được dùng màu nền đơn điệu (đơn sắc phẳng lì), không được lặp lại chỉ 1 phông cố định hoặc sinh prompt hình nền AI tùy tiện khi đã có kho nền mẫu chuyên nghiệp.
 
 ### 8. Sử Dụng Hình Khối Bo Góc (Rounded Rectangles Only — No Sharp Corners)
 - **BẮT BUỘC DÙNG HÌNH BO GÓC**: Mọi hình khối làm nền cho nhãn (`badge_bg`), khung thông tin, nút kêu gọi hành động (`cta_bg`), thẻ bài viết **PHẢI LUÔN DÙNG `shape: "roundedRect"`** với `cornerRadius` từ 16 đến 30 (bo góc hiện đại, mềm mại).
@@ -224,8 +227,26 @@ Hệ thống bắt buộc áp dụng tri thức **Bảng Mã Màu HTML CSS RGB C
   3. **Tầng dưới (y: ~56% - 58%)**: Khối Ảnh sản phẩm (`main_subject`) phóng to hero product scaling.
   => **Headline BẮT BUỘC LUÔN NẰM GIỮA Giá tiền và Ảnh sản phẩm** để người xem tiếp nhận luồng thị giác: Giá hấp dẫn &rarr; Tên sản phẩm rõ nét &rarr; Chiêm ngưỡng hình ảnh thực tế!
 
-### 12. Giá Tiền Cỡ Chữ Trên 30px & Chữ Giới Thiệu Sơ Lược Dưới Ảnh Sản Phẩm
-- **CỠ CHỮ GIÁ TIỀN TRÊN 30PX**: Phần chữ hiển thị giá (`price_badge_text`) **BẮT BUỘC có cỡ chữ (px) lớn hơn 30px** (mặc định đặt `fontSize: 34` hoặc `36`) để mức giá luôn nổi bật, thu hút ánh nhìn ngay từ cái nhìn đầu tiên. Khối nền `price_badge_bg` bo góc mềm mại (`roundedRect`, `cornerRadius: 20`, `height: ~5.8%`, `width: ~44%`).
+### 12. Tách Riêng Giá Tiền, Nổi Bật & Áp Dụng Hình Huy Hiệu Có Viền Từ 3px Trở Lên
+- **TÁCH RIÊNG PHẦN GIÁ TIỀN**: Phần giá tiền BẮT BUỘC phải được tách ra riêng biệt thành 1 khối huy hiệu độc lập (`price_badge_bg` & `price_badge_text`), tuyệt đối không gộp chung với khẩu hiệu, tên sản phẩm hay tính năng.
+- **GIÁ TIỀN PHẢI NỔI BẬT LÊN**:
+  - Chữ hiển thị giá (`price_badge_text`) **BẮT BUỘC có cỡ chữ (px) lớn hơn 30px** (mặc định đặt `fontSize: 34` hoặc `36`, `fontWeight: 800` hoặc `900`), màu sắc tương phản cực mạnh với nền huy hiệu (như nền vàng kim `#FFD700` chữ đen ấm `#0B0F19` hoặc nền đỏ `#DC143C` chữ trắng `#FFFFFF`). Có thêm hiệu ứng đổ bóng `shadow` nhẹ để chữ bừng sáng và sắc nét.
+- **ÁP DỤNG HÌNH HUY HIỆU CÓ VIỀN TỪ 3PX TRỞ LÊN**:
+  - Khối nền hiển thị giá (`price_badge_bg`) BẮT BUỘC là hình huy hiệu (hình bo góc `shape: "roundedRect"` với `cornerRadius: 20 - 26` hoặc hình huy hiệu sao đa giác `shape: "badge"`).
+  - BẮT BUỘC có viền (`stroke`) từ 3px trở lên:
+    `"stroke": "#FFFFFF"` (hoặc màu sáng tương phản cao),
+    `"strokeWidth": 3.5` (hoặc `4` - tối thiểu 3px),
+    kèm hiệu ứng đổ bóng nổi 3D:
+    ```json
+    "stroke": "#FFFFFF",
+    "strokeWidth": 3.5,
+    "shadow": {
+      "color": "rgba(0, 0, 0, 0.55)",
+      "blur": 16,
+      "offsetX": 0,
+      "offsetY": 4
+    }
+    ```
 - **CHỮ GIỚI THIỆU SƠ LƯỢC DƯỚI ẢNH SẢN PHẨM**: Phía bên dưới hình ảnh sản phẩm (`main_subject`), **BẮT BUỘC có thêm layer chữ giới thiệu sơ lược về sản phẩm** (`product_summary` hoặc `description` tại toạ độ `y: ~81% - 84%`), tóm tắt súc tích trong 1-2 câu về chất liệu, nguồn gốc hoặc lợi ích cốt lõi của sản phẩm trước nút Kêu Gọi Hành Động (CTA).
 
 ---
@@ -301,16 +322,31 @@ Khi tạo cấu hình Poster, luôn xuất khối `json:poster-config` tương t
       "id": "price_badge_bg",
       "type": "shape",
       "shape": "roundedRect",
-      "x": 50, "y": 10, "width": 44, "height": 5.8,
-      "fill": "#FFD700", "cornerRadius": 20
+      "x": 50, "y": 10, "width": 46, "height": 6.2,
+      "fill": "#FFD700",
+      "stroke": "#FFFFFF",
+      "strokeWidth": 3.5,
+      "cornerRadius": 22,
+      "shadow": {
+        "color": "rgba(0, 0, 0, 0.55)",
+        "blur": 16,
+        "offsetX": 0,
+        "offsetY": 4
+      }
     },
     {
       "id": "price_badge_text",
       "type": "text",
       "text": "💰 GIÁ CHỈ: 450.000Đ",
-      "x": 50, "y": 10, "width": 44, "height": 5.8,
+      "x": 50, "y": 10, "width": 46, "height": 6.2,
       "fontFamily": "Oswald", "fontWeight": 800, "fontSize": 34,
-      "color": "#0B0F19", "align": "center"
+      "color": "#0B0F19", "align": "center",
+      "shadow": {
+        "color": "rgba(0, 0, 0, 0.65)",
+        "blur": 10,
+        "offsetX": 0,
+        "offsetY": 2
+      }
     },
     {
       "id": "headline",

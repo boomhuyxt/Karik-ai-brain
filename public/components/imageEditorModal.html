@@ -462,11 +462,17 @@
                                 <p class="text-[9px] text-slate-400">24 mẫu nền poster chuẩn Obsidian (Xe & Cơ khí, Meme Viral, Art Biker) — Tách nền ghép sản phẩm nổi bật tức thì.</p>
                             </div>
 
-                        <!-- 1-Click AI Auto Match & Composite Banner -->
-                        <button type="button" id="btnAutoMatchPicsart" onclick="window.autoMatchAndCompositePoster()" class="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white font-bold text-xs shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer border border-cyan-400/40">
-                            <span class="material-symbols-outlined text-sm text-amber-300">auto_awesome</span>
-                            <span>AI Tự Động Chọn Nền Obsidian & Ghép Poster Nổi Bật</span>
-                        </button>
+                        <!-- 1-Click AI Auto Match & Quick Random Xe -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 w-full">
+                            <button type="button" id="btnAutoMatchPicsart" onclick="window.autoMatchAndCompositePoster()" class="py-2 px-3 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white font-bold text-xs shadow-lg transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer border border-cyan-400/40">
+                                <span class="material-symbols-outlined text-sm text-amber-300">auto_awesome</span>
+                                <span>AI Tự Chọn Nền & Ghép</span>
+                            </button>
+                            <button type="button" id="btnRandomXeBackdropQuick" onclick="window.randomizeXeBackdrop()" class="py-2 px-3 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold text-xs shadow-lg transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer border border-amber-400/40">
+                                <span class="material-symbols-outlined text-sm text-yellow-200">casino</span>
+                                <span>🎲 Đổi Random Nền Xe</span>
+                            </button>
+                        </div>
                         </div>
 
                         <!-- Category Filter Chips (Obsidian Only: Xe, Meme, Art) -->
@@ -638,9 +644,13 @@
                             <span class="material-symbols-outlined text-xl">trending_flat</span>
                             <span class="text-[9px]">Mũi tên</span>
                         </button>
-                        <button data-shape="badge" title="Huy hiệu Sale/VIP" class="p-2.5 bg-slate-900 hover:bg-purple-900/40 border border-purple-500/30 hover:border-cyan-400 rounded-xl flex flex-col items-center gap-1 text-slate-200 hover:text-cyan-300 transition-all shape-btn">
+                        <button data-shape="badge" title="Huy hiệu Sale/VIP (Viền >= 3px)" class="p-2.5 bg-slate-900 hover:bg-purple-900/40 border border-purple-500/30 hover:border-cyan-400 rounded-xl flex flex-col items-center gap-1 text-slate-200 hover:text-cyan-300 transition-all shape-btn">
                             <span class="material-symbols-outlined text-xl">verified</span>
                             <span class="text-[9px]">Huy hiệu</span>
+                        </button>
+                        <button data-shape="priceBadge" title="Huy hiệu Giá Tiền (Viền >= 3px)" class="p-2.5 bg-slate-900 hover:bg-amber-900/40 border border-amber-500/40 hover:border-amber-300 rounded-xl flex flex-col items-center gap-1 text-amber-300 hover:text-amber-200 transition-all shape-btn">
+                            <span class="material-symbols-outlined text-xl">sell</span>
+                            <span class="text-[9px]">Huy hiệu Giá</span>
                         </button>
                     </div>
 
@@ -876,6 +886,22 @@
                                 <button aria-label="Chọn nền Deep Emerald" data-bg-grad="linear-gradient(135deg, #022c22 0%, #082f49 100%)" class="h-8 rounded-lg border border-white/20 hover:border-cyan-400 bg-gradient-to-br from-[#022c22] to-[#082f49] bg-grad-btn" title="Deep Emerald"></button>
                                 <button aria-label="Chọn nền Warm Amber" data-bg-grad="linear-gradient(135deg, #1c1917 0%, #451a03 100%)" class="h-8 rounded-lg border border-white/20 hover:border-cyan-400 bg-gradient-to-br from-[#1c1917] to-[#451a03] bg-grad-btn" title="Warm Amber"></button>
                             </div>
+                        </div>
+
+                        <!-- Random Xe Backdrop Quick Card -->
+                        <div class="p-2.5 rounded-xl bg-amber-950/30 border border-amber-500/40 space-y-2">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold text-amber-300 flex items-center gap-1.5">
+                                    <span class="material-symbols-outlined text-sm text-amber-400">casino</span>
+                                    <span>Nền Ngẫu Nhiên Xe & Cơ Khí</span>
+                                </span>
+                                <span class="text-[9px] bg-amber-500/20 text-amber-300 border border-amber-400/40 px-1.5 py-0.5 rounded-full font-mono font-bold">XE-01..08</span>
+                            </div>
+                            <p class="text-[10px] text-slate-300">Đổi ngẫu nhiên 1 trong 8 mẫu nền phông xe chuyên nghiệp (Garage, Studio Vải Đen, Bục Xi Măng, Hầm Xe, Khói Tối Giản...).</p>
+                            <button type="button" id="btnRandomXeBackdrop" onclick="window.randomizeXeBackdrop()" class="w-full py-1.5 px-3 rounded-lg bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold text-xs shadow-md transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer">
+                                <span class="material-symbols-outlined text-xs">shuffle</span>
+                                <span>🎲 Đổi Random Nền Xe & Cơ Khí</span>
+                            </button>
                         </div>
                     </div>
                 </div>

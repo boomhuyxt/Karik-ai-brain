@@ -338,8 +338,14 @@ test('buildPosterConfig strictly positions headline between price badge and main
   assert.ok(headline.y < mainSubject.y, `Headline Y (${headline.y}) must be above Main Subject Y (${mainSubject.y})`);
   assert.ok(mainSubject.y < productSummary.y, `Main Subject Y (${mainSubject.y}) must be above Product Summary Y (${productSummary.y})`);
 
-  // Price text must be strictly greater than 30px
+  // Price text must be strictly greater than 30px and prominent
   assert.ok(priceBadgeText.fontSize > 30, `Price badge font size (${priceBadgeText.fontSize}) must be > 30px`);
+  assert.equal(priceBadgeText.fontSize, 34);
+
+  // Price badge shape must have border >= 3px and 3D shadow
+  assert.ok(priceBadgeBg.stroke, 'Price badge shape must have a stroke border');
+  assert.ok(priceBadgeBg.strokeWidth >= 3, `Price badge strokeWidth (${priceBadgeBg.strokeWidth}) must be >= 3px`);
+  assert.ok(priceBadgeBg.shadow, 'Price badge shape must have shadow to stand out');
 
   // Headline specifications
   assert.equal(headline.fontSize, 86);
@@ -353,5 +359,91 @@ test('buildPosterConfig strictly positions headline between price badge and main
   assert.ok(config.backdropId.startsWith('XE-'));
   const backdrop = obsidianPosterService.getBackdropById(config.backdropId);
   assert.equal(backdrop.category, 'xe');
+});
+
+test('buildPosterConfig extracts user-provided product name and price into headline and price badge', () => {
+  const config = obsidianPosterService.buildPosterConfig({
+    brief: 'Tên sản phẩm: Nhớt Wolver Racing Special 10W40, Giá: 250.000đ'
+  });
+
+  assert.equal(config.title, 'Nhớt Wolver Racing Special 10W40');
+  assert.equal(config.productName, 'Nhớt Wolver Racing Special 10W40');
+  assert.ok(config.price.includes('250.000Đ') || config.price.includes('250.000đ'));
+
+  const headline = config.layers.find(l => l.id === 'headline');
+  const priceBadgeText = config.layers.find(l => l.id === 'price_badge_text');
+  const priceBadgeBg = config.layers.find(l => l.id === 'price_badge_bg');
+
+  assert.ok(headline);
+  assert.equal(headline.text, 'NHỚT WOLVER RACING SPECIAL 10W40');
+
+  assert.ok(priceBadgeText);
+  assert.ok(priceBadgeText.text.includes('250.000Đ'));
+  assert.ok(priceBadgeText.fontSize >= 34);
+
+  assert.ok(priceBadgeBg);
+  assert.ok(priceBadgeBg.strokeWidth >= 3);
+});
+
+test('deriveProductHeadline extracts exact product name from various user prompt formats even without "cho"', () => {
+  // Case 1: Prompt without 'cho', with price and promotional verbs
+  const p1 = obsidianPosterService.deriveProductHeadline('tạo ảnh poster quảng cáo Dung dịch vệ sinh buồng đốt Yamaha giá 75.000đ');
+  assert.equal(p1, 'Dung dịch vệ sinh buồng đốt Yamaha');
+
+  // Case 2: Short prompt without 'cho'
+  const p2 = obsidianPosterService.deriveProductHeadline('tạo poster Nhớt Motul 300V');
+  assert.equal(p2, 'Nhớt Motul 300V');
+
+  // Case 3: Prompt with 'làm poster'
+  const p3 = obsidianPosterService.deriveProductHeadline('làm poster Bugi Denso Iridium');
+  assert.equal(p3, 'Bugi Denso Iridium');
+
+  // Case 4: Prompt with 'cho'
+  const p4 = obsidianPosterService.deriveProductHeadline('thiết kế poster cho Vỏ Michelin Pilot Street 2');
+  assert.equal(p4, 'Vỏ Michelin Pilot Street 2');
+
+  // Case 5: Prompt starting with 'tôi ảnh poster quảng cáo' (user's exact bug report)
+  const p5 = obsidianPosterService.deriveProductHeadline('tôi ảnh poster quảng cáo Dung dịch buồng đốt Yamaha giá 75.000đ');
+  assert.equal(p5, 'Dung dịch buồng đốt Yamaha');
+
+  // Case 6: Prompt starting with 'tôi muốn làm ảnh poster quảng cáo'
+  const p6 = obsidianPosterService.deriveProductHeadline('tôi muốn làm ảnh poster quảng cáo Nhớt Motul 300V');
+  assert.equal(p6, 'Nhớt Motul 300V');
+
+  // Case 7: Dirty copy/title from Gemini containing 'TÔI ẢNH POSTER QUẢNG CÁO...'
+  const p7 = obsidianPosterService.deriveProductHeadline('', { title: 'TÔI ẢNH POSTER QUẢNG CÁO DUNG DỊCH VỆ SINH BUỒNG ĐỐT YAMAHA' });
+  assert.equal(p7, 'DUNG DỊCH VỆ SINH BUỒNG ĐỐT YAMAHA');
+
+  // Case 8: Conversational request from customer
+  const p8 = obsidianPosterService.deriveProductHeadline('Em nhờ shop tạo poster quảng cáo cho Lốp xe Michelin City Extra');
+  assert.equal(p8, 'Lốp xe Michelin City Extra');
+});
+
+test('buildPosterConfig extracts only pure product name for headline even when user starts prompt with "tôi ảnh poster quảng cáo"', () => {
+  const config = obsidianPosterService.buildPosterConfig({
+    brief: 'tôi ảnh poster quảng cáo Dung dịch vệ sinh buồng đốt Yamaha giá 75.000đ'
+  });
+
+  const headline = config.layers.find(l => l.id === 'headline');
+  assert.ok(headline);
+  assert.equal(headline.text, 'DUNG DỊCH VỆ SINH BUỒNG ĐỐT YAMAHA');
+  assert.ok(!headline.text.includes('TÔI'));
+  assert.ok(!headline.text.includes('POSTER'));
+  assert.ok(!headline.text.includes('QUẢNG CÁO'));
+});
+
+
+test('buildPosterConfig selects random Xe backdrop from XE-01 to XE-08 when no backdrop is specified', () => {
+  const xeIds = new Set(['XE-01', 'XE-02', 'XE-03', 'XE-04', 'XE-05', 'XE-06', 'XE-07', 'XE-08']);
+  for (let i = 0; i < 20; i++) {
+    const config = obsidianPosterService.buildPosterConfig({
+      brief: 'tạo poster Dung dịch vệ sinh buồng đốt Yamaha'
+    });
+    assert.ok(xeIds.has(config.backdropId), `Backdrop ${config.backdropId} must be in Xe category`);
+    assert.ok(config.canvas.background.url.includes('raw/n%E1%BB%81n%20poster/xe/'));
+    const headline = config.layers.find(l => l.id === 'headline');
+    assert.ok(headline);
+    assert.equal(headline.text, 'DUNG DỊCH VỆ SINH BUỒNG ĐỐT YAMAHA');
+  }
 });
 

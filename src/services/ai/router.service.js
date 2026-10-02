@@ -48,7 +48,7 @@ class RouterService {
   dispatchAgent(prompt = '', category = '') {
     const text = `${prompt} ${category}`.toLowerCase();
 
-    // 1. Image & Poster Studio Design Agent (Gemini 3.6 Flash)
+    // 1. Image & Poster Studio Design Agent (Gemini 3.7 Flash)
     const imageKeywords = [
       'tạo ảnh', 'vẽ ảnh', 'hình ảnh', 'tạo hình', 'poster', 'banner',
       'concept art', 'visual', 'ảnh quảng cáo', 'thiết kế ảnh', 'prompts ảnh',
@@ -133,18 +133,21 @@ class RouterService {
      - Tầng giữa (y: ~20-22%): Tiêu Đề Chính (Headline) cỡ chữ 86px ("fontSize": 86) in hoa, có shadow/glow nổi bật.
      - Tầng dưới (y: ~56-58%): Ảnh Sản Phẩm (layer "main_subject" phóng to hero product scaling).
      => Headline BẮT BUỘC LUÔN NẰM GIỮA Giá tiền và Ảnh sản phẩm.
-  4. GIÁ TIỀN CỠ CHỮ TRÊN 30PX & CHỮ GIỚI THIỆU SƠ LƯỢC DƯỚI ẢNH:
-     - Chữ hiển thị giá ("price_badge_text") BẮT BUỘC có cỡ chữ trên 30px ("fontSize": 34 hoặc 36).
+  4. TÁCH RIÊNG GIÁ TIỀN & HUY HIỆU CÓ VIỀN TỪ 3PX TRỞ LÊN:
+     - Phần GIÁ TIỀN BẮT BUỘC ĐƯỢC TÁCH RA RIÊNG THÀNH MỘT HUY HIỆU ĐỘC LẬP ("price_badge_bg" & "price_badge_text"), tuyệt đối không gộp chung với khẩu hiệu hay tên sản phẩm.
+     - GIÁ TIỀN PHẢI CỰC KỲ NỔI BẬT: Chữ hiển thị giá ("price_badge_text") BẮT BUỘC có cỡ chữ trên 30px ("fontSize": 34 hoặc 36), fontWeight 800-900, màu sắc tương phản cao và có hiệu ứng đổ bóng.
+     - ÁP DỤNG HÌNH HUY HIỆU CÓ VIỀN TỪ 3PX TRỞ LÊN: Khối huy hiệu hiển thị giá tiền ("price_badge_bg") BẮT BUỘC có viền dày từ 3px trở lên ("stroke": "#FFFFFF" hoặc màu tương phản cao, "strokeWidth": 3.5 hoặc 4), bo góc mềm mại ("cornerRadius": 20-26) kèm hiệu ứng đổ bóng 3D ("shadow") để giá tiền nổi bật hẳn lên.
      - Phía dưới hình ảnh sản phẩm ("main_subject"), BẮT BUỘC có thêm layer chữ giới thiệu sơ lược về sản phẩm ("product_summary" tại y: ~81-84%) tóm tắt súc tích 1-2 dòng công năng, ưu điểm nổi bật.
   5. LÀM NÉT (SHARPEN) LÊN 50%: Ảnh sản phẩm (layer "main_subject") BẮT BUỘC phải được làm nét lên 50% thông qua cấu hình "adjustments": { "sharpen": 50 } để các chi tiết máy, nhãn mác, góc cạnh sản phẩm sắc nét tối đa.
   6. KHỐI ĐỒ HỌA BO GÓC (ROUNDED RECT): TUYỆT ĐỐI KHÔNG dùng hình vuông góc nhọn thông thường cho huy hiệu (badge), card nền hay nút bấm (CTA). BẮT BUỘC dùng hình vuông bo góc với type: "shape", shape: "roundedRect" và khai báo thuộc tính cornerRadius (16 - 30px) để tạo giao diện hiện đại, mềm mại và cao cấp.
   7. TIÊU ĐỀ HEADLINE ĐỔ BÓNG & PHÁT SÁNG (SHADOW / GLOW): Toàn bộ tiêu đề chính (headline / title) BẮT BUỘC phải được đổ bóng và phát sáng hợp lý (khai báo thuộc tính "shadow": { "color": "rgba(0,0,0,0.85)", "blur": 20, "offsetX": 0, "offsetY": 4 } hoặc glow phát sáng tương phản với màu nền) để chữ nổi bật, có chiều sâu 3D và không bị chìm vào hình nền.
-  7. Chọn art direction theo ngành hàng, đối tượng, sở thích và lịch sử; không lặp bộ ba style + layout + palette gần nhất.
-  8. Thiết kế theo pipeline hybrid: key visual không chữ do image model tạo; typography, badge và CTA là layer chỉnh sửa được.
-  9. Lập Bảng phân lớp thiết kế (Layer Specifications: Nền, Hình ảnh, Typography, Shapes/Huy hiệu, Hiệu ứng Filters, Tách nền Magic Cut) và xuất cấu hình json:poster-config schema 3.0 chuẩn xác.
-  10. Hướng dẫn người dùng thao tác trực tiếp trên AI Karik Studio (bấm nút Studio Ảnh trên khung chat).
-  11. BẮT BUỘC VỀ CAPTION ĐĂNG BÀI (publishing.productCaption): Trong json:poster-config, trường productCaption PHẢI CHỈ NÊU VỀ SẢN PHẨM & GIÁ BÁN / GIÁ ƯU ĐÃI / TÍNH NĂNG / KHUYẾN MÃI / CTA CHỐT ĐƠN. TUYỆT ĐỐI NGHIÊM CẤM đưa các câu mô tả kỹ thuật thiết kế poster, bố cục, màu sắc, font chữ hay layer vào productCaption.
-  12. Tuân thủ nghiêm ngặt quy chuẩn tại image.prompt.md và poster.prompt.md.`;
+  8. Chọn art direction theo ngành hàng, đối tượng, sở thích và lịch sử; không lặp bộ ba style + layout + palette gần nhất.
+  9. Thiết kế theo pipeline hybrid: key visual không chữ do image model tạo; typography, badge và CTA là layer chỉnh sửa được.
+  10. Lập Bảng phân lớp thiết kế (Layer Specifications: Nền, Hình ảnh, Typography, Shapes/Huy hiệu, Hiệu ứng Filters, Tách nền Magic Cut) và xuất cấu hình json:poster-config schema 3.0 chuẩn xác.
+  11. BẮT BUỘC TRÍCH XUẤT CHÍNH XÁC TÊN SẢN PHẨM VÀ GIÁ TIỀN ĐÃ CHO: Nếu người dùng cung cấp tên sản phẩm (ví dụ: "Tên sản phẩm: ...", "edit ảnh cho [Tên SP]...", "SP: ...", v.v.) và/hoặc giá bán (ví dụ: "Giá: 250.000đ", "giá 450k", v.v.), BẮT BUỘC TRÍCH XUẤT ĐÚNG 100% tên sản phẩm vào "title" và layer "headline", trích xuất đúng giá bán vào "price" và layer "price_badge_text". TUYỆT ĐỐI KHÔNG dùng tên chung chung (như "SẢN PHẨM CAO CẤP", "SẢN PHẨM CHÍNH HÃNG") hay giá giả định khi người dùng đã ghi rõ.
+  12. Hướng dẫn người dùng thao tác trực tiếp trên AI Karik Studio (bấm nút Studio Ảnh trên khung chat).
+  13. BẮT BUỘC VỀ CAPTION ĐĂNG BÀI (publishing.productCaption): Trong json:poster-config, trường productCaption PHẢI CHỈ NÊU VỀ SẢN PHẨM & GIÁ BÁN / GIÁ ƯU ĐÃI / TÍNH NĂNG / KHUYẾN MÃI / CTA CHỐT ĐƠN. TUYỆT ĐỐI NGHIÊM CẤM đưa các câu mô tả kỹ thuật thiết kế poster, bố cục, màu sắc, font chữ hay layer vào productCaption.
+  14. Tuân thủ nghiêm ngặt quy chuẩn tại image.prompt.md và poster.prompt.md.`;
     }
 
     if (agent.id === 'social') {

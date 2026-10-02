@@ -7,11 +7,11 @@ try {
   // Test 1: Image Agent Dispatch & Orchestrated Prompt
   const imageAgent = routerService.dispatchAgent('Tạo ảnh poster quảng cáo đồ uống');
   assert.strictEqual(imageAgent.id, 'image');
-  assert.strictEqual(imageAgent.model, 'gemini-3.6-flash');
+  assert.strictEqual(imageAgent.model, 'gemini-3.7-flash');
   const imageEnriched = routerService.buildOrchestratedPrompt('Tạo ảnh poster quảng cáo đồ uống', imageAgent);
   assert.ok(imageEnriched.includes('CHỈ THỊ ĐIỀU PHỐI TỪ AI KARIK ORCHESTRATOR -> AGENT STUDIO ẢNH'));
   assert.ok(imageEnriched.includes('image.prompt.md'));
-  console.log('✅ Image Studio Agent Dispatch & Prompt Engineering Passed: Model set to Gemini 3.6 Flash');
+  console.log('✅ Image Studio Agent Dispatch & Prompt Engineering Passed: Model set to Gemini 3.7 Flash');
 
   // Test 2: Social Media & Viral Copywriting Agent Dispatch (Facebook & TikTok)
   const socialAgent = routerService.dispatchAgent('Đăng bài Facebook giới thiệu sản phẩm');

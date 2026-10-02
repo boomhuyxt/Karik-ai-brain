@@ -3,11 +3,11 @@ const assert = require('node:assert');
 const routerService = require('../../src/services/ai/router.service');
 const geminiConfig = require('../../src/config/gemini');
 
-test('Image Studio Agent - should be mapped to Studio Designer Persona with Gemini 3.6 Flash', () => {
+test('Image Studio Agent - should be mapped to Studio Designer Persona with Gemini 3.7 Flash', () => {
   const agent = routerService.dispatchAgent('Thiết kế cho tôi poster quảng cáo cà phê');
   assert.strictEqual(agent.id, 'image');
-  assert.strictEqual(agent.model, 'gemini-3.6-flash');
-  assert.strictEqual(geminiConfig.agents.image.name, 'Agent Studio Ảnh (Gemini 3.6 Flash)');
+  assert.strictEqual(agent.model, 'gemini-3.7-flash');
+  assert.strictEqual(geminiConfig.agents.image.name, 'Agent Studio Ảnh (Gemini 3.7 Flash)');
 });
 
 test('RouterService - buildOrchestratedPrompt for image agent includes Studio instructions', () => {

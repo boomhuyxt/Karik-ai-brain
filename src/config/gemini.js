@@ -6,7 +6,7 @@ module.exports = {
   },
   defaultModel: 'gemini-3.5-flash-lite',
   fastModel: 'gemini-3.5-flash-lite',
-  fallbackModels: ['gemini-flash-lite-latest', 'gemini-3.6-flash', 'gemini-2.5-flash-tts', 'gemini-3.1-flash-tts'],
+  fallbackModels: ['gemini-flash-lite-latest', 'gemini-3.7-flash', 'gemini-3.6-flash', 'gemini-2.5-flash-tts', 'gemini-3.1-flash-tts'],
   baseUrl: 'https://generativelanguage.googleapis.com/v1beta',
 
   // 🤖 AI Karik Multi-Agent Ecosystem Architecture
@@ -20,10 +20,10 @@ module.exports = {
     },
     image: {
       id: 'image',
-      name: 'Agent Studio Ảnh (Gemini 3.6 Flash)',
-      model: 'gemini-3.6-flash',
+      name: 'Agent Studio Ảnh (Gemini 3.7 Flash)',
+      model: 'gemini-3.7-flash',
       role: 'Chuyên gia thiết kế & biên tập hình ảnh, poster, banner qua AI Karik Studio (Bố cục, Typography, Layer, Filter, Xóa nền)',
-      badge: 'Agent Studio Ảnh (Gemini 3.6 Flash)'
+      badge: 'Agent Studio Ảnh (Gemini 3.7 Flash)'
     },
     social: {
       id: 'social',

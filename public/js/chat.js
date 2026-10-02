@@ -407,7 +407,7 @@ function initAIChat() {
             const voiceBadgeHtml = `<span class="voice-badge text-[9px] bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-400/40 px-1.5 py-0.5 rounded font-mono font-bold flex items-center gap-1"><span class="material-symbols-outlined text-[10px] text-emerald-600 dark:text-emerald-300">volume_up</span> Chromium Voice</span>`;
 
             const replyText = result.reply || result.message || 'Không có phản hồi';
-            const agentInfo = result.agent || { id: 'orchestrator', model: result.model || 'gemini-3.6-flash' };
+            const agentInfo = result.agent || { id: 'orchestrator', model: result.model || 'gemini-3.7-flash' };
             const tokenInfo = result.tokens || { totalTokens: 0, inputTokens: 0, outputTokens: 0 };
             const msgId = 'aimsg_' + Date.now();
             
@@ -417,7 +417,7 @@ function initAIChat() {
                 const posterJsonMatch = replyText.match(/```(?:json:poster-config|json)\s*\n([\s\S]*?)\n```/i);
                 if (posterJsonMatch && posterJsonMatch[1]) {
                     const parsed = JSON.parse(posterJsonMatch[1]);
-                    if (parsed && (parsed.title || parsed.filter || parsed.preset || parsed.badge)) {
+                    if (parsed && (parsed.title || parsed.filter || parsed.preset || parsed.badge || parsed.layers)) {
                         parsedPosterConfig = parsed;
                     }
                 }
@@ -425,15 +425,163 @@ function initAIChat() {
                 console.warn('[Chat] Failed to parse poster config JSON:', err);
             }
 
-            // Image Studio Quick Action Card when user edits/works with an image
+            // Helper to thoroughly clean conversational commands, requests, and media prefixes
+            const cleanProductTitle = (text) => {
+                if (!text || typeof text !== 'string') return '';
+                let str = text.trim();
+                str = str.replace(/^[*_~`"'“”‘’«»#]+|[*_~`"'“”‘’«»#]+$/g, '').trim();
+                str = str
+                    .replace(/(?:giá|price|chi\s*phí)\s*[:=-]?\s*[\d.,]+\s*(?:k|vnđ|vnd|đ|\$)?.*$/gi, '')
+                    .replace(/[\d.,]+\s*(?:k|vnđ|vnd|đ|\$)\b.*$/gi, '')
+                    .trim();
+
+                let prev = '';
+                while (prev !== str) {
+                    prev = str;
+                    str = str
+                        .replace(/^(?:tôi|mình|em|anh|chị|shop|admin)\s*(?:muốn|cần|yêu\s*cầu|nhờ|xin)?\s+/i, '')
+                        .replace(/^(?:bạn\s*(?:ơi|hãy)?|giúp\s*(?:tôi|mình|em|anh|chị)?|hãy|vui\s*lòng|xin\s*vui\s*lòng)\s+/i, '')
+                        .replace(/^(?:thiết\s*kế|tạo|làm|vẽ|lên\s*ý\s*tưởng|edit|chỉnh\s*sửa|render|generate|build|xuất)\s+(?:một\s+)?/i, '')
+                        .replace(/^(?:một\s+)?(?:poster|banner|ảnh|hình\s*ảnh|hình|ấn\s*phẩm|standee|flyer|art|key\s*visual)\s+/i, '')
+                        .replace(/^(?:quảng\s*cáo|quảng\s*bá|giới\s*thiệu|ra\s*mắt|chào\s*đón|bán|ưu\s*đãi|khuyến\s*mãi|sale|deal|bài\s*viết)\s+/i, '')
+                        .replace(/^(?:sản\s*phẩm|mặt\s*hàng|món\s*hàng|món\s*đồ|item|dòng\s*sản\s*phẩm|loại)\s+/i, '')
+                        .replace(/^(?:cho|dành\s+cho|về)\s+/i, '')
+                        .replace(/^(?:một\s+)/i, '')
+                        .trim();
+                }
+                str = str.replace(/^[:;,.-\s]+|[:;,.-\s]+$/g, '').trim();
+                return str;
+            };
+
+            // Extract product name and price from user input to ensure they are never lost
+            const extractProductAndPrice = (text) => {
+                if (!text || typeof text !== 'string') return { title: null, price: null };
+                let title = null;
+                let price = null;
+                
+                // 1. Price matching
+                const explicitPriceMatch = text.match(/(?:giá\s*(?:bán|chỉ|ưu\s*đãi|gốc|niêm\s*yết)?\s*(?:là|:|thì|\s)\s*)([0-9]{1,3}(?:[.,][0-9]{3})+(?:\s*(?:k|đ|vnd|vnđ|d|đồng))?|[0-9]+(?:\s*(?:k|đ|vnd|vnđ|d|đồng|tr|triệu))|[0-9]{4,})/i);
+                if (explicitPriceMatch) {
+                    let num = explicitPriceMatch[1].trim().toUpperCase();
+                    if (/^[0-9]+$/.test(num) && Number(num) >= 1000) {
+                        num = Number(num).toLocaleString('vi-VN') + 'Đ';
+                    } else if (!/(?:k|đ|vnd|vnđ|d|đồng|tr|triệu)/i.test(num)) {
+                        num += 'Đ';
+                    }
+                    price = `GIÁ: ${num}`;
+                } else {
+                    const currMatch = text.match(/([0-9]{1,3}(?:[.,][0-9]{3})*\s*(?:k|đ|vnd|vnđ|đồng)|[0-9]+\s*(?:k|đ|vnd|vnđ|đồng|tr|triệu))/i);
+                    if (currMatch) {
+                        price = `GIÁ: ${currMatch[1].trim().toUpperCase()}`;
+                    }
+                }
+
+                // 2. Title matching
+                const explicitNameMatch = text.match(/(?:tên\s*(?:sản\s*phẩm|sp)?|sản\s*phẩm|mặt\s*hàng|sp)\s*[:=-]\s*([^,\n;]+)/i);
+                if (explicitNameMatch && explicitNameMatch[1]) {
+                    let extracted = cleanProductTitle(explicitNameMatch[1]);
+                    if (extracted.length >= 2) {
+                        title = extracted;
+                    }
+                }
+                if (!title) {
+                    let cleanedFull = cleanProductTitle(text);
+                    const firstLine = cleanedFull.split(/[\n;]/)[0].trim();
+                    if (firstLine && firstLine.length >= 2 && !/^(poster|ảnh|banner)$/i.test(firstLine)) {
+                        title = firstLine.split(/\s+/).slice(0, 8).join(' ');
+                    }
+                }
+                return { title, price };
+            };
+
+            // 8 trained backdrops in 'Xe & cơ khí' (Kho Mẫu Nền Poster Obsidian)
+            const XE_BACKDROPS_LIST = [
+                { id: 'XE-01', title: 'Thép Gân Nhám Kim Cương (Diamond Plate)', url: '/api/github/raw?path=raw/n%E1%BB%81n%20poster/xe/13dcb8bbea70bd889867f8e3f2a01747.jpg' },
+                { id: 'XE-02', title: 'Phông Vải Xếp Nếp Studio Đen', url: '/api/github/raw?path=raw/n%E1%BB%81n%20poster/xe/26db3ae4b9087f595ec372baf42b029f.jpg' },
+                { id: 'XE-03', title: 'NASCAR Nghiêng Lốp Tốc Độ', url: '/api/github/raw?path=raw/n%E1%BB%81n%20poster/xe/2b1f5d1ebc662a49c17468bf049d1a6c.jpg' },
+                { id: 'XE-04', title: 'Khúc Cua F1 Kerb Vết Lốp', url: '/api/github/raw?path=raw/n%E1%BB%81n%20poster/xe/3ea5306d8a604736a7e5c6336ae0c956.jpg' },
+                { id: 'XE-05', title: 'Khói Burnout Lửa Đêm', url: '/api/github/raw?path=raw/n%E1%BB%81n%20poster/xe/3fcb619106a33025ee9311ab6ff79a23.jpg' },
+                { id: 'XE-06', title: 'Bo Đua Đô Thị & Tòa Kính Mờ Sương', url: '/api/github/raw?path=raw/n%E1%BB%81n%20poster/xe/763c5054d6657912a1206a25fbab378b.jpg' },
+                { id: 'XE-07', title: 'Phông Xám Studio Loang Cổ Điển', url: '/api/github/raw?path=raw/n%E1%BB%81n%20poster/xe/d195928c07d6d703230894d3f1dedaa2.jpg' },
+                { id: 'XE-08', title: 'Ma Trận Lưới Số Cyber Grid', url: '/api/github/raw?path=raw/n%E1%BB%81n%20poster/xe/download.png' }
+            ];
+            const randomXe = XE_BACKDROPS_LIST[Math.floor(Math.random() * XE_BACKDROPS_LIST.length)];
+
+            const extractedInfo = extractProductAndPrice(userText);
+            const isPosterIntent = Boolean(parsedPosterConfig) || /(?:làm poster|tạo poster|poster|thiết kế poster)/i.test(userText);
+
+            if (!parsedPosterConfig) {
+                if (extractedInfo.title || extractedInfo.price || isPosterIntent) {
+                    parsedPosterConfig = {
+                        title: extractedInfo.title || 'SẢN PHẨM CAO CẤP',
+                        productName: extractedInfo.title || 'SẢN PHẨM CAO CẤP',
+                        price: extractedInfo.price,
+                        badge: extractedInfo.price || 'GIÁ ƯU ĐÃI HÔM NAY',
+                        backdropId: randomXe.id,
+                        backdropTitle: randomXe.title,
+                        templateUrl: randomXe.url,
+                        canvas: {
+                            width: 1080,
+                            height: 1920,
+                            backdrop: randomXe.url,
+                            background: {
+                                type: 'template',
+                                url: randomXe.url,
+                                title: randomXe.title
+                            }
+                        }
+                    };
+                }
+            } else {
+                if (parsedPosterConfig.title) {
+                    const sanitized = cleanProductTitle(parsedPosterConfig.title);
+                    if (sanitized && sanitized.length >= 2 && !/^(SẢN PHẨM CHÍNH HÃNG|TÊN SẢN PHẨM)$/i.test(sanitized)) {
+                        parsedPosterConfig.title = sanitized;
+                        parsedPosterConfig.productName = sanitized;
+                    }
+                }
+                if (extractedInfo.title) {
+                    parsedPosterConfig.title = extractedInfo.title;
+                    parsedPosterConfig.productName = extractedInfo.title;
+                }
+                if (Array.isArray(parsedPosterConfig.layers)) {
+                    const hl = parsedPosterConfig.layers.find(l => l.id === 'headline');
+                    if (hl && (parsedPosterConfig.title || extractedInfo.title)) {
+                        hl.text = (parsedPosterConfig.title || extractedInfo.title).toUpperCase();
+                    }
+                }
+                if (extractedInfo.price) {
+                    parsedPosterConfig.price = extractedInfo.price;
+                    if (!parsedPosterConfig.badge || !parsedPosterConfig.badge.includes('GIÁ')) {
+                        parsedPosterConfig.badge = extractedInfo.price;
+                    }
+                    if (Array.isArray(parsedPosterConfig.layers)) {
+                        const pt = parsedPosterConfig.layers.find(l => l.id === 'price_badge_text');
+                        if (pt) pt.text = extractedInfo.price.toUpperCase();
+                    }
+                }
+                // Random Xe backdrop selection from 'Xe & cơ khí' for dynamic variety
+                parsedPosterConfig.backdropId = randomXe.id;
+                parsedPosterConfig.backdropTitle = randomXe.title;
+                parsedPosterConfig.templateUrl = randomXe.url;
+                if (!parsedPosterConfig.canvas) parsedPosterConfig.canvas = { width: 1080, height: 1920 };
+                parsedPosterConfig.canvas.backdrop = randomXe.url;
+                parsedPosterConfig.canvas.background = {
+                    type: 'template',
+                    url: randomXe.url,
+                    title: randomXe.title
+                };
+            }
+
+            // Image Studio Quick Action Card when user edits/works with an image or creates a poster
             const targetImageUrl = (attachedFileResult && attachedFileResult.category === 'image') 
                 ? attachedFileResult.url 
-                : (window.lastUploadedImageUrl || null);
+                : (window.lastUploadedImageUrl || (parsedPosterConfig ? (parsedPosterConfig.templateUrl || randomXe.url) : null));
 
             let studioActionCardHtml = '';
-            const isImageEditingIntent = agentInfo.id === 'image' || Boolean(parsedPosterConfig) || /(?:edit|chỉnh|xóa nền|tách nền|thay nền|poster|banner|studio|crop|cắt|filter|ghép ảnh)/i.test(userText);
+            const isImageEditingIntent = agentInfo.id === 'image' || Boolean(parsedPosterConfig) || isPosterIntent || /(?:edit|chỉnh|xóa nền|tách nền|thay nền|poster|banner|studio|crop|cắt|filter|ghép ảnh)/i.test(userText);
 
-            if (targetImageUrl && isImageEditingIntent) {
+            if (isImageEditingIntent || parsedPosterConfig) {
                 const escapedConfigAttr = parsedPosterConfig ? escapeHtml(JSON.stringify(parsedPosterConfig)) : '';
                 const posterTitleHint = parsedPosterConfig && parsedPosterConfig.title ? `Tiêu đề: "${parsedPosterConfig.title}"` : 'Đã nạp bố cục vào Studio';
                 const safeConfigJson = parsedPosterConfig ? JSON.stringify(parsedPosterConfig).replace(/"/g, '&quot;') : '{}';
@@ -468,7 +616,10 @@ function initAIChat() {
                             <button type="button" onclick="window.switchAndRebuildPoster('bold_sale', '${targetImageUrl}', ${safeConfigJson})" class="px-2.5 py-1 rounded-lg bg-slate-950/90 hover:bg-rose-950/90 border border-rose-500/40 hover:border-rose-300 text-[10px] text-rose-300 font-semibold transition-all active:scale-95 flex items-center gap-1 shadow-sm">🔥 Bold Hot Sale</button>
                             <button type="button" onclick="window.switchAndRebuildPoster('split_left', '${targetImageUrl}', ${safeConfigJson})" class="px-2.5 py-1 rounded-lg bg-slate-950/90 hover:bg-blue-950/90 border border-blue-500/40 hover:border-blue-300 text-[10px] text-blue-300 font-semibold transition-all active:scale-95 flex items-center gap-1 shadow-sm">📐 Split Magazine</button>
                             <button type="button" onclick="window.autoMatchAndCompositePoster('${targetImageUrl}', '${escapeHtml(userText)}')" class="px-2.5 py-1 rounded-lg bg-gradient-to-r from-purple-800 to-indigo-800 hover:from-purple-700 hover:to-indigo-700 border border-purple-400/50 text-[10px] text-amber-300 font-bold transition-all active:scale-95 flex items-center gap-1 shadow-sm">
-                                <span class="material-symbols-outlined text-[12px] text-amber-400">auto_awesome_motion</span> Ghép 39 Mẫu Picsart
+                                <span class="material-symbols-outlined text-[12px] text-amber-400">auto_awesome_motion</span> Ghép Nền Obsidian
+                            </button>
+                            <button type="button" onclick="window.randomizeXeBackdrop()" class="px-2.5 py-1 rounded-lg bg-gradient-to-r from-amber-800 to-orange-800 hover:from-amber-700 hover:to-orange-700 border border-amber-400/50 text-[10px] text-yellow-200 font-bold transition-all active:scale-95 flex items-center gap-1 shadow-sm">
+                                <span class="material-symbols-outlined text-[12px] text-yellow-300">casino</span> 🎲 Random Nền Xe
                             </button>
                         </div>
                     </div>

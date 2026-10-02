@@ -548,12 +548,27 @@ class ObsidianPosterService {
       const p = String(copy.price).trim();
       return p.toUpperCase().includes('GIÁ') ? p : `GIÁ: ${p}`;
     }
-    const text = `${brief || ''} ${copy.badge || ''} ${copy.subtitle || ''}`;
-    const priceMatch = text.match(/(?:giá\s*(?:chỉ|bán)?\s*[:\s]*)?(\d{1,3}(?:[.,]\d{3})*(?:\s*(?:k|đ|vnd|vnđ|d|đồng))|\d+\s*(?:k|đ|vnd|vnđ|d|đồng))/i);
-    if (priceMatch) {
-      const p = priceMatch[1].trim().toUpperCase();
-      return p.startsWith('GIÁ') ? p : `GIÁ CHỈ: ${p}`;
+    const text = `${copy.badge || ''} ${brief || ''} ${copy.subtitle || ''}`.trim();
+    if (!text) return 'GIÁ ƯU ĐÃI HÔM NAY';
+
+    // 1. Explicit 'giá' prefix with number + optional currency format
+    const explicitMatch = text.match(/(?:giá\s*(?:bán|chỉ|ưu\s*đãi|gốc|niêm\s*yết)?\s*(?:là|:|thì|\s)\s*)([0-9]{1,3}(?:[.,][0-9]{3})+(?:\s*(?:k|đ|vnd|vnđ|d|đồng))?|[0-9]+(?:\s*(?:k|đ|vnd|vnđ|d|đồng|tr|triệu))|[0-9]{4,})/i);
+    if (explicitMatch) {
+      let num = explicitMatch[1].trim().toUpperCase();
+      if (/^[0-9]+$/.test(num) && Number(num) >= 1000) {
+        num = Number(num).toLocaleString('vi-VN') + 'Đ';
+      } else if (!/(?:k|đ|vnd|vnđ|d|đồng|tr|triệu)/i.test(num)) {
+        num += 'Đ';
+      }
+      return `GIÁ CHỈ: ${num}`;
     }
+
+    // 2. Standalone number with explicit currency symbol (k, đ, vnd, vnđ, đồng)
+    const currMatch = text.match(/([0-9]{1,3}(?:[.,][0-9]{3})*\s*(?:k|đ|vnd|vnđ|đồng)|[0-9]+\s*(?:k|đ|vnd|vnđ|đồng|tr|triệu))/i);
+    if (currMatch) {
+      return `GIÁ CHỈ: ${currMatch[1].trim().toUpperCase()}`;
+    }
+
     return copy.badge || copy.eyebrow || 'GIÁ ƯU ĐÃI HÔM NAY';
   }
 
@@ -682,33 +697,73 @@ class ObsidianPosterService {
   /**
    * Build complete json:poster-config from an Obsidian backdrop according to
   /**
+   * Clean and sanitize product title by stripping conversational fillers,
+   * commands, intent phrases, and media keywords (e.g. 'tôi ảnh poster quảng cáo...')
+   */
+  cleanProductTitle(text) {
+    if (!text || typeof text !== 'string') return '';
+    let str = text.trim();
+    // 1. Strip wrapping quotes, brackets, markdown bold/italic
+    str = str.replace(/^[*_~`"'“”‘’«»#]+|[*_~`"'“”‘’«»#]+$/g, '').trim();
+
+    // 2. Strip price declarations and currency before cleaning title
+    str = str
+      .replace(/(?:giá|price|chi\s*phí)\s*[:=-]?\s*[\d.,]+\s*(?:k|vnđ|vnd|đ|\$)?.*$/gi, '')
+      .replace(/[\d.,]+\s*(?:k|vnđ|vnd|đ|\$)\b.*$/gi, '')
+      .trim();
+
+    // 3. Repeatedly strip conversation, bot requests, command intents and media prefixes
+    let prev = '';
+    while (prev !== str) {
+      prev = str;
+      str = str
+        .replace(/^(?:tôi|mình|em|anh|chị|shop|admin)\s*(?:muốn|cần|yêu\s*cầu|nhờ|xin)?\s+/i, '')
+        .replace(/^(?:bạn\s*(?:ơi|hãy)?|giúp\s*(?:tôi|mình|em|anh|chị)?|hãy|vui\s*lòng|xin\s*vui\s*lòng)\s+/i, '')
+        .replace(/^(?:thiết\s*kế|tạo|làm|vẽ|lên\s*ý\s*tưởng|edit|chỉnh\s*sửa|render|generate|build|xuất)\s+(?:một\s+)?/i, '')
+        .replace(/^(?:một\s+)?(?:poster|banner|ảnh|hình\s*ảnh|hình|ấn\s*phẩm|standee|flyer|art|key\s*visual)\s+/i, '')
+        .replace(/^(?:quảng\s*cáo|quảng\s*bá|giới\s*thiệu|ra\s*mắt|chào\s*đón|bán|ưu\s*đãi|khuyến\s*mãi|sale|deal|bài\s*viết)\s+/i, '')
+        .replace(/^(?:sản\s*phẩm|mặt\s*hàng|món\s*hàng|món\s*đồ|item|dòng\s*sản\s*phẩm|loại)\s+/i, '')
+        .replace(/^(?:cho|dành\s+cho|về)\s+/i, '')
+        .replace(/^(?:một\s+)/i, '')
+        .trim();
+    }
+
+    // 4. Strip punctuation at ends
+    str = str.replace(/^[:;,.-\s]+|[:;,.-\s]+$/g, '').trim();
+    return str;
+  }
+
+  /**
    * Derive product-centric headline from brief or product context
    */
   deriveProductHeadline(brief = '', copy = {}, preferences = {}) {
-    if (copy.title && copy.title.trim()) return copy.title.trim();
-    if (copy.productName && copy.productName.trim()) return copy.productName.trim();
-    if (preferences.productName && preferences.productName.trim()) return preferences.productName.trim();
-
-    const raw = (brief || '').split(/[.!?;:\n]/)[0].trim();
-    if (!raw) return 'SẢN PHẨM CHÍNH HÃNG';
-
-    // Remove common command prefixes
-    let cleaned = raw
-      .replace(/^(hãy\s+)?(thiết kế|tạo|làm|vẽ|lên ý tưởng)\s+(một\s+)?/i, '')
-      .replace(/^(một\s+)?(poster|banner|ảnh|hình ảnh|ấn phẩm)\s+(quảng cáo\s+)?/i, '')
-      .replace(/^(giới thiệu|ra mắt|quảng bá|chào đón|bán|ưu đãi|sale)\s+/i, '')
-      .trim();
-
-    // Extract core subject before "cho", "dành cho"
-    const parts = cleaned.split(/\s+(?:dành\s+)?cho\s+/i);
-    if (parts.length > 1 && parts[0].trim().length >= 4) {
-      return parts[0].trim().split(/\s+/).slice(0, 6).join(' ');
+    // 1. If copy or preferences provided, sanitize first
+    const rawProvided = (copy.productName || copy.title || preferences.productName || '').trim();
+    if (rawProvided) {
+      const cleanedProvided = this.cleanProductTitle(rawProvided);
+      if (cleanedProvided && cleanedProvided.length >= 2 && !/^(SẢN PHẨM CHÍNH HÃNG|TÊN SẢN PHẨM)$/i.test(cleanedProvided)) {
+        return cleanedProvided;
+      }
     }
 
-    const words = cleaned.split(/\s+/).filter(Boolean);
-    const filteredWords = words.filter(w => !/^(hãy|thiết|kế|tạo|làm|một|poster|ảnh|banner|quảng|cáo)$/i.test(w));
-    const candidate = (filteredWords.length > 0 ? filteredWords : words).slice(0, 6).join(' ');
-    return candidate || 'SẢN PHẨM CHÍNH HÃNG';
+    const str = (brief || '').trim();
+    if (!str) return 'SẢN PHẨM CHÍNH HÃNG';
+
+    // 2. Explicit tags: Tên sản phẩm, Tên SP, Sản phẩm, Mặt hàng, SP
+    const explicitMatch = str.match(/(?:tên\s*(?:sản\s*phẩm|sp)?|sản\s*phẩm|mặt\s*hàng|sp)\s*[:=-]\s*([^,\n;]+)/i);
+    if (explicitMatch && explicitMatch[1]) {
+      let extracted = this.cleanProductTitle(explicitMatch[1]);
+      if (extracted && extracted.length >= 2) return extracted;
+    }
+
+    // 3. Clean conversational commands & media prefixes directly from brief
+    const cleanedBrief = this.cleanProductTitle(str);
+    const firstLine = cleanedBrief.split(/[\n;]/)[0].trim();
+    if (firstLine && firstLine.length >= 2 && !/^(poster|ảnh|banner)$/i.test(firstLine)) {
+      return firstLine.split(/\s+/).slice(0, 8).join(' ');
+    }
+
+    return 'SẢN PHẨM CHÍNH HÃNG';
   }
 
   /**
@@ -735,6 +790,7 @@ class ObsidianPosterService {
       background: harmony.rule60?.hex || bd.recommendedColors?.background || '#0B0F19',
       badgeBg: harmony.textColors?.badge || harmony.rule10?.hex || '#FFD700',
       badgeText: harmony.textColors?.badgeText || '#020617',
+      badgeStroke: '#FFFFFF',
       ctaBg: harmony.textColors?.ctaBg || harmony.rule10?.hex || '#FFD700',
       ctaText: harmony.textColors?.ctaText || '#020617'
     };
@@ -771,6 +827,11 @@ class ObsidianPosterService {
     const isAlignLeft = Boolean(safeZone.align === 'left');
     const textX = 50;
     const textAlign = 'center';
+
+    // Guaranteed vertical hierarchy: Price Badge (y: 11-12) < Headline (y: 21-22) < Main Subject (y: 56)
+    const priceY = Math.min((safeZone.yMin || 10) + 2, 12);
+    const headlineY = Math.min((safeZone.yMin || 10) + 12, 22);
+    const subtitleY = Math.min((safeZone.yMin || 10) + 21, 31);
 
     const layers = [
       // 1. Gradient Masking to guarantee text legibility
@@ -815,39 +876,67 @@ class ObsidianPosterService {
           sharpen: 50
         }
       },
-      // 4. Price Badge Pill (Nằm ở TRÊN Headline: y: safeZone.yMin + 2 ~ 12%)
+      // 4. Price Badge Pill - Tách riêng biệt, hình huy hiệu có viền từ 3px trở lên, cực kỳ nổi bật (Nằm ở TRÊN Headline: y: priceY ~ 11-12%)
       {
         id: 'price_badge_bg',
         type: 'shape',
         shape: 'roundedRect',
         x: textX,
-        y: safeZone.yMin + 2,
-        width: 44,
-        height: 5.8,
+        y: priceY,
+        width: 46,
+        height: 6.2,
         fill: colors.badgeBg,
-        cornerRadius: 20
+        stroke: colors.badgeStroke || '#FFFFFF',
+        strokeWidth: 3.5,
+        cornerRadius: 22,
+        shadow: {
+          color: 'rgba(0, 0, 0, 0.55)',
+          blur: 16,
+          offsetX: 0,
+          offsetY: 4
+        }
       },
       {
         id: 'price_badge_text',
         type: 'text',
         text: priceText.toUpperCase(),
         x: textX,
-        y: safeZone.yMin + 2,
-        width: 44,
-        height: 5.8,
+        y: priceY,
+        width: 46,
+        height: 6.2,
+        fontFamily: fonts[0],
+        fontWeight: 800,
+        fontSize: 34,
+        color: colors.badgeText,
+        align: 'center',
+        shadow: {
+          color: 'rgba(0, 0, 0, 0.65)',
+          blur: 10,
+          offsetX: 0,
+          offsetY: 2
+        }
+      },
+      {
+        id: 'badge_text',
+        type: 'text',
+        text: (copy.badge || badge || priceText).toUpperCase(),
+        x: textX,
+        y: priceY,
+        width: 46,
+        height: 6.2,
         fontFamily: fonts[0],
         fontWeight: 800,
         fontSize: 34,
         color: colors.badgeText,
         align: 'center'
       },
-      // 5. Headline 86px (NẰM CHÍNH GIỮA GIÁ TIỀN VÀ ẢNH SẢN PHẨM: y: safeZone.yMin + 12 ~ 22%)
+      // 5. Headline 86px (NẰM CHÍNH GIỮA GIÁ TIỀN VÀ ẢNH SẢN PHẨM: y: headlineY ~ 21-22%)
       {
         id: 'headline',
         type: 'text',
         text: title.toUpperCase(),
         x: textX,
-        y: safeZone.yMin + 12,
+        y: headlineY,
         width: 90,
         height: 14,
         fontFamily: fonts[0],
@@ -862,13 +951,13 @@ class ObsidianPosterService {
           offsetY: 4
         }
       },
-      // 6. Subtitle (Tier 2 visual hierarchy - Center Aligned)
+      // 6. Subtitle (Tier 2 visual hierarchy - Center Aligned: y: subtitleY ~ 31%)
       {
         id: 'subtitle',
         type: 'text',
         text: subtitle,
         x: textX,
-        y: safeZone.yMin + 21,
+        y: subtitleY,
         width: 88,
         height: 7,
         fontFamily: fonts[1],
@@ -969,6 +1058,8 @@ class ObsidianPosterService {
       title,
       subtitle,
       badge,
+      price: priceText,
+      productName: title,
       productSummary,
       canvas: {
         width: canvasWidth,

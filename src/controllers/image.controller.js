@@ -49,15 +49,15 @@ class ImageController {
 
   createObsidianPoster(req, res) {
     const { backdropId, brief, copy, productImageUrl, options, techniqueId } = req.body || {};
-    const backdrop = backdropId
+    const backdrop = (backdropId && backdropId !== 'random' && backdropId !== 'random_xe')
       ? obsidianPosterService.getBackdropById(backdropId)
-      : obsidianPosterService.matchBackdrop(brief, { ...req.body?.preferences, techniqueId }).backdrop;
+      : (obsidianPosterService.getRandomXeBackdrop() || obsidianPosterService.getBackdropById('XE-02'));
     const posterConfig = obsidianPosterService.buildPosterConfig({
       backdrop,
       brief,
       copy,
       productImageUrl,
-      options: { ...(options || {}), techniqueId, preferences: req.body?.preferences }
+      options: { ...(options || {}), techniqueId, preferences: req.body?.preferences, randomXe: !backdropId }
     });
     return res.json({ success: true, posterConfig });
   }
